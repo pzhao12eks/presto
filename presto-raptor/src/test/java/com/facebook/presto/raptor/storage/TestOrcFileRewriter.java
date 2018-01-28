@@ -71,6 +71,7 @@ public class TestOrcFileRewriter
 
     @BeforeClass
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
     }

@@ -18,9 +18,10 @@ import com.google.common.net.HostAndPort;
 import io.airlift.units.Duration;
 import org.apache.thrift.transport.TTransportException;
 
+import javax.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
@@ -30,14 +31,14 @@ public class MockHiveMetastoreClientFactory
 {
     private final List<HiveMetastoreClient> clients;
 
-    public MockHiveMetastoreClientFactory(Optional<HostAndPort> socksProxy, Duration timeout, List<HiveMetastoreClient> clients)
+    public MockHiveMetastoreClientFactory(@Nullable HostAndPort socksProxy, Duration timeout, List<HiveMetastoreClient> clients)
     {
-        super(Optional.empty(), socksProxy, timeout, new NoHiveMetastoreAuthentication());
+        super(socksProxy, timeout, new NoHiveMetastoreAuthentication());
         this.clients = new ArrayList<>(requireNonNull(clients, "clients is null"));
     }
 
     @Override
-    public HiveMetastoreClient create(HostAndPort address)
+    public HiveMetastoreClient create(String host, int port)
             throws TTransportException
     {
         checkState(!clients.isEmpty(), "mock not given enough clients");

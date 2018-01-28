@@ -43,7 +43,6 @@ import java.util.function.Predicate;
 import static com.facebook.presto.sql.tree.BooleanLiteral.FALSE_LITERAL;
 import static com.facebook.presto.sql.tree.BooleanLiteral.TRUE_LITERAL;
 import static com.facebook.presto.sql.tree.ComparisonExpressionType.IS_DISTINCT_FROM;
-import static com.google.common.base.Predicates.not;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -227,23 +226,21 @@ public final class ExpressionUtils
         return disjuncts.isEmpty() ? emptyDefault : or(disjuncts);
     }
 
-    public static Expression filterDeterministicConjuncts(Expression expression)
-    {
-        return filterConjuncts(expression, DeterminismEvaluator::isDeterministic);
-    }
-
-    public static Expression filterNonDeterministicConjuncts(Expression expression)
-    {
-        return filterConjuncts(expression, not(DeterminismEvaluator::isDeterministic));
-    }
-
-    private static Expression filterConjuncts(Expression expression, Predicate<Expression> predicate)
+    public static Expression stripNonDeterministicConjuncts(Expression expression)
     {
         List<Expression> conjuncts = extractConjuncts(expression).stream()
-                .filter(predicate)
+                .filter(DeterminismEvaluator::isDeterministic)
                 .collect(toList());
 
         return combineConjuncts(conjuncts);
+    }
+
+    public static Expression stripDeterministicConjuncts(Expression expression)
+    {
+        return combineConjuncts(extractConjuncts(expression)
+                .stream()
+                .filter((conjunct) -> !DeterminismEvaluator.isDeterministic(conjunct))
+                .collect(toImmutableList()));
     }
 
     public static Function<Expression, Expression> expressionOrNullSymbols(final Predicate<Symbol>... nullSymbolScopes)

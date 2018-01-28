@@ -17,7 +17,7 @@ import com.facebook.presto.Session;
 import com.facebook.presto.client.ClientSession;
 import com.facebook.presto.client.Column;
 import com.facebook.presto.client.QueryError;
-import com.facebook.presto.client.QueryStatusInfo;
+import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.client.StatementClient;
 import com.facebook.presto.metadata.MetadataUtil;
 import com.facebook.presto.metadata.QualifiedObjectName;
@@ -81,12 +81,14 @@ public abstract class AbstractTestingPrestoClient<T>
 
         try (StatementClient client = new StatementClient(httpClient, clientSession, sql)) {
             while (client.isValid()) {
-                resultsSession.addResults(client.currentStatusInfo(), client.currentData());
+                QueryResults results = client.current();
+
+                resultsSession.addResults(results);
                 client.advance();
             }
 
             if (!client.isFailed()) {
-                QueryStatusInfo results = client.finalStatusInfo();
+                QueryResults results = client.finalResults();
                 if (results.getUpdateType() != null) {
                     resultsSession.setUpdateType(results.getUpdateType());
                 }
@@ -98,7 +100,7 @@ public abstract class AbstractTestingPrestoClient<T>
                 return new ResultWithQueryId<>(results.getId(), result);
             }
 
-            QueryError error = client.finalStatusInfo().getError();
+            QueryError error = client.finalResults().getError();
             verify(error != null, "no error");
             if (error.getFailureInfo() != null) {
                 throw error.getFailureInfo().toException();
@@ -125,7 +127,6 @@ public abstract class AbstractTestingPrestoClient<T>
                 server,
                 session.getIdentity().getUser(),
                 session.getSource().orElse(null),
-                session.getClientTags(),
                 session.getClientInfo().orElse(null),
                 session.getCatalog().orElse(null),
                 session.getSchema().orElse(null),

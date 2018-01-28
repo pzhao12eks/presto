@@ -25,6 +25,7 @@ import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
@@ -49,14 +50,12 @@ public class ThriftPageSource
     private PrestoThriftId nextToken;
     private boolean firstCall = true;
     private CompletableFuture<PrestoThriftPageResult> future;
-    private final ThriftConnectorStats stats;
     private long completedBytes;
 
     public ThriftPageSource(
             PrestoThriftServiceProvider clientProvider,
             ThriftConnectorSplit split,
             List<ColumnHandle> columns,
-            ThriftConnectorStats stats,
             long maxBytesPerResponse)
     {
         // init columns
@@ -70,7 +69,6 @@ public class ThriftPageSource
         }
         this.columnNames = columnNames.build();
         this.columnTypes = columnTypes.build();
-        this.stats = requireNonNull(stats, "stats is null");
 
         // this parameter is read from config, so it should be checked by config validation
         // however, here it's a raw constructor parameter, so adding this safety check
@@ -169,12 +167,7 @@ public class ThriftPageSource
         nextToken = rowsBatch.getNextToken();
         Page page = rowsBatch.toPage(columnTypes);
         if (page != null) {
-            long pageSize = page.getSizeInBytes();
-            completedBytes += pageSize;
-            stats.addScanPageSize(pageSize);
-        }
-        else {
-            stats.addScanPageSize(0);
+            completedBytes += page.getSizeInBytes();
         }
         return page;
     }
@@ -187,6 +180,7 @@ public class ThriftPageSource
 
     @Override
     public void close()
+            throws IOException
     {
         if (future != null) {
             future.cancel(true);

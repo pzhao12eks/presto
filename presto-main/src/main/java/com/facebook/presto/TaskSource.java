@@ -13,7 +13,6 @@
  */
 package com.facebook.presto;
 
-import com.facebook.presto.execution.Lifespan;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -29,25 +28,17 @@ public class TaskSource
 {
     private final PlanNodeId planNodeId;
     private final Set<ScheduledSplit> splits;
-    private final Set<Lifespan> noMoreSplitsForLifespan;
     private final boolean noMoreSplits;
 
     @JsonCreator
     public TaskSource(
             @JsonProperty("planNodeId") PlanNodeId planNodeId,
             @JsonProperty("splits") Set<ScheduledSplit> splits,
-            @JsonProperty("noMoreSplitsForLifespan") Set<Lifespan> noMoreSplitsForLifespan,
             @JsonProperty("noMoreSplits") boolean noMoreSplits)
     {
         this.planNodeId = requireNonNull(planNodeId, "planNodeId is null");
         this.splits = ImmutableSet.copyOf(requireNonNull(splits, "splits is null"));
-        this.noMoreSplitsForLifespan = ImmutableSet.copyOf(noMoreSplitsForLifespan);
         this.noMoreSplits = noMoreSplits;
-    }
-
-    public TaskSource(PlanNodeId planNodeId, Set<ScheduledSplit> splits, boolean noMoreSplits)
-    {
-        this(planNodeId, splits, ImmutableSet.of(), noMoreSplits);
     }
 
     @JsonProperty
@@ -60,12 +51,6 @@ public class TaskSource
     public Set<ScheduledSplit> getSplits()
     {
         return splits;
-    }
-
-    @JsonProperty
-    public Set<Lifespan> getNoMoreSplitsForLifespan()
-    {
-        return noMoreSplitsForLifespan;
     }
 
     @JsonProperty
@@ -87,15 +72,9 @@ public class TaskSource
                     .addAll(splits)
                     .addAll(source.getSplits())
                     .build();
-            Set<Lifespan> newNoMoreSplitsForDriverGroup = ImmutableSet.<Lifespan>builder()
-                    .addAll(noMoreSplitsForLifespan)
-                    .addAll(source.getNoMoreSplitsForLifespan())
-                    .build();
 
-            return new TaskSource(
-                    planNodeId,
+            return new TaskSource(planNodeId,
                     newSplits,
-                    newNoMoreSplitsForDriverGroup,
                     source.isNoMoreSplits());
         }
         else {

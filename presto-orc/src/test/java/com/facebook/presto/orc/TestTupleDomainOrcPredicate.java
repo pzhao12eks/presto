@@ -61,6 +61,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testBoolean()
+            throws Exception
     {
         assertEquals(getDomain(BOOLEAN, 0, null), none(BOOLEAN));
         assertEquals(getDomain(BOOLEAN, 10, null), all(BOOLEAN));
@@ -92,6 +93,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testBigint()
+            throws Exception
     {
         assertEquals(getDomain(BIGINT, 0, null), none(BIGINT));
         assertEquals(getDomain(BIGINT, 10, null), all(BIGINT));
@@ -116,11 +118,12 @@ public class TestTupleDomainOrcPredicate
 
     private static ColumnStatistics integerColumnStats(Long numberOfValues, Long minimum, Long maximum)
     {
-        return new ColumnStatistics(numberOfValues, 9L, null, new IntegerStatistics(minimum, maximum, null), null, null, null, null, null, null);
+        return new ColumnStatistics(numberOfValues, 9L, null, new IntegerStatistics(minimum, maximum), null, null, null, null, null, null);
     }
 
     @Test
     public void testDouble()
+            throws Exception
     {
         assertEquals(getDomain(DOUBLE, 0, null), none(DOUBLE));
         assertEquals(getDomain(DOUBLE, 10, null), all(DOUBLE));
@@ -150,6 +153,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testFloat()
+            throws Exception
     {
         assertEquals(getDomain(REAL, 0, null), none(REAL));
         assertEquals(getDomain(REAL, 10, null), all(REAL));
@@ -174,6 +178,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testString()
+            throws Exception
     {
         assertEquals(getDomain(VARCHAR, 0, null), none(VARCHAR));
         assertEquals(getDomain(VARCHAR, 10, null), all(VARCHAR));
@@ -198,6 +203,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testChar()
+            throws Exception
     {
         assertEquals(getDomain(CHAR, 0, null), none(CHAR));
         assertEquals(getDomain(CHAR, 10, null), all(CHAR));
@@ -240,6 +246,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testDate()
+            throws Exception
     {
         assertEquals(getDomain(DATE, 0, null), none(DATE));
         assertEquals(getDomain(DATE, 10, null), all(DATE));
@@ -269,6 +276,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testDecimal()
+            throws Exception
     {
         assertEquals(getDomain(SHORT_DECIMAL, 0, null), none(SHORT_DECIMAL));
         assertEquals(getDomain(LONG_DECIMAL, 10, null), all(LONG_DECIMAL));
@@ -325,6 +333,7 @@ public class TestTupleDomainOrcPredicate
 
     @Test
     public void testBinary()
+            throws Exception
     {
         assertEquals(getDomain(VARBINARY, 0, null), none(VARBINARY));
         assertEquals(getDomain(VARBINARY, 10, null), all(VARBINARY));

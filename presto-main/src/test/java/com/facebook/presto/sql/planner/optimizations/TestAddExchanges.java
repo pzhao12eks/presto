@@ -45,6 +45,7 @@ public class TestAddExchanges
 {
     @Test
     public void testPickLayoutAnyPreference()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference(PreferredProperties.any());
 
@@ -80,6 +81,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutPartitionedPreference()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference(PreferredProperties.distributed());
 
@@ -141,6 +143,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutUnpartitionedPreference()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference(PreferredProperties.undistributed());
 
@@ -202,6 +205,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutPartitionedOnSingle()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference(
                 PreferredProperties.partitioned(ImmutableSet.of(symbol("a"))));
@@ -264,6 +268,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutPartitionedOnMultiple()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference(
                 PreferredProperties.partitioned(ImmutableSet.of(symbol("a"), symbol("b"))));
@@ -332,6 +337,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutGrouped()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.local(ImmutableList.of(grouped("a"))));
@@ -400,6 +406,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutGroupedMultiple()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.local(ImmutableList.of(grouped("a", "b"))));
@@ -468,6 +475,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutGroupedMultipleProperties()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.local(ImmutableList.of(grouped("a"), grouped("b"))));
@@ -536,6 +544,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutGroupedWithSort()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.local(ImmutableList.of(grouped("a"), sorted("b", ASC_NULLS_FIRST))));
@@ -604,6 +613,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutUnpartitionedWithGroupAndSort()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.undistributedWithLocal(ImmutableList.of(grouped("a"), sorted("b", ASC_NULLS_FIRST))));
@@ -672,6 +682,7 @@ public class TestAddExchanges
 
     @Test
     public void testPickLayoutPartitionedWithGroup()
+            throws Exception
     {
         Comparator<ActualProperties> preference = streamingExecutionPreference
                 (PreferredProperties.partitionedWithLocal(

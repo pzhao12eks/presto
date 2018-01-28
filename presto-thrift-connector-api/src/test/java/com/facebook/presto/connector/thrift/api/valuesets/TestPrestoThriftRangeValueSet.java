@@ -36,6 +36,7 @@ public class TestPrestoThriftRangeValueSet
 {
     @Test
     public void testFromValueSetAll()
+            throws Exception
     {
         PrestoThriftValueSet thriftValueSet = fromValueSet(ValueSet.all(BIGINT));
         assertNotNull(thriftValueSet.getRangeValueSet());
@@ -45,6 +46,7 @@ public class TestPrestoThriftRangeValueSet
 
     @Test
     public void testFromValueSetNone()
+            throws Exception
     {
         PrestoThriftValueSet thriftValueSet = fromValueSet(ValueSet.none(BIGINT));
         assertNotNull(thriftValueSet.getRangeValueSet());
@@ -53,6 +55,7 @@ public class TestPrestoThriftRangeValueSet
 
     @Test
     public void testFromValueSetOf()
+            throws Exception
     {
         PrestoThriftValueSet thriftValueSet = fromValueSet(ValueSet.of(BIGINT, 1L, 2L, 3L));
         assertNotNull(thriftValueSet.getRangeValueSet());
@@ -64,6 +67,7 @@ public class TestPrestoThriftRangeValueSet
 
     @Test
     public void testFromValueSetOfRangesUnbounded()
+            throws Exception
     {
         PrestoThriftValueSet thriftValueSet = fromValueSet(ValueSet.ofRanges(Range.greaterThanOrEqual(BIGINT, 0L)));
         assertNotNull(thriftValueSet.getRangeValueSet());
@@ -73,6 +77,7 @@ public class TestPrestoThriftRangeValueSet
 
     @Test
     public void testFromValueSetOfRangesBounded()
+            throws Exception
     {
         PrestoThriftValueSet thriftValueSet = fromValueSet(ValueSet.ofRanges(
                 range(BIGINT, -10L, true, -1L, false),

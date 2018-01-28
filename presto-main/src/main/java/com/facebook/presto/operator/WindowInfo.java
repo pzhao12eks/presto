@@ -53,7 +53,7 @@ public class WindowInfo
     static class DriverWindowInfoBuilder
     {
         private ImmutableList.Builder<IndexInfo> indexInfosBuilder = ImmutableList.builder();
-        private IndexInfoBuilder currentIndexInfoBuilder;
+        private IndexInfoBuilder currentIndexInfoBuilder = null;
 
         public void addIndex(PagesIndex index)
         {

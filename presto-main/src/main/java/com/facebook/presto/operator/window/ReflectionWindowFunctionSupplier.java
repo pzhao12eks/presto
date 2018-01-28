@@ -50,7 +50,7 @@ public class ReflectionWindowFunctionSupplier<T extends WindowFunction>
             }
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -66,7 +66,7 @@ public class ReflectionWindowFunctionSupplier<T extends WindowFunction>
             }
         }
         catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e.getCause());
         }
         catch (Exception e) {
             throw Throwables.propagate(e);

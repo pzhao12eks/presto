@@ -28,7 +28,5 @@ public @interface AggregationFunction
 
     boolean decomposable() default true;
 
-    boolean isOrderSensitive() default false;
-
     String[] alias() default {};
 }

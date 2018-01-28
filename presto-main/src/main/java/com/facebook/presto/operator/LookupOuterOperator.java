@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.execution.Lifespan;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.type.Type;
@@ -21,10 +20,7 @@ import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
 import static io.airlift.concurrent.MoreFutures.tryGetFutureValue;
@@ -43,22 +39,20 @@ public class LookupOuterOperator
 
         private final int operatorId;
         private final PlanNodeId planNodeId;
-        private final Function<Lifespan, ListenableFuture<OuterPositionIterator>> outerPositionsFuture;
+        private final ListenableFuture<OuterPositionIterator> outerPositionsFuture;
         private final List<Type> types;
         private final List<Type> probeOutputTypes;
         private final List<Type> buildOutputTypes;
-        private final Function<Lifespan, ReferenceCount> referenceCount;
-
-        private Set<Lifespan> createdLifespans = new HashSet<>();
-        private boolean closed;
+        private final ReferenceCount referenceCount;
+        private State state = State.NOT_CREATED;
 
         public LookupOuterOperatorFactory(
                 int operatorId,
                 PlanNodeId planNodeId,
-                Function<Lifespan, ListenableFuture<OuterPositionIterator>> outerPositionsFuture,
+                ListenableFuture<OuterPositionIterator> outerPositionsFuture,
                 List<Type> probeOutputTypes,
                 List<Type> buildOutputTypes,
-                Function<Lifespan, ReferenceCount> referenceCount)
+                ReferenceCount referenceCount)
         {
             this.operatorId = operatorId;
             this.planNodeId = requireNonNull(planNodeId, "planNodeId is null");
@@ -87,33 +81,22 @@ public class LookupOuterOperator
         @Override
         public Operator createOperator(DriverContext driverContext)
         {
-            checkState(!closed, "LookupOuterOperatorFactory is closed");
-            if (createdLifespans.contains(driverContext.getLifespan())) {
-                throw new IllegalStateException("Only one outer operator can be created per Lifespan");
-            }
-            createdLifespans.add(driverContext.getLifespan());
+            checkState(state == State.NOT_CREATED, "Only one outer operator can be created");
+            state = State.CREATED;
 
-            ListenableFuture<OuterPositionIterator> outerPositionsFuture = this.outerPositionsFuture.apply(driverContext.getLifespan());
-            ReferenceCount referenceCount = this.referenceCount.apply(driverContext.getLifespan());
             OperatorContext operatorContext = driverContext.addOperatorContext(operatorId, planNodeId, LookupOuterOperator.class.getSimpleName());
             referenceCount.retain();
             return new LookupOuterOperator(operatorContext, outerPositionsFuture, probeOutputTypes, buildOutputTypes, referenceCount::release);
         }
 
         @Override
-        public void noMoreOperators(Lifespan lifespan)
-        {
-            ReferenceCount referenceCount = this.referenceCount.apply(lifespan);
-            referenceCount.release();
-        }
-
-        @Override
         public void noMoreOperators()
         {
-            if (closed) {
+            if (state == State.CLOSED) {
                 return;
             }
-            closed = true;
+            state = State.CLOSED;
+            referenceCount.release();
         }
 
         @Override

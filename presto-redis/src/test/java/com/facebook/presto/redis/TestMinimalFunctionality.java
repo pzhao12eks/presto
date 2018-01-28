@@ -64,6 +64,7 @@ public class TestMinimalFunctionality
 
     @AfterClass(alwaysRun = true)
     public void stopRedis()
+            throws Exception
     {
         embeddedRedis.close();
     }
@@ -84,6 +85,7 @@ public class TestMinimalFunctionality
 
     @AfterMethod
     public void tearDown()
+            throws Exception
     {
         queryRunner.close();
     }
@@ -108,6 +110,7 @@ public class TestMinimalFunctionality
 
     @Test
     public void testTableExists()
+            throws Exception
     {
         QualifiedObjectName name = new QualifiedObjectName("redis", "default", tableName);
         transaction(queryRunner.getTransactionManager(), new AllowAllAccessControl())
@@ -120,6 +123,7 @@ public class TestMinimalFunctionality
 
     @Test
     public void testTableHasData()
+            throws Exception
     {
         MaterializedResult result = queryRunner.execute("SELECT count(1) from " + tableName);
 

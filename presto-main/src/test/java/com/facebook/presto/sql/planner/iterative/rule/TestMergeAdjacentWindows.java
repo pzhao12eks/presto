@@ -66,6 +66,7 @@ public class TestMergeAdjacentWindows
 
     @Test
     public void testPlanWithoutWindowNode()
+            throws Exception
     {
         tester().assertThat(new GatherAndMergeWindows.MergeAdjacentWindowsOverProjects(0))
                 .on(p -> p.values(p.symbol("a")))
@@ -74,6 +75,7 @@ public class TestMergeAdjacentWindows
 
     @Test
     public void testPlanWithSingleWindowNode()
+            throws Exception
     {
         tester().assertThat(new GatherAndMergeWindows.MergeAdjacentWindowsOverProjects(0))
                 .on(p ->
@@ -118,6 +120,7 @@ public class TestMergeAdjacentWindows
 
     @Test
     public void testDependentAdjacentWindowsIdenticalSpecifications()
+            throws Exception
     {
         tester().assertThat(new GatherAndMergeWindows.MergeAdjacentWindowsOverProjects(0))
                 .on(p ->
@@ -133,6 +136,7 @@ public class TestMergeAdjacentWindows
 
     @Test
     public void testDependentAdjacentWindowsDistinctSpecifications()
+            throws Exception
     {
         tester().assertThat(new GatherAndMergeWindows.MergeAdjacentWindowsOverProjects(0))
                 .on(p ->
@@ -148,6 +152,7 @@ public class TestMergeAdjacentWindows
 
     @Test
     public void testIdenticalAdjacentWindowSpecifications()
+            throws Exception
     {
         tester().assertThat(new GatherAndMergeWindows.MergeAdjacentWindowsOverProjects(0))
                 .on(p ->

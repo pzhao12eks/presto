@@ -67,6 +67,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testNestedLoopJoin()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
         // build
@@ -120,6 +121,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testCrossJoinWithNullProbe()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -162,6 +164,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testCrossJoinWithNullBuild()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -203,6 +206,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testCrossJoinWithNullOnBothSides()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -256,6 +260,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testBuildMultiplePages()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -299,6 +304,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testProbeMultiplePages()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -342,6 +348,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testProbeAndBuildMultiplePages()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -392,6 +399,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testEmptyProbePage()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -421,6 +429,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testEmptyBuildPage()
+            throws Exception
     {
         TaskContext taskContext = createTaskContext();
 
@@ -449,6 +458,7 @@ public class TestNestedLoopJoinOperator
 
     @Test
     public void testCount()
+            throws Exception
     {
         // normal case
         Page buildPage = new Page(100);
@@ -486,7 +496,7 @@ public class TestNestedLoopJoinOperator
         ValuesOperatorFactory valuesOperatorFactory = new ValuesOperatorFactory(0, new PlanNodeId("test"), buildPages.getTypes(), buildPages.build());
         NestedLoopBuildOperatorFactory nestedLoopBuildOperatorFactory = new NestedLoopBuildOperatorFactory(1, new PlanNodeId("test"), buildPages.getTypes());
 
-        Driver driver = Driver.createDriver(driverContext,
+        Driver driver = new Driver(driverContext,
                 valuesOperatorFactory.createOperator(driverContext),
                 nestedLoopBuildOperatorFactory.createOperator(driverContext));
 

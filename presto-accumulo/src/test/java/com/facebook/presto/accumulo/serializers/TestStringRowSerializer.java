@@ -23,12 +23,14 @@ public class TestStringRowSerializer
 
     @Override
     public void testArray()
+            throws Exception
     {
         // Arrays are not supported by StringRowSerializer
     }
 
     @Override
     public void testMap()
+            throws Exception
     {
         // Maps are not supported by StringRowSerializer
     }

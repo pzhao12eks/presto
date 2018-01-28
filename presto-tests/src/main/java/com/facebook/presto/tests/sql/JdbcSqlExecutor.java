@@ -17,32 +17,21 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
-
-import static java.util.Objects.requireNonNull;
 
 public class JdbcSqlExecutor
         implements SqlExecutor
 {
     private final String jdbcUrl;
-    private final Properties jdbcProperties;
 
     public JdbcSqlExecutor(String jdbcUrl)
     {
-        this(jdbcUrl, new Properties());
-    }
-
-    public JdbcSqlExecutor(String jdbcUrl, Properties jdbcProperties)
-    {
-        this.jdbcUrl = requireNonNull(jdbcUrl, "jdbcUrl is null");
-        this.jdbcProperties = new Properties();
-        this.jdbcProperties.putAll(requireNonNull(jdbcProperties, "jdbcProperties is null"));
+        this.jdbcUrl = jdbcUrl;
     }
 
     @Override
     public void execute(String sql)
     {
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, jdbcProperties);
+        try (Connection connection = DriverManager.getConnection(jdbcUrl);
                 Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }

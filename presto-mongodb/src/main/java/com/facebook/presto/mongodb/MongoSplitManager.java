@@ -43,7 +43,7 @@ public class MongoSplitManager
     }
 
     @Override
-    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorTableLayoutHandle layout, SplitSchedulingStrategy splitSchedulingStrategy)
+    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transactionHandle, ConnectorSession session, ConnectorTableLayoutHandle layout)
     {
         MongoTableLayoutHandle tableLayout = (MongoTableLayoutHandle) layout;
         MongoTableHandle tableHandle = tableLayout.getTable();

@@ -221,6 +221,7 @@ public class TestJsonExtract
 
     @Test
     public void testFullScalarExtract()
+            throws Exception
     {
         assertEquals(doScalarExtract("{}", "$"), null);
         assertEquals(doScalarExtract("{\"fuu\": {\"bar\": 1}}", "$.fuu"), null); // Null b/c value is complex type
@@ -258,6 +259,7 @@ public class TestJsonExtract
 
     @Test
     public void testFullJsonExtract()
+            throws Exception
     {
         assertEquals(doJsonExtract("{}", "$"), "{}");
         assertEquals(doJsonExtract("{\"fuu\": {\"bar\": 1}}", "$.fuu"), "{\"bar\":1}");

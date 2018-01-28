@@ -168,6 +168,7 @@ public class TableFinishOperator
 
     @Override
     public void close()
+            throws Exception
     {
         if (!closed) {
             closed = true;

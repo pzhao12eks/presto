@@ -76,6 +76,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testSingleImplementationScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "single_implementation_parametric_scalar",
@@ -113,6 +114,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testHiddenScalarParse()
+            throws Exception
     {
         List<SqlScalarFunction> functions = ScalarFromAnnotationsParser.parseFunctionDefinition(HiddenScalarFunction.class);
         assertEquals(functions.size(), 1);
@@ -135,6 +137,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testNonDeterministicScalarParse()
+            throws Exception
     {
         List<SqlScalarFunction> functions = ScalarFromAnnotationsParser.parseFunctionDefinition(NonDeterministicScalarFunction.class);
         assertEquals(functions.size(), 1);
@@ -160,6 +163,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testWithNullablePrimitiveArgScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "scalar_with_nullable",
@@ -198,6 +202,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testWithNullableComplexArgScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "scalar_with_nullable_complex",
@@ -234,6 +239,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testStaticMethodScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "static_method_scalar",
@@ -272,6 +278,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testMultiScalarParse()
+            throws Exception
     {
         Signature expectedSignature1 = new Signature(
                 "static_method_scalar_1",
@@ -325,6 +332,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testParametricScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "parametric_scalar",
@@ -366,6 +374,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testComplexParametricScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "with_exact_scalar",
@@ -413,6 +422,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testSimpleInjectionScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "parametric_scalar_inject",
@@ -459,6 +469,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testConstructorInjectionScalarParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "parametric_scalar_inject_constructor",
@@ -500,6 +511,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testFixedTypeParameterParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "fixed_type_parameter_scalar_function",
@@ -538,6 +550,7 @@ public class TestAnnotationEngineForScalars
 
     @Test
     public void testPartiallyFixedTypeParameterParse()
+            throws Exception
     {
         Signature expectedSignature = new Signature(
                 "partially_fixed_type_parameter_scalar_function",

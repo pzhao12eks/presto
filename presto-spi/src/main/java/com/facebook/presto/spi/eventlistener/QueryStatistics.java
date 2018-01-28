@@ -27,9 +27,7 @@ public class QueryStatistics
     private final Optional<Duration> analysisTime;
     private final Optional<Duration> distributedPlanningTime;
 
-    private final long peakUserMemoryBytes;
-    // peak of user + system memory
-    private final long peakTotalNonRevocableMemoryBytes;
+    private final long peakMemoryBytes;
     private final long totalBytes;
     private final long totalRows;
     private final long outputBytes;
@@ -52,8 +50,7 @@ public class QueryStatistics
             Duration queuedTime,
             Optional<Duration> analysisTime,
             Optional<Duration> distributedPlanningTime,
-            long peakUserMemoryBytes,
-            long peakTotalNonRevocableMemoryBytes,
+            long peakMemoryBytes,
             long totalBytes,
             long totalRows,
             long outputBytes,
@@ -71,8 +68,7 @@ public class QueryStatistics
         this.queuedTime = requireNonNull(queuedTime, "queuedTime is null");
         this.analysisTime = requireNonNull(analysisTime, "analysisTime is null");
         this.distributedPlanningTime = requireNonNull(distributedPlanningTime, "distributedPlanningTime is null");
-        this.peakUserMemoryBytes = peakUserMemoryBytes;
-        this.peakTotalNonRevocableMemoryBytes = peakTotalNonRevocableMemoryBytes;
+        this.peakMemoryBytes = peakMemoryBytes;
         this.totalBytes = totalBytes;
         this.totalRows = totalRows;
         this.outputBytes = outputBytes;
@@ -111,14 +107,9 @@ public class QueryStatistics
         return distributedPlanningTime;
     }
 
-    public long getPeakUserMemoryBytes()
+    public long getPeakMemoryBytes()
     {
-        return peakUserMemoryBytes;
-    }
-
-    public long getPeakTotalNonRevocableMemoryBytes()
-    {
-        return peakTotalNonRevocableMemoryBytes;
+        return peakMemoryBytes;
     }
 
     public long getTotalBytes()

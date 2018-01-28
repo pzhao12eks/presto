@@ -52,6 +52,7 @@ public class TestNodeResource
 
     @Test
     public void testGetAllNodes()
+            throws Exception
     {
         List<Stats> nodes = client.execute(
                 prepareGet().setUri(server.resolve("/v1/node")).build(),
@@ -63,6 +64,7 @@ public class TestNodeResource
 
     @Test
     public void testGetFailedNodes()
+            throws Exception
     {
         List<Stats> nodes = client.execute(
                 prepareGet().setUri(server.resolve("/v1/node/failed")).build(),

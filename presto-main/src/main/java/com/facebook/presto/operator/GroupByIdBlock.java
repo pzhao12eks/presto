@@ -19,6 +19,7 @@ import com.facebook.presto.spi.block.BlockEncoding;
 import io.airlift.slice.Slice;
 import org.openjdk.jol.info.ClassLayout;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
@@ -196,9 +197,9 @@ public class GroupByIdBlock
     }
 
     @Override
-    public Block copyPositions(int[] positions, int offset, int length)
+    public Block copyPositions(List<Integer> positions)
     {
-        return block.copyPositions(positions, offset, length);
+        return block.copyPositions(positions);
     }
 
     @Override

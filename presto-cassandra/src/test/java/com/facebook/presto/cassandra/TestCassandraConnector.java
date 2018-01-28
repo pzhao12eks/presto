@@ -47,7 +47,6 @@ import java.util.Optional;
 
 import static com.facebook.presto.cassandra.CassandraTestingUtils.TABLE_ALL_TYPES;
 import static com.facebook.presto.cassandra.CassandraTestingUtils.createTestTables;
-import static com.facebook.presto.spi.connector.ConnectorSplitManager.SplitSchedulingStrategy.UNGROUPED_SCHEDULING;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.DoubleType.DOUBLE;
@@ -114,6 +113,7 @@ public class TestCassandraConnector
 
     @AfterMethod
     public void tearDown()
+            throws Exception
     {
     }
 
@@ -124,6 +124,7 @@ public class TestCassandraConnector
 
     @Test
     public void testGetDatabaseNames()
+            throws Exception
     {
         List<String> databases = metadata.listSchemaNames(SESSION);
         assertTrue(databases.contains(database.toLowerCase(ENGLISH)));
@@ -131,6 +132,7 @@ public class TestCassandraConnector
 
     @Test
     public void testGetTableNames()
+            throws Exception
     {
         List<SchemaTableName> tables = metadata.listTables(SESSION, database);
         assertTrue(tables.contains(table));
@@ -139,6 +141,7 @@ public class TestCassandraConnector
     // disabled until metadata manager is updated to handle invalid catalogs and schemas
     @Test(enabled = false, expectedExceptions = SchemaNotFoundException.class)
     public void testGetTableNamesException()
+            throws Exception
     {
         metadata.listTables(SESSION, INVALID_DATABASE);
     }
@@ -153,6 +156,7 @@ public class TestCassandraConnector
 
     @Test
     public void testGetRecords()
+            throws Exception
     {
         ConnectorTableHandle tableHandle = getTableHandle(table);
         ConnectorTableMetadata tableMetadata = metadata.getTableMetadata(SESSION, tableHandle);
@@ -163,7 +167,7 @@ public class TestCassandraConnector
 
         List<ConnectorTableLayoutResult> layouts = metadata.getTableLayouts(SESSION, tableHandle, Constraint.alwaysTrue(), Optional.empty());
         ConnectorTableLayoutHandle layout = getOnlyElement(layouts).getTableLayout().getHandle();
-        List<ConnectorSplit> splits = getAllSplits(splitManager.getSplits(transaction, SESSION, layout, UNGROUPED_SCHEDULING));
+        List<ConnectorSplit> splits = getAllSplits(splitManager.getSplits(transaction, SESSION, layout));
 
         long rowNumber = 0;
         for (ConnectorSplit split : splits) {
@@ -254,6 +258,7 @@ public class TestCassandraConnector
     }
 
     private static List<ConnectorSplit> getAllSplits(ConnectorSplitSource splitSource)
+            throws InterruptedException
     {
         ImmutableList.Builder<ConnectorSplit> splits = ImmutableList.builder();
         while (!splitSource.isFinished()) {

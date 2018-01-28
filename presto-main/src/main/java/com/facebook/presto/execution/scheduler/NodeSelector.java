@@ -17,7 +17,6 @@ import com.facebook.presto.execution.RemoteTask;
 import com.facebook.presto.metadata.Split;
 import com.facebook.presto.spi.Node;
 import com.facebook.presto.sql.planner.NodePartitionMap;
-import com.google.common.collect.ImmutableSet;
 
 import java.util.List;
 import java.util.Set;
@@ -30,12 +29,7 @@ public interface NodeSelector
 
     Node selectCurrentNode();
 
-    default List<Node> selectRandomNodes(int limit)
-    {
-        return selectRandomNodes(limit, ImmutableSet.of());
-    }
-
-    List<Node> selectRandomNodes(int limit, Set<Node> excludedNodes);
+    List<Node> selectRandomNodes(int limit);
 
     /**
      * Identifies the nodes for running the specified splits.

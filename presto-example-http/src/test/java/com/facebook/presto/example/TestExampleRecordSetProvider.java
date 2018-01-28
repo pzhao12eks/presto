@@ -38,6 +38,7 @@ public class TestExampleRecordSetProvider
 
     @Test
     public void testGetRecordSet()
+            throws Exception
     {
         ExampleRecordSetProvider recordSetProvider = new ExampleRecordSetProvider(new ExampleConnectorId("test"));
         RecordSet recordSet = recordSetProvider.getRecordSet(ExampleTransactionHandle.INSTANCE, SESSION, new ExampleSplit("test", "schema", "table", dataUri), ImmutableList.of(

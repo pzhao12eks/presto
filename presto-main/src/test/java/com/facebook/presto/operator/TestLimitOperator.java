@@ -59,6 +59,7 @@ public class TestLimitOperator
 
     @Test
     public void testLimitWithPageAlignment()
+            throws Exception
     {
         List<Page> input = rowPagesBuilder(BIGINT)
                 .addSequencePage(3, 1)
@@ -78,6 +79,7 @@ public class TestLimitOperator
 
     @Test
     public void testLimitWithBlockView()
+            throws Exception
     {
         List<Page> input = rowPagesBuilder(BIGINT)
                 .addSequencePage(3, 1)

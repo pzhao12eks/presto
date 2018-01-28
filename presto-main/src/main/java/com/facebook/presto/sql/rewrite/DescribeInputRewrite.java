@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.facebook.presto.execution.ParameterExtractor.getParameters;
-import static com.facebook.presto.sql.ParsingUtil.createParsingOptions;
 import static com.facebook.presto.sql.QueryUtil.aliased;
 import static com.facebook.presto.sql.QueryUtil.ascending;
 import static com.facebook.presto.sql.QueryUtil.identifier;
@@ -97,7 +96,7 @@ final class DescribeInputRewrite
                 throws SemanticException
         {
             String sqlString = session.getPreparedStatement(node.getName().getValue());
-            Statement statement = parser.createStatement(sqlString, createParsingOptions(session));
+            Statement statement = parser.createStatement(sqlString);
 
             // create  analysis for the query we are describing.
             Analyzer analyzer = new Analyzer(session, metadata, parser, accessControl, queryExplainer, parameters);

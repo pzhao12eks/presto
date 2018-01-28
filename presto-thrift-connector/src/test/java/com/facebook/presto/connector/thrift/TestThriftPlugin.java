@@ -31,6 +31,7 @@ public class TestThriftPlugin
 {
     @Test
     public void testPlugin()
+            throws Exception
     {
         ThriftPlugin plugin = loadPlugin(ThriftPlugin.class);
 

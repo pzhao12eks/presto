@@ -15,7 +15,6 @@ package com.facebook.presto.client;
 
 import com.facebook.presto.spi.type.TimeZoneKey;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import io.airlift.units.Duration;
 
 import java.net.URI;
@@ -23,7 +22,6 @@ import java.nio.charset.CharsetEncoder;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -35,7 +33,6 @@ public class ClientSession
     private final URI server;
     private final String user;
     private final String source;
-    private final Set<String> clientTags;
     private final String clientInfo;
     private final String catalog;
     private final String schema;
@@ -53,7 +50,6 @@ public class ClientSession
                 session.getServer(),
                 session.getUser(),
                 session.getSource(),
-                session.getClientTags(),
                 session.getClientInfo(),
                 catalog,
                 schema,
@@ -72,7 +68,6 @@ public class ClientSession
                 session.getServer(),
                 session.getUser(),
                 session.getSource(),
-                session.getClientTags(),
                 session.getClientInfo(),
                 session.getCatalog(),
                 session.getSchema(),
@@ -91,7 +86,6 @@ public class ClientSession
                 session.getServer(),
                 session.getUser(),
                 session.getSource(),
-                session.getClientTags(),
                 session.getClientInfo(),
                 session.getCatalog(),
                 session.getSchema(),
@@ -110,7 +104,6 @@ public class ClientSession
                 session.getServer(),
                 session.getUser(),
                 session.getSource(),
-                session.getClientTags(),
                 session.getClientInfo(),
                 session.getCatalog(),
                 session.getSchema(),
@@ -129,7 +122,6 @@ public class ClientSession
                 session.getServer(),
                 session.getUser(),
                 session.getSource(),
-                session.getClientTags(),
                 session.getClientInfo(),
                 session.getCatalog(),
                 session.getSchema(),
@@ -146,7 +138,6 @@ public class ClientSession
             URI server,
             String user,
             String source,
-            Set<String> clientTags,
             String clientInfo,
             String catalog,
             String schema,
@@ -161,7 +152,6 @@ public class ClientSession
         this.server = requireNonNull(server, "server is null");
         this.user = user;
         this.source = source;
-        this.clientTags = ImmutableSet.copyOf(requireNonNull(clientTags, "clientTags is null"));
         this.clientInfo = clientInfo;
         this.catalog = catalog;
         this.schema = schema;
@@ -172,10 +162,6 @@ public class ClientSession
         this.properties = ImmutableMap.copyOf(requireNonNull(properties, "properties is null"));
         this.preparedStatements = ImmutableMap.copyOf(requireNonNull(preparedStatements, "preparedStatements is null"));
         this.clientRequestTimeout = clientRequestTimeout;
-
-        for (String clientTag : clientTags) {
-            checkArgument(!clientTag.contains(","), "client tag cannot contain ','");
-        }
 
         // verify the properties are valid
         CharsetEncoder charsetEncoder = US_ASCII.newEncoder();
@@ -200,11 +186,6 @@ public class ClientSession
     public String getSource()
     {
         return source;
-    }
-
-    public Set<String> getClientTags()
-    {
-        return clientTags;
     }
 
     public String getClientInfo()
@@ -263,7 +244,6 @@ public class ClientSession
         return toStringHelper(this)
                 .add("server", server)
                 .add("user", user)
-                .add("clientTags", clientTags)
                 .add("clientInfo", clientInfo)
                 .add("catalog", catalog)
                 .add("schema", schema)

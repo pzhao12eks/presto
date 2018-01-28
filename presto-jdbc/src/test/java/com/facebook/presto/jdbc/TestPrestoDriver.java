@@ -137,7 +137,6 @@ public class TestPrestoDriver
     {
         try (Connection connection = createConnection("blackhole", "blackhole");
                 Statement statement = connection.createStatement()) {
-            assertEquals(statement.executeUpdate("CREATE SCHEMA blackhole.blackhole"), 0);
             assertEquals(statement.executeUpdate("CREATE TABLE test_table (x bigint)"), 0);
 
             assertEquals(statement.executeUpdate("CREATE TABLE slow_test_table (x bigint) " +
@@ -152,6 +151,7 @@ public class TestPrestoDriver
 
     @AfterClass(alwaysRun = true)
     public void teardown()
+            throws Exception
     {
         closeQuietly(server);
         executorService.shutdownNow();
@@ -168,7 +168,7 @@ public class TestPrestoDriver
                         "  123 _integer" +
                         ",  12300000000 _bigint" +
                         ", 'foo' _varchar" +
-                        ", 0.1E0 _double" +
+                        ", 0.1 _double" +
                         ", true _boolean" +
                         ", cast('hello' as varbinary) _varbinary" +
                         ", DECIMAL '1234567890.1234567' _decimal_short" +
@@ -428,7 +428,6 @@ public class TestPrestoDriver
         List<List<String>> blackhole = new ArrayList<>();
         blackhole.add(list("blackhole", "information_schema"));
         blackhole.add(list("blackhole", "default"));
-        blackhole.add(list("blackhole", "blackhole"));
 
         List<List<String>> test = new ArrayList<>();
         test.add(list(TEST_CATALOG, "information_schema"));

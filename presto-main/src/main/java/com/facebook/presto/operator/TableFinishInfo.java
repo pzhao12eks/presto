@@ -17,6 +17,7 @@ import com.facebook.presto.spi.connector.ConnectorOutputMetadata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airlift.json.JsonCodec;
 import io.airlift.units.DataSize;
@@ -34,8 +35,8 @@ public class TableFinishInfo
     private static final JsonCodec<Object> INFO_CODEC = jsonCodec(Object.class);
     private static final JsonCodec<JsonNode> JSON_NODE_CODEC = jsonCodec(JsonNode.class);
 
-    private String connectorOutputMetadata;
-    private boolean jsonLengthLimitExceeded;
+    private String connectorOutputMetadata = null;
+    private boolean jsonLengthLimitExceeded = false;
 
     public TableFinishInfo(Optional<ConnectorOutputMetadata> metadata)
     {
@@ -52,6 +53,7 @@ public class TableFinishInfo
 
     @JsonCreator
     public TableFinishInfo(@JsonProperty("connectorOutputMetadata") JsonNode connectorOutputMetadata)
+            throws JsonProcessingException
     {
         this.connectorOutputMetadata = JSON_NODE_CODEC.toJson(connectorOutputMetadata);
     }

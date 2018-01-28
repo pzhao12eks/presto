@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.orc.writer;
 
-import com.facebook.presto.orc.OrcEncoding;
 import com.facebook.presto.orc.checkpoint.BooleanStreamCheckpoint;
 import com.facebook.presto.orc.checkpoint.LongStreamCheckpoint;
 import com.facebook.presto.orc.metadata.ColumnEncoding;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.facebook.presto.orc.OrcEncoding.DWRF;
 import static com.facebook.presto.orc.metadata.ColumnEncoding.ColumnEncodingKind.DIRECT;
 import static com.facebook.presto.orc.metadata.ColumnEncoding.ColumnEncodingKind.DIRECT_V2;
 import static com.facebook.presto.orc.metadata.CompressionKind.NONE;
@@ -75,19 +73,18 @@ public class TimestampColumnWriter
 
     private boolean closed;
 
-    public TimestampColumnWriter(int column, Type type, CompressionKind compression, int bufferSize, OrcEncoding orcEncoding, DateTimeZone hiveStorageTimeZone)
+    public TimestampColumnWriter(int column, Type type, CompressionKind compression, int bufferSize, boolean isDwrf, DateTimeZone hiveStorageTimeZone)
     {
         checkArgument(column >= 0, "column is negative");
         this.column = column;
         this.type = requireNonNull(type, "type is null");
         this.compressed = requireNonNull(compression, "compression is null") != NONE;
-        if (orcEncoding == DWRF) {
-            this.columnEncoding = new ColumnEncoding(DIRECT, 0);
+        this.columnEncoding = new ColumnEncoding(isDwrf ? DIRECT : DIRECT_V2, 0);
+        if (isDwrf) {
             this.secondsStream = new LongOutputStreamV1(compression, bufferSize, true, DATA);
             this.nanosStream = new LongOutputStreamV1(compression, bufferSize, false, SECONDARY);
         }
         else {
-            this.columnEncoding = new ColumnEncoding(DIRECT_V2, 0);
             this.secondsStream = new LongOutputStreamV2(compression, bufferSize, true, DATA);
             this.nanosStream = new LongOutputStreamV2(compression, bufferSize, false, SECONDARY);
         }

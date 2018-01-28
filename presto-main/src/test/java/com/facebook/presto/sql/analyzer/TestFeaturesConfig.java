@@ -14,7 +14,6 @@
 package com.facebook.presto.sql.analyzer;
 
 import com.google.common.collect.ImmutableMap;
-import io.airlift.configuration.ConfigurationFactory;
 import io.airlift.configuration.testing.ConfigAssertions;
 import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
@@ -22,13 +21,10 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static com.facebook.presto.sql.analyzer.FeaturesConfig.SPILLER_SPILL_PATH;
-import static com.facebook.presto.sql.analyzer.FeaturesConfig.SPILL_ENABLED;
 import static com.facebook.presto.sql.analyzer.RegexLibrary.JONI;
 import static com.facebook.presto.sql.analyzer.RegexLibrary.RE2J;
 import static io.airlift.configuration.testing.ConfigAssertions.assertFullMapping;
 import static io.airlift.configuration.testing.ConfigAssertions.assertRecordedDefaults;
-import static io.airlift.units.DataSize.Unit.GIGABYTE;
 import static io.airlift.units.DataSize.Unit.KILOBYTE;
 import static io.airlift.units.DataSize.Unit.MEGABYTE;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -47,8 +43,6 @@ public class TestFeaturesConfig
                 .setColocatedJoinsEnabled(false)
                 .setJoinReorderingEnabled(true)
                 .setRedistributeWrites(true)
-                .setScaleWriters(false)
-                .setWriterMinSize(new DataSize(32, MEGABYTE))
                 .setOptimizeMetadataQueries(false)
                 .setOptimizeHashGeneration(true)
                 .setOptimizeSingleDistinct(true)
@@ -71,10 +65,8 @@ public class TestFeaturesConfig
                 .setIterativeOptimizerEnabled(true)
                 .setIterativeOptimizerTimeout(new Duration(3, MINUTES))
                 .setExchangeCompressionEnabled(false)
-                .setLegacyTimestamp(true)
                 .setEnableIntermediateAggregations(false)
                 .setPushAggregationThroughJoin(true)
-                .setParseDecimalLiteralsAsDouble(true)
                 .setForceSingleNodeOutput(true)
                 .setPagesIndexEagerCompactionEnabled(false)
                 .setFilterAndProjectMinOutputPageSize(new DataSize(25, KILOBYTE))
@@ -97,8 +89,6 @@ public class TestFeaturesConfig
                 .put("colocated-joins-enabled", "true")
                 .put("reorder-joins", "false")
                 .put("redistribute-writes", "false")
-                .put("scale-writers", "true")
-                .put("writer-min-size", "42GB")
                 .put("optimizer.optimize-metadata-queries", "true")
                 .put("optimizer.optimize-hash-generation", "false")
                 .put("optimizer.optimize-single-distinct", "false")
@@ -117,9 +107,7 @@ public class TestFeaturesConfig
                 .put("experimental.memory-revoking-threshold", "0.2")
                 .put("experimental.memory-revoking-target", "0.8")
                 .put("exchange.compression-enabled", "true")
-                .put("deprecated.legacy-timestamp", "false")
                 .put("optimizer.enable-intermediate-aggregations", "true")
-                .put("parse-decimal-literals-as-double", "false")
                 .put("optimizer.force-single-node-output", "false")
                 .put("pages-index.eager-compaction-enabled", "true")
                 .put("experimental.filter-and-project-min-output-page-size", "1MB")
@@ -136,8 +124,6 @@ public class TestFeaturesConfig
                 .setColocatedJoinsEnabled(true)
                 .setJoinReorderingEnabled(false)
                 .setRedistributeWrites(false)
-                .setScaleWriters(true)
-                .setWriterMinSize(new DataSize(42, GIGABYTE))
                 .setOptimizeMetadataQueries(true)
                 .setOptimizeHashGeneration(false)
                 .setOptimizeSingleDistinct(false)
@@ -159,21 +145,12 @@ public class TestFeaturesConfig
                 .setMemoryRevokingTarget(0.8)
                 .setLegacyOrderBy(true)
                 .setExchangeCompressionEnabled(true)
-                .setLegacyTimestamp(false)
                 .setEnableIntermediateAggregations(true)
-                .setParseDecimalLiteralsAsDouble(false)
                 .setForceSingleNodeOutput(false)
                 .setPagesIndexEagerCompactionEnabled(true)
                 .setFilterAndProjectMinOutputPageSize(new DataSize(1, MEGABYTE))
                 .setFilterAndProjectMinOutputPageRowCount(2048);
 
         assertFullMapping(properties, expected);
-    }
-
-    @Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ".*\\Q" + SPILLER_SPILL_PATH + " must be configured when " + SPILL_ENABLED + " is set to true\\E.*")
-    public void testValidateSpillConfiguredIfEnabled()
-    {
-        new ConfigurationFactory(ImmutableMap.of(SPILL_ENABLED, "true"))
-                .build(FeaturesConfig.class);
     }
 }

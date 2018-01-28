@@ -21,8 +21,6 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static com.facebook.presto.memory.MemoryManagerConfig.LowMemoryKillerPolicy.NONE;
-import static com.facebook.presto.memory.MemoryManagerConfig.LowMemoryKillerPolicy.TOTAL_RESERVATION_ON_BLOCKED_NODES;
 import static io.airlift.configuration.testing.ConfigAssertions.assertFullMapping;
 import static io.airlift.configuration.testing.ConfigAssertions.assertRecordedDefaults;
 import static io.airlift.units.DataSize.Unit.GIGABYTE;
@@ -35,7 +33,7 @@ public class TestMemoryManagerConfig
     public void testDefaults()
     {
         assertRecordedDefaults(ConfigAssertions.recordDefaults(MemoryManagerConfig.class)
-                .setLowMemoryKillerPolicy(NONE)
+                .setKillOnOutOfMemory(false)
                 .setKillOnOutOfMemoryDelay(new Duration(5, MINUTES))
                 .setMaxQueryMemory(new DataSize(20, GIGABYTE)));
     }
@@ -44,13 +42,13 @@ public class TestMemoryManagerConfig
     public void testExplicitPropertyMappings()
     {
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
-                .put("query.low-memory-killer.policy", "total-reservation-on-blocked-nodes")
+                .put("query.low-memory-killer.enabled", "true")
                 .put("query.low-memory-killer.delay", "20s")
                 .put("query.max-memory", "2GB")
                 .build();
 
         MemoryManagerConfig expected = new MemoryManagerConfig()
-                .setLowMemoryKillerPolicy(TOTAL_RESERVATION_ON_BLOCKED_NODES)
+                .setKillOnOutOfMemory(true)
                 .setKillOnOutOfMemoryDelay(new Duration(20, SECONDS))
                 .setMaxQueryMemory(new DataSize(2, GIGABYTE));
 

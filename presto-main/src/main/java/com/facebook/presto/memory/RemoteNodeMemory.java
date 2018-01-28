@@ -99,6 +99,7 @@ public class RemoteNodeMemory
             {
                 @Override
                 public void onSuccess(@Nullable JsonResponse<MemoryInfo> result)
+
                 {
                     lastUpdateNanos.set(System.nanoTime());
                     future.compareAndSet(responseFuture, null);

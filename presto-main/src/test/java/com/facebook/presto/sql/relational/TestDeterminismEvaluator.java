@@ -35,6 +35,7 @@ public class TestDeterminismEvaluator
 {
     @Test
     public void testDeterminismEvaluator()
+            throws Exception
     {
         DeterminismEvaluator determinismEvaluator = new DeterminismEvaluator(createTestMetadataManager().getFunctionRegistry());
 

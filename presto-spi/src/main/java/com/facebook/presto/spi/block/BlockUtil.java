@@ -17,10 +17,11 @@ import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.ceil;
-import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 
 final class BlockUtil
 {
@@ -34,25 +35,18 @@ final class BlockUtil
     {
     }
 
-    static void checkArrayRange(int[] array, int offset, int length)
+    static void checkValidPositions(List<Integer> positions, int positionCount)
     {
-        requireNonNull(array, "array is null");
-        if (offset < 0 || length < 0 || offset + length > array.length) {
-            throw new IndexOutOfBoundsException(format("Invalid offset %s and length %s in array with %s elements", offset, length, array.length));
+        Set<Integer> invalidPositions = positions.stream().filter(position -> position >= positionCount).collect(toSet());
+        if (!invalidPositions.isEmpty()) {
+            throw new IllegalArgumentException("Invalid positions " + invalidPositions + " in block with " + positionCount + " positions");
         }
     }
 
     static void checkValidRegion(int positionCount, int positionOffset, int length)
     {
         if (positionOffset < 0 || length < 0 || positionOffset + length > positionCount) {
-            throw new IndexOutOfBoundsException(format("Invalid position %s and length %s in block with %s positions", positionOffset, length, positionCount));
-        }
-    }
-
-    static void checkValidPosition(int position, int positionCount)
-    {
-        if (position < 0 || position >= positionCount) {
-            throw new IllegalArgumentException(format("Invalid position %s in block with %s positions", position, positionCount));
+            throw new IndexOutOfBoundsException("Invalid position " + positionOffset + " in block with " + positionCount + " positions");
         }
     }
 
@@ -68,7 +62,7 @@ final class BlockUtil
         else if (newSize > MAX_ARRAY_SIZE) {
             newSize = MAX_ARRAY_SIZE;
             if (newSize == currentSize) {
-                throw new IllegalArgumentException(format("Can not grow array beyond '%s'", MAX_ARRAY_SIZE));
+                throw new IllegalArgumentException("Can not grow array beyond " + MAX_ARRAY_SIZE);
             }
         }
         return (int) newSize;
@@ -176,7 +170,7 @@ final class BlockUtil
 
     /**
      * Returns <tt>true</tt> if the two specified arrays contain the same object in every position.
-     * Unlike the {@link Arrays#equals(Object[], Object[])} method, this method compares using reference equals.
+     * Unlike the {@link Arrays#equals(Object[],Object[])} method, this method compares using reference equals.
      */
     static boolean arraySame(Object[] array1, Object[] array2)
     {

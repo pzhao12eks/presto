@@ -1046,14 +1046,6 @@ let QueryDetail = React.createClass({
                                 </tr>
                                 <tr>
                                     <td className="info-title">
-                                        Client Tags
-                                    </td>
-                                    <td className="info-text">
-                                        { query.session.clientTags.join(", ") }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td className="info-title">
                                         Submission Time
                                     </td>
                                     <td className="info-text">
@@ -1250,18 +1242,10 @@ let QueryDetail = React.createClass({
                                         </tr>
                                         <tr>
                                             <td className="info-title">
-                                                Logical Written Data
+                                                Written Data
                                             </td>
                                             <td className="info-text">
-                                                { query.queryStats.logicalWrittenDataSize }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="info-title">
-                                                Physical Written Data
-                                            </td>
-                                            <td className="info-text">
-                                                { query.queryStats.physicalWrittenDataSize }
+                                                { query.queryStats.writtenDataSize }
                                             </td>
                                         </tr>
                                     </tbody>

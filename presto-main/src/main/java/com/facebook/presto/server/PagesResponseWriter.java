@@ -15,6 +15,7 @@ package com.facebook.presto.server;
 
 import com.facebook.presto.execution.buffer.SerializedPage;
 import com.facebook.presto.spi.Page;
+import com.google.common.base.Throwables;
 import com.google.common.reflect.TypeToken;
 import io.airlift.slice.OutputStreamSliceOutput;
 import io.airlift.slice.SliceOutput;
@@ -50,7 +51,7 @@ public class PagesResponseWriter
             LIST_GENERIC_TOKEN = List.class.getMethod("get", int.class).getGenericReturnType();
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

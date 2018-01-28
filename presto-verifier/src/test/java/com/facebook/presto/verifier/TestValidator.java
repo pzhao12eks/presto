@@ -23,6 +23,7 @@ public class TestValidator
 {
     @Test
     public void testDoubleComparison()
+            throws Exception
     {
         assertEquals(precisionCompare(0.9045, 0.9045000000000001, 3), 0);
         assertEquals(precisionCompare(0.9045, 0.9045000000000001, 2), 0);

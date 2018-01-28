@@ -13,9 +13,9 @@
  */
 package com.facebook.presto.tests.hive;
 
-import io.prestodb.tempto.fulfillment.table.hive.HiveTableDefinition;
+import com.teradata.tempto.fulfillment.table.hive.HiveTableDefinition;
 
-import static io.prestodb.tempto.fulfillment.table.hive.InlineDataSource.createResourceDataSource;
+import static com.teradata.tempto.fulfillment.table.hive.InlineDataSource.createResourceDataSource;
 
 public class HiveTableDefinitions
 {

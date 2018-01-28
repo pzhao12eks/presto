@@ -38,8 +38,5 @@ public interface ConnectorSession
 
     long getStartTime();
 
-    @Deprecated
-    boolean isLegacyTimestamp();
-
     <T> T getProperty(String name, Class<T> type);
 }

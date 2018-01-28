@@ -23,6 +23,7 @@ public class TestGrouping
 
     @BeforeClass
     public void init()
+            throws Exception
     {
         assertions = new QueryAssertions();
     }
@@ -35,6 +36,7 @@ public class TestGrouping
 
     @Test
     public void testImplicitCoercions()
+            throws Exception
     {
         // GROUPING + implicit coercions (issue #8738)
         assertions.assertQuery(
@@ -48,16 +50,5 @@ public class TestGrouping
                         "FROM (VALUES 1) t(x) " +
                         "GROUP BY GROUPING SETS ((x), ()) ",
                 "VALUES (1.0, 1), (1.0, 0)");
-    }
-
-    @Test
-    public void testFilter()
-    {
-        assertions.assertQuery(
-                "SELECT a, b, grouping(a, b) " +
-                        "FROM (VALUES ('x0', 'y0'), ('x1', 'y1') ) AS t (a, b) " +
-                        "GROUP BY CUBE (a, b)" +
-                        "HAVING grouping(a, b) = 0",
-                "VALUES ('x0', 'y0', 0), ('x1', 'y1', 0)");
     }
 }

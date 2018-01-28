@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static com.facebook.presto.spi.block.DictionaryId.randomDictionaryId;
 import static java.lang.Math.min;
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public class Page
@@ -94,23 +93,10 @@ public class Page
         return blocks[channel];
     }
 
-    /**
-     * Gets the values at the specified position as a single element page.  The method creates independent
-     * copy of the data.
-     */
-    public Page getSingleValuePage(int position)
-    {
-        Block[] singleValueBlocks = new Block[this.blocks.length];
-        for (int i = 0; i < this.blocks.length; i++) {
-            singleValueBlocks[i] = this.blocks[i].getSingleValueBlock(position);
-        }
-        return new Page(1, singleValueBlocks);
-    }
-
     public Page getRegion(int positionOffset, int length)
     {
         if (positionOffset < 0 || length < 0 || positionOffset + length > positionCount) {
-            throw new IndexOutOfBoundsException(format("Invalid position %s and length %s in page with %s positions", positionOffset, length, positionCount));
+            throw new IndexOutOfBoundsException("Invalid position " + positionOffset + " in page with " + positionCount + " positions");
         }
 
         int channelCount = getChannelCount();
@@ -176,22 +162,22 @@ public class Page
         int dictionarySize = dictionary.getPositionCount();
 
         // determine which dictionary entries are referenced and build a reindex for them
-        int[] dictionaryPositionsToCopy = new int[min(dictionarySize, positionCount)];
+        List<Integer> dictionaryPositionsToCopy = new ArrayList<>(min(dictionarySize, positionCount));
         int[] remapIndex = new int[dictionarySize];
         Arrays.fill(remapIndex, -1);
 
-        int numberOfIndexes = 0;
+        int newIndex = 0;
         for (int i = 0; i < positionCount; i++) {
             int position = firstDictionaryBlock.getId(i);
             if (remapIndex[position] == -1) {
-                dictionaryPositionsToCopy[numberOfIndexes] = position;
-                remapIndex[position] = numberOfIndexes;
-                numberOfIndexes++;
+                dictionaryPositionsToCopy.add(position);
+                remapIndex[position] = newIndex;
+                newIndex++;
             }
         }
 
         // entire dictionary is referenced
-        if (numberOfIndexes == dictionarySize) {
+        if (dictionaryPositionsToCopy.size() == dictionarySize) {
             return blocks;
         }
 
@@ -205,7 +191,7 @@ public class Page
             }
 
             try {
-                Block compactDictionary = dictionaryBlock.getDictionary().copyPositions(dictionaryPositionsToCopy, 0, numberOfIndexes);
+                Block compactDictionary = dictionaryBlock.getDictionary().copyPositions(dictionaryPositionsToCopy);
                 outputDictionaryBlocks.add(new DictionaryBlock(positionCount, compactDictionary, newIds, true, newDictionaryId));
             }
             catch (UnsupportedOperationException e) {
@@ -263,14 +249,14 @@ public class Page
         return blocks[0].getPositionCount();
     }
 
-    public Page getPositions(int[] retainedPositions, int offset, int length)
+    public Page mask(int[] retainedPositions)
     {
         requireNonNull(retainedPositions, "retainedPositions is null");
 
-        Block[] blocks = Arrays.stream(getBlocks())
-                .map(block -> block.getPositions(retainedPositions, offset, length))
+        Block[] blocks = Arrays.stream(this.getBlocks())
+                .map(block -> new DictionaryBlock(block, retainedPositions))
                 .toArray(Block[]::new);
-        return new Page(length, blocks);
+        return new Page(retainedPositions.length, blocks);
     }
 
     private static class DictionaryBlockIndexes

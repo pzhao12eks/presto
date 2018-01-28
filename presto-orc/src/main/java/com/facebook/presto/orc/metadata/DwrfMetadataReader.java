@@ -42,7 +42,6 @@ import static com.facebook.presto.orc.metadata.CompressionKind.NONE;
 import static com.facebook.presto.orc.metadata.CompressionKind.SNAPPY;
 import static com.facebook.presto.orc.metadata.CompressionKind.ZLIB;
 import static com.facebook.presto.orc.metadata.CompressionKind.ZSTD;
-import static com.facebook.presto.orc.metadata.DwrfMetadataWriter.STATIC_METADATA;
 import static com.facebook.presto.orc.metadata.OrcMetadataReader.byteStringToSlice;
 import static com.facebook.presto.orc.metadata.OrcMetadataReader.maxStringTruncateToValidRange;
 import static com.facebook.presto.orc.metadata.OrcMetadataReader.minStringTruncateToValidRange;
@@ -80,6 +79,7 @@ public class DwrfMetadataReader
 
     @Override
     public Metadata readMetadata(HiveWriterVersion hiveWriterVersion, InputStream inputStream)
+            throws IOException
     {
         return new Metadata(ImmutableList.of());
     }
@@ -166,6 +166,7 @@ public class DwrfMetadataReader
 
     @Override
     public List<HiveBloomFilter> readBloomFilterIndexes(InputStream inputStream)
+            throws IOException
     {
         // DWRF does not have bloom filters
         return ImmutableList.of();
@@ -198,10 +199,7 @@ public class DwrfMetadataReader
     {
         ImmutableMap.Builder<String, Slice> mapBuilder = ImmutableMap.builder();
         for (DwrfProto.UserMetadataItem item : metadataList) {
-            // skip static metadata added by the writer framework
-            if (!STATIC_METADATA.containsKey(item.getName())) {
-                mapBuilder.put(item.getName(), byteStringToSlice(item.getValue()));
-            }
+            mapBuilder.put(item.getName(), byteStringToSlice(item.getValue()));
         }
         return mapBuilder.build();
     }
@@ -265,8 +263,7 @@ public class DwrfMetadataReader
 
         return new IntegerStatistics(
                 integerStatistics.hasMinimum() ? integerStatistics.getMinimum() : null,
-                integerStatistics.hasMaximum() ? integerStatistics.getMaximum() : null,
-                integerStatistics.hasSum() ? integerStatistics.getSum() : null);
+                integerStatistics.hasMaximum() ? integerStatistics.getMaximum() : null);
     }
 
     private static DoubleStatistics toDoubleStatistics(DwrfProto.DoubleStatistics doubleStatistics)

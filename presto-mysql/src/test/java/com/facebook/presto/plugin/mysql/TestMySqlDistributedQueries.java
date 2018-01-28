@@ -20,10 +20,17 @@ import io.airlift.tpch.TpchTable;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import static com.facebook.presto.plugin.mysql.MySqlQueryRunner.createMySqlQueryRunner;
 import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.testing.MaterializedResult.resultBuilder;
 import static com.facebook.presto.testing.assertions.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 @Test
 public class TestMySqlDistributedQueries
@@ -38,6 +45,7 @@ public class TestMySqlDistributedQueries
     }
 
     public TestMySqlDistributedQueries(TestingMySqlServer mysqlServer)
+            throws Exception
     {
         super(() -> createMySqlQueryRunner(mysqlServer, TpchTable.getTables()));
         this.mysqlServer = mysqlServer;
@@ -47,6 +55,27 @@ public class TestMySqlDistributedQueries
     public final void destroy()
     {
         mysqlServer.close();
+    }
+
+    @Test
+    public void testDropTable()
+    {
+        assertUpdate("CREATE TABLE test_drop AS SELECT 123 x", 1);
+        assertTrue(getQueryRunner().tableExists(getSession(), "test_drop"));
+
+        assertUpdate("DROP TABLE test_drop");
+        assertFalse(getQueryRunner().tableExists(getSession(), "test_drop"));
+    }
+
+    @Test
+    public void testViews()
+            throws SQLException
+    {
+        execute("CREATE OR REPLACE VIEW tpch.test_view AS SELECT * FROM tpch.orders");
+
+        assertQuery("SELECT orderkey FROM test_view", "SELECT orderkey FROM orders");
+
+        execute("DROP VIEW IF EXISTS tpch.test_view");
     }
 
     @Override
@@ -81,5 +110,12 @@ public class TestMySqlDistributedQueries
         // this connector uses a non-canonical type for varchar columns in tpch
     }
 
-    // MySQL specific tests should normally go in TestMySqlIntegrationSmokeTest
+    private void execute(String sql)
+            throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection(mysqlServer.getJdbcUrl());
+                Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
+    }
 }

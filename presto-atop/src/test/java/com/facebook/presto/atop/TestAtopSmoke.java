@@ -33,6 +33,7 @@ public class TestAtopSmoke
 
     @BeforeClass
     public void setUp()
+            throws Exception
     {
         queryRunner = createQueryRunner();
     }

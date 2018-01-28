@@ -13,19 +13,17 @@
  */
 package com.facebook.presto.orc.stream;
 
-import com.facebook.presto.orc.OrcEncoding;
 import com.facebook.presto.orc.checkpoint.LongStreamCheckpoint;
 import com.facebook.presto.orc.metadata.CompressionKind;
 
-import static com.facebook.presto.orc.OrcEncoding.DWRF;
 import static com.facebook.presto.orc.metadata.Stream.StreamKind.LENGTH;
 
 public interface LongOutputStream
         extends ValueOutputStream<LongStreamCheckpoint>
 {
-    static LongOutputStream createLengthOutputStream(CompressionKind compression, int bufferSize, OrcEncoding orcEncoding)
+    static LongOutputStream createLengthOutputStream(CompressionKind compression, int bufferSize, boolean isDwrf)
     {
-        if (orcEncoding == DWRF) {
+        if (isDwrf) {
             return new LongOutputStreamV1(compression, bufferSize, false, LENGTH);
         }
         else {

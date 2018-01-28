@@ -13,10 +13,11 @@
  */
 package com.facebook.presto.tests.hive;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
-import io.prestodb.tempto.ProductTest;
-import io.prestodb.tempto.assertions.QueryAssert.Row;
-import io.prestodb.tempto.query.QueryResult;
+import com.teradata.tempto.ProductTest;
+import com.teradata.tempto.assertions.QueryAssert.Row;
+import com.teradata.tempto.query.QueryResult;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -29,10 +30,10 @@ import static com.facebook.presto.tests.TestGroups.STORAGE_FORMATS;
 import static com.facebook.presto.tests.utils.JdbcDriverUtils.setSessionProperty;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static io.prestodb.tempto.assertions.QueryAssert.Row.row;
-import static io.prestodb.tempto.assertions.QueryAssert.assertThat;
-import static io.prestodb.tempto.query.QueryExecutor.defaultQueryExecutor;
-import static io.prestodb.tempto.query.QueryExecutor.query;
+import static com.teradata.tempto.assertions.QueryAssert.Row.row;
+import static com.teradata.tempto.assertions.QueryAssert.assertThat;
+import static com.teradata.tempto.query.QueryExecutor.defaultQueryExecutor;
+import static com.teradata.tempto.query.QueryExecutor.query;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -52,8 +53,7 @@ public class TestHiveStorageFormats
                 {storageFormat("RCBINARY")},
                 {storageFormat("RCTEXT")},
                 {storageFormat("SEQUENCEFILE")},
-                {storageFormat("TEXTFILE")},
-                {storageFormat("AVRO")}
+                {storageFormat("TEXTFILE")}
         };
     }
 
@@ -234,7 +234,7 @@ public class TestHiveStorageFormats
             }
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

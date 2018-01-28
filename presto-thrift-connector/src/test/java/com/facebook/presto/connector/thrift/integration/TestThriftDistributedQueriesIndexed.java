@@ -28,6 +28,7 @@ public class TestThriftDistributedQueriesIndexed
     private final Level previousLogLevel;
 
     public TestThriftDistributedQueriesIndexed()
+            throws Exception
     {
         super(() -> createThriftQueryRunner(2, 2, true));
         // During index join thrift server will log a lot of messages like "ClosedChannelException" and "java.io.IOException: Connection reset by peer".
@@ -41,6 +42,7 @@ public class TestThriftDistributedQueriesIndexed
 
     @Override
     public void testExampleSystemTable()
+            throws Exception
     {
         // system tables are not supported
     }

@@ -32,12 +32,14 @@ import com.facebook.presto.spi.ConnectorPageSource;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.RecordPageSource;
 import com.facebook.presto.spi.type.Type;
+import com.facebook.presto.tpch.TpchMetadata;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import io.airlift.json.JsonCodec;
 import io.airlift.tpch.TpchColumn;
+import io.airlift.tpch.TpchColumnType;
 import io.airlift.tpch.TpchEntity;
 import io.airlift.tpch.TpchTable;
 
@@ -102,7 +104,7 @@ public class ThriftTpchService
         TpchTable<?> tpchTable = TpchTable.getTable(schemaTableName.getTableName());
         List<PrestoThriftColumnMetadata> columns = new ArrayList<>();
         for (TpchColumn<? extends TpchEntity> column : tpchTable.getColumns()) {
-            columns.add(new PrestoThriftColumnMetadata(column.getSimplifiedColumnName(), getTypeString(column), null, false));
+            columns.add(new PrestoThriftColumnMetadata(column.getSimplifiedColumnName(), getTypeString(column.getType()), null, false));
         }
         List<Set<String>> indexableKeys = getIndexableKeys(schemaName, tableName);
         return new PrestoThriftNullableTableMetadata(new PrestoThriftTableMetadata(schemaTableName, columns, null, !indexableKeys.isEmpty() ? indexableKeys : null));
@@ -220,7 +222,7 @@ public class ThriftTpchService
     public static List<Type> types(String tableName, List<String> columnNames)
     {
         TpchTable<?> table = TpchTable.getTable(tableName);
-        return columnNames.stream().map(name -> getPrestoType(table.getColumn(name))).collect(toList());
+        return columnNames.stream().map(name -> getPrestoType(table.getColumn(name).getType())).collect(toList());
     }
 
     public static double schemaNameToScaleFactor(String schemaName)
@@ -318,8 +320,8 @@ public class ThriftTpchService
         }
     }
 
-    private static String getTypeString(TpchColumn<?> column)
+    private static String getTypeString(TpchColumnType tpchType)
     {
-        return getPrestoType(column).getTypeSignature().toString();
+        return TpchMetadata.getPrestoType(tpchType).getTypeSignature().toString();
     }
 }

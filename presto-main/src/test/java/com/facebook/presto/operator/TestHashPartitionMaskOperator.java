@@ -76,6 +76,7 @@ public class TestHashPartitionMaskOperator
 
     @Test(dataProvider = "hashEnabledValues")
     public void testHashPartitionMask(boolean hashEnabled)
+            throws Exception
     {
         RowPagesBuilder rowPagesBuilder = rowPagesBuilder(hashEnabled, Ints.asList(0), BIGINT);
         List<Page> input = rowPagesBuilder
@@ -117,6 +118,7 @@ public class TestHashPartitionMaskOperator
 
     @Test(dataProvider = "hashEnabledValues")
     public void testHashPartitionMaskWithMask(boolean hashEnabled)
+            throws Exception
     {
         RowPagesBuilder rowPagesBuilder = rowPagesBuilder(hashEnabled, Ints.asList(0), BIGINT, BOOLEAN, BOOLEAN);
         List<Page> input = rowPagesBuilder

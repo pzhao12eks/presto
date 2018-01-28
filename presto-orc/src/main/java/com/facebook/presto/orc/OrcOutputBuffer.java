@@ -111,12 +111,14 @@ public class OrcOutputBuffer
 
     @Override
     public void flush()
+            throws IOException
     {
         flushBufferToOutputStream();
     }
 
     @Override
     public void close()
+            throws IOException
     {
         flushBufferToOutputStream();
     }

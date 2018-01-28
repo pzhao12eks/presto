@@ -52,6 +52,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testEmpty()
+            throws Exception
     {
         InternalAggregationFunction booleanAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("checksum",
@@ -63,6 +64,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testBoolean()
+            throws Exception
     {
         InternalAggregationFunction booleanAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("checksum",
@@ -75,6 +77,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testLong()
+            throws Exception
     {
         InternalAggregationFunction longAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("checksum",
@@ -87,6 +90,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testDouble()
+            throws Exception
     {
         InternalAggregationFunction doubleAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("checksum",
@@ -99,6 +103,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testString()
+            throws Exception
     {
         InternalAggregationFunction stringAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("checksum",
@@ -111,6 +116,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testShortDecimal()
+            throws Exception
     {
         InternalAggregationFunction decimalAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(new Signature("checksum", AGGREGATE, parseTypeSignature(VARBINARY), parseTypeSignature("decimal(10,2)")));
         Block block = createShortDecimalsBlock("11.11", "22.22", null, "33.33", "44.44");
@@ -120,6 +126,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testLongDecimal()
+            throws Exception
     {
         InternalAggregationFunction decimalAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(new Signature("checksum", AGGREGATE, parseTypeSignature(VARBINARY), parseTypeSignature("decimal(19,2)")));
         Block block = createLongDecimalsBlock("11.11", "22.22", null, "33.33", "44.44");
@@ -129,6 +136,7 @@ public class TestChecksumAggregation
 
     @Test
     public void testArray()
+            throws Exception
     {
         ArrayType arrayType = new ArrayType(BigintType.BIGINT);
         InternalAggregationFunction stringAgg = metadata.getFunctionRegistry().getAggregateFunctionImplementation(new Signature("checksum", AGGREGATE, VarbinaryType.VARBINARY.getTypeSignature(), arrayType.getTypeSignature()));

@@ -41,6 +41,7 @@ public class TestPageSplitterUtil
 {
     @Test
     public void testSplitPage()
+            throws Exception
     {
         int positionCount = 10;
         int maxPageSizeInBytes = 100;

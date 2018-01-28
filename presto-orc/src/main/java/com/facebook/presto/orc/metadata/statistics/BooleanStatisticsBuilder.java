@@ -13,9 +13,6 @@
  */
 package com.facebook.presto.orc.metadata.statistics;
 
-import com.facebook.presto.spi.block.Block;
-import com.facebook.presto.spi.type.Type;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -27,16 +24,6 @@ public class BooleanStatisticsBuilder
 {
     private long nonNullValueCount;
     private long trueValueCount;
-
-    @Override
-    public void addBlock(Type type, Block block)
-    {
-        for (int position = 0; position < block.getPositionCount(); position++) {
-            if (!block.isNull(position)) {
-                addValue(type.getBoolean(block, position));
-            }
-        }
-    }
 
     public void addValue(boolean value)
     {

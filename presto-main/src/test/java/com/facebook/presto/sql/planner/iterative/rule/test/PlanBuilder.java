@@ -215,7 +215,7 @@ public class PlanBuilder
             checkArgument(expression instanceof FunctionCall);
             FunctionCall aggregation = (FunctionCall) expression;
             Signature signature = metadata.getFunctionRegistry().resolveFunction(aggregation.getName(), TypeSignatureProvider.fromTypes(inputTypes));
-            return addAggregation(output, new Aggregation(aggregation, signature, mask));
+            return addAggregation(output, new Aggregation(aggregation, signature, mask, ImmutableList.of(), ImmutableList.of()));
         }
 
         public AggregationBuilder addAggregation(Symbol output, Aggregation aggregation)
@@ -299,40 +299,20 @@ public class PlanBuilder
     public TableScanNode tableScan(List<Symbol> symbols, Map<Symbol, ColumnHandle> assignments, Expression originalConstraint)
     {
         TableHandle tableHandle = new TableHandle(new ConnectorId("testConnector"), new TestingTableHandle());
-        return tableScan(tableHandle, symbols, assignments, Optional.empty(), TupleDomain.all(), originalConstraint);
+        return tableScan(tableHandle, symbols, assignments, originalConstraint);
     }
 
     public TableScanNode tableScan(TableHandle tableHandle, List<Symbol> symbols, Map<Symbol, ColumnHandle> assignments)
     {
-        return tableScan(tableHandle, symbols, assignments, Optional.empty());
+        return tableScan(tableHandle, symbols, assignments, null);
     }
 
-    public TableScanNode tableScan(
-            TableHandle tableHandle,
-            List<Symbol> symbols,
-            Map<Symbol, ColumnHandle> assignments,
-            Optional<TableLayoutHandle> tableLayout)
+    public TableScanNode tableScan(TableHandle tableHandle, List<Symbol> symbols, Map<Symbol, ColumnHandle> assignments, Expression originalConstraint)
     {
-        return tableScan(tableHandle, symbols, assignments, tableLayout, TupleDomain.all());
+        return tableScan(tableHandle, symbols, assignments, originalConstraint, Optional.empty());
     }
 
-    public TableScanNode tableScan(
-            TableHandle tableHandle,
-            List<Symbol> symbols,
-            Map<Symbol, ColumnHandle> assignments,
-            Optional<TableLayoutHandle> tableLayout,
-            TupleDomain<ColumnHandle> tupleDomain)
-    {
-        return tableScan(tableHandle, symbols, assignments, tableLayout, tupleDomain, null);
-    }
-
-    public TableScanNode tableScan(
-            TableHandle tableHandle,
-            List<Symbol> symbols,
-            Map<Symbol, ColumnHandle> assignments,
-            Optional<TableLayoutHandle> tableLayout,
-            TupleDomain<ColumnHandle> tupleDomain,
-            Expression originalConstraint)
+    public TableScanNode tableScan(TableHandle tableHandle, List<Symbol> symbols, Map<Symbol, ColumnHandle> assignments, Expression originalConstraint, Optional<TableLayoutHandle> tableLayout)
     {
         return new TableScanNode(
                 idAllocator.getNextId(),
@@ -340,7 +320,7 @@ public class PlanBuilder
                 symbols,
                 assignments,
                 tableLayout,
-                tupleDomain,
+                TupleDomain.all(),
                 originalConstraint);
     }
 
@@ -455,19 +435,12 @@ public class PlanBuilder
 
         public ExchangeBuilder fixedHashDistributionParitioningScheme(List<Symbol> outputSymbols, List<Symbol> partitioningSymbols)
         {
-            return partitioningScheme(new PartitioningScheme(Partitioning.create(
-                    FIXED_HASH_DISTRIBUTION,
-                    ImmutableList.copyOf(partitioningSymbols)),
-                    ImmutableList.copyOf(outputSymbols)));
+            return partitioningScheme(new PartitioningScheme(Partitioning.create(FIXED_HASH_DISTRIBUTION, ImmutableList.copyOf(partitioningSymbols)), ImmutableList.copyOf(outputSymbols)));
         }
 
         public ExchangeBuilder fixedHashDistributionParitioningScheme(List<Symbol> outputSymbols, List<Symbol> partitioningSymbols, Symbol hashSymbol)
         {
-            return partitioningScheme(new PartitioningScheme(Partitioning.create(
-                    FIXED_HASH_DISTRIBUTION,
-                    ImmutableList.copyOf(partitioningSymbols)),
-                    ImmutableList.copyOf(outputSymbols),
-                    Optional.of(hashSymbol)));
+            return partitioningScheme(new PartitioningScheme(Partitioning.create(FIXED_HASH_DISTRIBUTION, ImmutableList.copyOf(partitioningSymbols)), ImmutableList.copyOf(outputSymbols), Optional.of(hashSymbol)));
         }
 
         public ExchangeBuilder partitioningScheme(PartitioningScheme partitioningScheme)
@@ -525,11 +498,6 @@ public class PlanBuilder
                 Optional.empty());
     }
 
-    public JoinNode join(JoinNode.Type type, PlanNode left, PlanNode right, List<JoinNode.EquiJoinClause> criteria, List<Symbol> outputSymbols, Optional<Expression> filter)
-    {
-        return join(type, left, right, criteria, outputSymbols, filter, Optional.empty(), Optional.empty());
-    }
-
     public JoinNode join(
             JoinNode.Type type,
             PlanNode left,
@@ -540,21 +508,7 @@ public class PlanBuilder
             Optional<Symbol> leftHashSymbol,
             Optional<Symbol> rightHashSymbol)
     {
-        return join(type, left, right, criteria, outputSymbols, filter, leftHashSymbol, rightHashSymbol, Optional.empty());
-    }
-
-    public JoinNode join(
-            JoinNode.Type type,
-            PlanNode left,
-            PlanNode right,
-            List<JoinNode.EquiJoinClause> criteria,
-            List<Symbol> outputSymbols,
-            Optional<Expression> filter,
-            Optional<Symbol> leftHashSymbol,
-            Optional<Symbol> rightHashSymbol,
-            Optional<JoinNode.DistributionType> distributionType)
-    {
-        return new JoinNode(idAllocator.getNextId(), type, left, right, criteria, outputSymbols, filter, leftHashSymbol, rightHashSymbol, distributionType);
+        return new JoinNode(idAllocator.getNextId(), type, left, right, criteria, outputSymbols, filter, leftHashSymbol, rightHashSymbol, Optional.empty());
     }
 
     public PlanNode indexJoin(IndexJoinNode.Type type, TableScanNode probe, TableScanNode index)

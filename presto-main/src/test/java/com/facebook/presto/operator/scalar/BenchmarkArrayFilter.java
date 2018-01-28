@@ -97,6 +97,7 @@ public class BenchmarkArrayFilter
     @Benchmark
     @OperationsPerInvocation(POSITIONS * ARRAY_SIZE * NUM_TYPES)
     public List<Optional<Page>> benchmark(BenchmarkData data)
+            throws Throwable
     {
         return ImmutableList.copyOf(data.getPageProcessor().process(SESSION, new DriverYieldSignal(), data.getPage()));
     }

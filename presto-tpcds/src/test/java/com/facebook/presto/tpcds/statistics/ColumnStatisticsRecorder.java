@@ -20,7 +20,7 @@ import java.util.TreeSet;
 class ColumnStatisticsRecorder
 {
     private final TreeSet<Object> nonNullValues = new TreeSet<>();
-    private long nullsCount;
+    private long nullsCount = 0;
 
     public void record(Comparable<?> value)
     {

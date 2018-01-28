@@ -17,14 +17,14 @@ import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 import org.openjdk.jol.info.ClassLayout;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static com.facebook.presto.spi.block.BlockUtil.checkArrayRange;
-import static com.facebook.presto.spi.block.BlockUtil.checkValidPosition;
-import static com.facebook.presto.spi.block.BlockUtil.checkValidRegion;
+import static com.facebook.presto.spi.block.BlockUtil.checkValidPositions;
 import static com.facebook.presto.spi.block.DictionaryId.randomDictionaryId;
 import static io.airlift.slice.SizeOf.sizeOf;
 import static java.lang.Math.min;
@@ -69,7 +69,7 @@ public class DictionaryBlock
         this(0, positionCount, dictionary, ids, dictionaryIsCompacted, dictionarySourceId);
     }
 
-    public DictionaryBlock(int idsOffset, int positionCount, Block dictionary, int[] ids, boolean dictionaryIsCompacted, DictionaryId dictionarySourceId)
+    private DictionaryBlock(int idsOffset, int positionCount, Block dictionary, int[] ids, boolean dictionaryIsCompacted, DictionaryId dictionarySourceId)
     {
         requireNonNull(dictionary, "dictionary is null");
         requireNonNull(ids, "ids is null");
@@ -264,37 +264,40 @@ public class DictionaryBlock
     }
 
     @Override
-    public Block copyPositions(int[] positions, int offset, int length)
+    public Block copyPositions(List<Integer> positions)
     {
-        checkArrayRange(positions, offset, length);
+        checkValidPositions(positions, positionCount);
 
-        IntArrayList positionsToCopy = new IntArrayList();
+        List<Integer> positionsToCopy = new ArrayList<>();
         Map<Integer, Integer> oldIndexToNewIndex = new HashMap<>();
-        int[] newIds = new int[length];
+        int[] newIds = new int[positions.size()];
 
-        for (int i = 0; i < length; i++) {
-            int position = positions[offset + i];
-            int oldIndex = getId(position);
+        for (int i = 0; i < positions.size(); i++) {
+            int oldIndex = getId(positions.get(i));
             if (!oldIndexToNewIndex.containsKey(oldIndex)) {
                 oldIndexToNewIndex.put(oldIndex, positionsToCopy.size());
                 positionsToCopy.add(oldIndex);
             }
             newIds[i] = oldIndexToNewIndex.get(oldIndex);
         }
-        return new DictionaryBlock(dictionary.copyPositions(positionsToCopy.elements(), 0, positionsToCopy.size()), newIds);
+        return new DictionaryBlock(dictionary.copyPositions(positionsToCopy), newIds);
     }
 
     @Override
     public Block getRegion(int positionOffset, int length)
     {
-        checkValidRegion(positionCount, positionOffset, length);
+        if (positionOffset < 0 || length < 0 || positionOffset + length > positionCount) {
+            throw new IndexOutOfBoundsException("Invalid position " + positionOffset + " in block with " + positionCount + " positions");
+        }
         return new DictionaryBlock(idsOffset + positionOffset, length, dictionary, ids, false, randomDictionaryId());
     }
 
     @Override
     public Block copyRegion(int position, int length)
     {
-        checkValidRegion(positionCount, position, length);
+        if (position < 0 || length < 0 || position + length > positionCount) {
+            throw new IndexOutOfBoundsException("Invalid position " + position + " in block with " + positionCount + " positions");
+        }
         int[] newIds = Arrays.copyOfRange(ids, idsOffset + position, idsOffset + position + length);
         DictionaryBlock dictionaryBlock = new DictionaryBlock(dictionary, newIds);
         return dictionaryBlock.compact();
@@ -304,29 +307,6 @@ public class DictionaryBlock
     public boolean isNull(int position)
     {
         return dictionary.isNull(getId(position));
-    }
-
-    @Override
-    public Block getPositions(int[] positions, int offset, int length)
-    {
-        checkArrayRange(positions, offset, length);
-
-        int[] newIds = new int[length];
-        boolean isCompact = isCompact() && length >= dictionary.getPositionCount();
-        boolean[] seen = null;
-        if (isCompact) {
-            seen = new boolean[dictionary.getPositionCount()];
-        }
-        for (int i = 0; i < length; i++) {
-            newIds[i] = getId(positions[offset + i]);
-            if (isCompact) {
-                seen[newIds[i]] = true;
-            }
-        }
-        for (int i = 0; i < dictionary.getPositionCount() && isCompact; i++) {
-            isCompact &= seen[i];
-        }
-        return new DictionaryBlock(newIds.length, getDictionary(), newIds, isCompact, getDictionarySourceId());
     }
 
     @Override
@@ -350,7 +330,9 @@ public class DictionaryBlock
 
     public int getId(int position)
     {
-        checkValidPosition(position, positionCount);
+        if (position < 0 || position >= positionCount) {
+            throw new IllegalArgumentException("Invalid position " + position + " in block with " + positionCount + " positions");
+        }
         return ids[position + idsOffset];
     }
 
@@ -375,7 +357,7 @@ public class DictionaryBlock
 
         // determine which dictionary entries are referenced and build a reindex for them
         int dictionarySize = dictionary.getPositionCount();
-        IntArrayList dictionaryPositionsToCopy = new IntArrayList(min(dictionarySize, positionCount));
+        List<Integer> dictionaryPositionsToCopy = new ArrayList<>(min(dictionarySize, positionCount));
         int[] remapIndex = new int[dictionarySize];
         Arrays.fill(remapIndex, -1);
 
@@ -404,7 +386,7 @@ public class DictionaryBlock
             newIds[i] = newId;
         }
         try {
-            Block compactDictionary = dictionary.copyPositions(dictionaryPositionsToCopy.elements(), 0, dictionaryPositionsToCopy.size());
+            Block compactDictionary = dictionary.copyPositions(dictionaryPositionsToCopy);
             return new DictionaryBlock(positionCount, compactDictionary, newIds, true);
         }
         catch (UnsupportedOperationException e) {

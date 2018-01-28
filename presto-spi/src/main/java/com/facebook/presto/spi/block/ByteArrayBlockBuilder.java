@@ -18,9 +18,9 @@ import org.openjdk.jol.info.ClassLayout;
 import javax.annotation.Nullable;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
-import static com.facebook.presto.spi.block.BlockUtil.checkArrayRange;
 import static com.facebook.presto.spi.block.BlockUtil.checkValidRegion;
 import static io.airlift.slice.SizeOf.sizeOf;
 import static java.lang.Math.max;
@@ -192,19 +192,17 @@ public class ByteArrayBlockBuilder
     }
 
     @Override
-    public Block copyPositions(int[] positions, int offset, int length)
+    public Block copyPositions(List<Integer> positions)
     {
-        checkArrayRange(positions, offset, length);
-
-        boolean[] newValueIsNull = new boolean[length];
-        byte[] newValues = new byte[length];
-        for (int i = 0; i < length; i++) {
-            int position = positions[offset + i];
+        boolean[] newValueIsNull = new boolean[positions.size()];
+        byte[] newValues = new byte[positions.size()];
+        for (int i = 0; i < positions.size(); i++) {
+            int position = positions.get(i);
             checkReadablePosition(position);
             newValueIsNull[i] = valueIsNull[position];
             newValues[i] = values[position];
         }
-        return new ByteArrayBlock(length, newValueIsNull, newValues);
+        return new ByteArrayBlock(positions.size(), newValueIsNull, newValues);
     }
 
     @Override

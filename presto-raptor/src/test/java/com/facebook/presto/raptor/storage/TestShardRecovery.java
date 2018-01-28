@@ -63,6 +63,7 @@ public class TestShardRecovery
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
         File directory = new File(temporary, "data");
@@ -239,6 +240,7 @@ public class TestShardRecovery
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "No backup file found for shard: .*")
     public void testNoBackupException()
+            throws Exception
     {
         recoveryManager.restoreFromBackup(UUID.randomUUID(), 0, OptionalLong.empty());
     }

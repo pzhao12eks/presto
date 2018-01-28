@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 
+import static com.facebook.presto.spi.resourceGroups.SchedulingPolicy.WEIGHTED;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static io.airlift.units.DataSize.Unit.BYTE;
@@ -67,22 +68,15 @@ public abstract class AbstractResourceConfigurationManager
                 checkArgument(group.getSoftCpuLimit().get().compareTo(group.getHardCpuLimit().get()) <= 0, "Soft CPU limit cannot be greater than hard CPU limit");
             }
             if (group.getSchedulingPolicy().isPresent()) {
-                switch (group.getSchedulingPolicy().get()) {
-                    case WEIGHTED:
-                        for (ResourceGroupSpec subGroup : group.getSubGroups()) {
-                            checkArgument(subGroup.getSchedulingWeight().isPresent(), "Must specify scheduling weight for each sub group when using \"weighted\" scheduling policy");
-                        }
-                        break;
-                    case WEIGHTED_FAIR:
-                        break;
-                    case QUERY_PRIORITY:
-                    case FAIR:
-                        for (ResourceGroupSpec subGroup : group.getSubGroups()) {
-                            checkArgument(!subGroup.getSchedulingWeight().isPresent(), "Must use \"weighted\" or \"weighted_fair\" scheduling policy when using scheduling weight");
-                        }
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
+                if (group.getSchedulingPolicy().get() == WEIGHTED) {
+                    for (ResourceGroupSpec subGroup : group.getSubGroups()) {
+                        checkArgument(subGroup.getSchedulingWeight().isPresent(), "Must specify scheduling weight for each sub group when using \"weighted\" scheduling policy");
+                    }
+                }
+                else {
+                    for (ResourceGroupSpec subGroup : group.getSubGroups()) {
+                        checkArgument(!subGroup.getSchedulingWeight().isPresent(), "Must use \"weighted\" scheduling policy when using scheduling weight");
+                    }
                 }
             }
         }

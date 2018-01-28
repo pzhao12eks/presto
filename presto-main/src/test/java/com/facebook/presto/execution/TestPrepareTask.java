@@ -58,6 +58,7 @@ public class TestPrepareTask
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         executor.shutdownNow();
     }

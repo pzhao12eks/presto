@@ -66,10 +66,10 @@ public class TaskManagerConfig
     private int taskNotificationThreads = 5;
     private int taskYieldThreads = 3;
 
-    private boolean levelAbsolutePriority;
+    private boolean levelAbsolutePriority = true;
     private BigDecimal levelTimeMultiplier = new BigDecimal(2.0);
 
-    private boolean legacySchedulingBehavior;
+    private boolean legacySchedulingBehavior = true;
 
     @MinDuration("1ms")
     @MaxDuration("10s")

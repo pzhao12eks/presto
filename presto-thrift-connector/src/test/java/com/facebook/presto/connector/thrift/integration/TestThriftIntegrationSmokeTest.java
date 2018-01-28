@@ -25,6 +25,7 @@ public class TestThriftIntegrationSmokeTest
         extends AbstractTestIntegrationSmokeTest
 {
     public TestThriftIntegrationSmokeTest()
+            throws Exception
     {
         super(() -> createThriftQueryRunner(2, 2, false));
     }
@@ -32,8 +33,9 @@ public class TestThriftIntegrationSmokeTest
     @Override
     @Test
     public void testShowSchemas()
+            throws Exception
     {
-        MaterializedResult actualSchemas = computeActual("SHOW SCHEMAS").toTestTypes();
+        MaterializedResult actualSchemas = computeActual("SHOW SCHEMAS").toJdbcTypes();
         MaterializedResult.Builder resultBuilder = MaterializedResult.resultBuilder(getQueryRunner().getDefaultSession(), VARCHAR)
                 .row("tiny")
                 .row("sf1");

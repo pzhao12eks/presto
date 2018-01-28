@@ -59,7 +59,7 @@ public class CassandraSplitManager
     }
 
     @Override
-    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transaction, ConnectorSession session, ConnectorTableLayoutHandle layout, SplitSchedulingStrategy splitSchedulingStrategy)
+    public ConnectorSplitSource getSplits(ConnectorTransactionHandle transaction, ConnectorSession session, ConnectorTableLayoutHandle layout)
     {
         CassandraTableLayoutHandle layoutHandle = (CassandraTableLayoutHandle) layout;
         CassandraTableHandle cassandraTableHandle = layoutHandle.getTable();

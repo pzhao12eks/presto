@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.memory.context.LocalMemoryContext;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.block.Block;
@@ -187,7 +186,7 @@ public class TopNOperator
                     sortTypes,
                     sortChannels,
                     sortOrders,
-                    operatorContext.localUserMemoryContext());
+                    operatorContext);
         }
 
         topNBuilder.processPage(page);
@@ -225,8 +224,8 @@ public class TopNOperator
         private final List<Type> sortTypes;
         private final List<Integer> sortChannels;
         private final List<SortOrder> sortOrders;
+        private final OperatorContext operatorContext;
         private final PriorityQueue<Block[]> globalCandidates;
-        private final LocalMemoryContext localUserMemoryContext;
 
         private long memorySize;
 
@@ -234,7 +233,7 @@ public class TopNOperator
                 List<Type> sortTypes,
                 List<Integer> sortChannels,
                 List<SortOrder> sortOrders,
-                LocalMemoryContext localUserMemoryContext)
+                OperatorContext operatorContext)
         {
             this.n = n;
 
@@ -242,7 +241,7 @@ public class TopNOperator
             this.sortChannels = sortChannels;
             this.sortOrders = sortOrders;
 
-            this.localUserMemoryContext = requireNonNull(localUserMemoryContext, "localUserMemoryContext is null");
+            this.operatorContext = operatorContext;
 
             Ordering<Block[]> comparator = Ordering.from(new RowComparator(sortTypes, sortChannels, sortOrders)).reverse();
             this.globalCandidates = new PriorityQueue<>(Math.min(n, MAX_INITIAL_PRIORITY_QUEUE_SIZE), comparator);
@@ -252,7 +251,7 @@ public class TopNOperator
         {
             long sizeDelta = mergeWithGlobalCandidates(page);
             memorySize += sizeDelta;
-            localUserMemoryContext.setBytes(memorySize);
+            operatorContext.setMemoryReservation(memorySize);
         }
 
         private long mergeWithGlobalCandidates(Page page)
@@ -262,7 +261,7 @@ public class TopNOperator
             Block[] blocks = page.getBlocks();
             for (int position = 0; position < page.getPositionCount(); position++) {
                 if (globalCandidates.size() < n || compare(position, blocks, globalCandidates.peek()) < 0) {
-                    sizeDelta += addRow(position, page);
+                    sizeDelta += addRow(position, blocks);
                 }
             }
 
@@ -288,10 +287,10 @@ public class TopNOperator
             return 0;
         }
 
-        private long addRow(int position, Page page)
+        private long addRow(int position, Block[] blocks)
         {
             long sizeDelta = 0;
-            Block[] row = page.getSingleValuePage(position).getBlocks();
+            Block[] row = getValues(position, blocks);
 
             sizeDelta += sizeOfRow(row);
             globalCandidates.add(row);
@@ -310,6 +309,15 @@ public class TopNOperator
                 size += value.getRetainedSizeInBytes();
             }
             return size;
+        }
+
+        private static Block[] getValues(int position, Block[] blocks)
+        {
+            Block[] row = new Block[blocks.length];
+            for (int i = 0; i < blocks.length; i++) {
+                row[i] = blocks[i].getSingleValueBlock(position);
+            }
+            return row;
         }
 
         public Iterator<Block[]> build()

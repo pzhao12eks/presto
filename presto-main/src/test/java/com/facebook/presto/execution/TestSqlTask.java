@@ -98,6 +98,7 @@ public class TestSqlTask
 
     @AfterClass(alwaysRun = true)
     public void destroy()
+            throws Exception
     {
         taskExecutor.stop();
         taskNotificationExecutor.shutdownNow();
@@ -106,6 +107,7 @@ public class TestSqlTask
 
     @Test
     public void testEmptyQuery()
+            throws Exception
     {
         SqlTask sqlTask = createInitialTask();
 
@@ -168,6 +170,7 @@ public class TestSqlTask
 
     @Test
     public void testCancel()
+            throws Exception
     {
         SqlTask sqlTask = createInitialTask();
 

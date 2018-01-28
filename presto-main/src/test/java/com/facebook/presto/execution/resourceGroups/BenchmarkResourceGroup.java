@@ -50,6 +50,7 @@ public class BenchmarkResourceGroup
 {
     @Benchmark
     public Object benchmark(BenchmarkData data)
+            throws Throwable
     {
         data.getRoot().processQueuedQueries();
         return data.getRoot();

@@ -59,6 +59,7 @@ public class TestBackupManager
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
 

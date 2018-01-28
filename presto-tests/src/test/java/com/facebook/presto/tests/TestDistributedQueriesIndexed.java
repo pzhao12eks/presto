@@ -23,6 +23,7 @@ public class TestDistributedQueriesIndexed
         extends AbstractTestIndexedQueries
 {
     public TestDistributedQueriesIndexed()
+            throws Exception
     {
         super(TestDistributedQueriesIndexed::createQueryRunner);
     }

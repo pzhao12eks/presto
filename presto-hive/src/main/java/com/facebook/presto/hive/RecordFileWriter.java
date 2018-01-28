@@ -113,17 +113,6 @@ public class RecordFileWriter
     }
 
     @Override
-    public long getWrittenBytes()
-    {
-        if (recordWriter instanceof ExtendedRecordWriter) {
-            return ((ExtendedRecordWriter) recordWriter).getWrittenBytes();
-        }
-
-        // there is no good way to get this from RecordWriter
-        return 0;
-    }
-
-    @Override
     public long getSystemMemoryUsage()
     {
         return estimatedWriterSystemMemoryUsage;
@@ -191,11 +180,5 @@ public class RecordFileWriter
         return toStringHelper(this)
                 .add("path", path)
                 .toString();
-    }
-
-    public interface ExtendedRecordWriter
-            extends RecordWriter
-    {
-        long getWrittenBytes();
     }
 }

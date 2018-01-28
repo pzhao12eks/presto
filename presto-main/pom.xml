@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.facebook.presto</groupId>
         <artifactId>presto-root</artifactId>
-        <version>0.193-SNAPSHOT</version>
+        <version>0.190-SNAPSHOT</version>
     </parent>
 
     <artifactId>presto-main</artifactId>
@@ -48,12 +48,12 @@
 
         <dependency>
             <groupId>com.facebook.presto</groupId>
-            <artifactId>presto-matching</artifactId>
+            <artifactId>presto-bytecode</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.facebook.presto</groupId>
-            <artifactId>presto-memory-context</artifactId>
+            <artifactId>presto-matching</artifactId>
         </dependency>
 
         <dependency>
@@ -154,11 +154,6 @@
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>units</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.airlift</groupId>
-            <artifactId>bytecode</artifactId>
         </dependency>
 
         <dependency>
@@ -264,7 +259,7 @@
 
         <dependency>
             <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
+            <artifactId>asm-all</artifactId>
         </dependency>
 
         <dependency>

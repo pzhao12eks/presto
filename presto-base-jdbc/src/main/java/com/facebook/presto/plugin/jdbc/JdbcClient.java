@@ -23,7 +23,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public interface JdbcClient
@@ -36,8 +35,6 @@ public interface JdbcClient
     JdbcTableHandle getTableHandle(SchemaTableName schemaTableName);
 
     List<JdbcColumnHandle> getColumns(JdbcTableHandle tableHandle);
-
-    Optional<ReadMapping> toPrestoType(JdbcTypeHandle typeHandle);
 
     ConnectorSplitSource getSplits(JdbcTableLayoutHandle layoutHandle);
 

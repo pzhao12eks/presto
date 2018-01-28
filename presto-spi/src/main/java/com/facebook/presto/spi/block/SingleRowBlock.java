@@ -27,9 +27,9 @@ public class SingleRowBlock
 
     private final Block[] fieldBlocks;
 
-    SingleRowBlock(int rowIndex, Block[] fieldBlocks)
+    SingleRowBlock(int cellOffset, Block[] fieldBlocks)
     {
-        super(rowIndex);
+        super(cellOffset, fieldBlocks.length);
         this.fieldBlocks = fieldBlocks;
     }
 
@@ -42,14 +42,14 @@ public class SingleRowBlock
     @Override
     public int getPositionCount()
     {
-        return fieldBlocks.length;
+        return numFields;
     }
 
     @Override
     public long getSizeInBytes()
     {
         long sizeInBytes = 0;
-        for (int i = 0; i < fieldBlocks.length; i++) {
+        for (int i = 0; i < numFields; i++) {
             sizeInBytes += getFieldBlock(i).getSizeInBytes();
         }
         return sizeInBytes;
@@ -59,7 +59,7 @@ public class SingleRowBlock
     public long getRetainedSizeInBytes()
     {
         long retainedSizeInBytes = INSTANCE_SIZE;
-        for (int i = 0; i < fieldBlocks.length; i++) {
+        for (int i = 0; i < numFields; i++) {
             retainedSizeInBytes += getFieldBlock(i).getRetainedSizeInBytes();
         }
         return retainedSizeInBytes;
@@ -68,7 +68,7 @@ public class SingleRowBlock
     @Override
     public void retainedBytesForEachPart(BiConsumer<Object, Long> consumer)
     {
-        for (int i = 0; i < fieldBlocks.length; i++) {
+        for (int i = 0; i < numFields; i++) {
             consumer.accept(fieldBlocks[i], fieldBlocks[i].getRetainedSizeInBytes());
         }
         consumer.accept(this, (long) INSTANCE_SIZE);
@@ -77,21 +77,21 @@ public class SingleRowBlock
     @Override
     public BlockEncoding getEncoding()
     {
-        BlockEncoding[] fieldBlockEncodings = new BlockEncoding[fieldBlocks.length];
-        for (int i = 0; i < fieldBlocks.length; i++) {
+        BlockEncoding[] fieldBlockEncodings = new BlockEncoding[numFields];
+        for (int i = 0; i < numFields; i++) {
             fieldBlockEncodings[i] = fieldBlocks[i].getEncoding();
         }
         return new SingleRowBlockEncoding(fieldBlockEncodings);
     }
 
-    public int getRowIndex()
+    public int getOffset()
     {
-        return rowIndex;
+        return startOffset;
     }
 
     @Override
     public String toString()
     {
-        return format("SingleRowBlock{numFields=%d}", fieldBlocks.length);
+        return format("SingleRowBlock{numFields=%d}", numFields);
     }
 }

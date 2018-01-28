@@ -37,6 +37,7 @@ public class TestMetadataDao
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         IDBI dbi = new DBI("jdbc:h2:mem:test" + System.nanoTime());
         dummyHandle = dbi.open();
@@ -52,6 +53,7 @@ public class TestMetadataDao
 
     @Test
     public void testTemporalColumn()
+            throws Exception
     {
         Long columnId = 1L;
         long tableId = dao.insertTable("schema1", "table1", true, false, null, 0);

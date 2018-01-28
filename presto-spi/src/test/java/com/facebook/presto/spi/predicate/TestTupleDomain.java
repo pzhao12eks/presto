@@ -55,6 +55,7 @@ public class TestTupleDomain
 
     @Test
     public void testNone()
+            throws Exception
     {
         assertTrue(TupleDomain.none().isNone());
         assertEquals(TupleDomain.<ColumnHandle>none(),
@@ -68,6 +69,7 @@ public class TestTupleDomain
 
     @Test
     public void testAll()
+            throws Exception
     {
         assertTrue(TupleDomain.all().isAll());
         assertEquals(TupleDomain.<ColumnHandle>all(),
@@ -79,6 +81,7 @@ public class TestTupleDomain
 
     @Test
     public void testIntersection()
+            throws Exception
     {
         TupleDomain<ColumnHandle> tupleDomain1 = TupleDomain.withColumnDomains(
                 ImmutableMap.<ColumnHandle, Domain>builder()
@@ -109,6 +112,7 @@ public class TestTupleDomain
 
     @Test
     public void testNoneIntersection()
+            throws Exception
     {
         assertEquals(TupleDomain.none().intersect(TupleDomain.all()), TupleDomain.none());
         assertEquals(TupleDomain.all().intersect(TupleDomain.none()), TupleDomain.none());
@@ -121,6 +125,7 @@ public class TestTupleDomain
 
     @Test
     public void testMismatchedColumnIntersection()
+            throws Exception
     {
         TupleDomain<ColumnHandle> tupleDomain1 = TupleDomain.withColumnDomains(
                 ImmutableMap.of(
@@ -142,6 +147,7 @@ public class TestTupleDomain
 
     @Test
     public void testColumnWiseUnion()
+            throws Exception
     {
         TupleDomain<ColumnHandle> tupleDomain1 = TupleDomain.withColumnDomains(
                 ImmutableMap.<ColumnHandle, Domain>builder()
@@ -175,6 +181,7 @@ public class TestTupleDomain
 
     @Test
     public void testNoneColumnWiseUnion()
+            throws Exception
     {
         assertEquals(columnWiseUnion(TupleDomain.none(), TupleDomain.all()), TupleDomain.all());
         assertEquals(columnWiseUnion(TupleDomain.all(), TupleDomain.none()), TupleDomain.all());
@@ -188,6 +195,7 @@ public class TestTupleDomain
 
     @Test
     public void testMismatchedColumnWiseUnion()
+            throws Exception
     {
         TupleDomain<ColumnHandle> tupleDomain1 = TupleDomain.withColumnDomains(
                 ImmutableMap.of(
@@ -206,6 +214,7 @@ public class TestTupleDomain
 
     @Test
     public void testOverlaps()
+            throws Exception
     {
         assertTrue(overlaps(
                 ImmutableMap.of(),
@@ -258,6 +267,7 @@ public class TestTupleDomain
 
     @Test
     public void testContains()
+            throws Exception
     {
         assertTrue(contains(
                 ImmutableMap.of(),
@@ -400,6 +410,7 @@ public class TestTupleDomain
 
     @Test
     public void testEquals()
+            throws Exception
     {
         assertTrue(equals(
                 ImmutableMap.of(),
@@ -513,6 +524,7 @@ public class TestTupleDomain
 
     @Test
     public void testIsNone()
+            throws Exception
     {
         assertFalse(TupleDomain.withColumnDomains(ImmutableMap.<ColumnHandle, Domain>of()).isNone());
         assertFalse(TupleDomain.withColumnDomains(ImmutableMap.of(A, Domain.singleValue(BIGINT, 0L))).isNone());
@@ -523,6 +535,7 @@ public class TestTupleDomain
 
     @Test
     public void testIsAll()
+            throws Exception
     {
         assertTrue(TupleDomain.withColumnDomains(ImmutableMap.<ColumnHandle, Domain>of()).isAll());
         assertFalse(TupleDomain.withColumnDomains(ImmutableMap.of(A, Domain.singleValue(BIGINT, 0L))).isAll());
@@ -532,6 +545,7 @@ public class TestTupleDomain
 
     @Test
     public void testExtractFixedValues()
+            throws Exception
     {
         assertEquals(
                 TupleDomain.extractFixedValues(TupleDomain.withColumnDomains(
@@ -548,18 +562,21 @@ public class TestTupleDomain
 
     @Test
     public void testExtractFixedValuesFromNone()
+            throws Exception
     {
         assertFalse(TupleDomain.extractFixedValues(TupleDomain.none()).isPresent());
     }
 
     @Test
     public void testExtractFixedValuesFromAll()
+            throws Exception
     {
         assertEquals(TupleDomain.extractFixedValues(TupleDomain.all()).get(), ImmutableMap.of());
     }
 
     @Test
     public void testSingleValuesMapToDomain()
+            throws Exception
     {
         assertEquals(
                 TupleDomain.fromFixedValues(
@@ -579,6 +596,7 @@ public class TestTupleDomain
 
     @Test
     public void testEmptySingleValuesMapToDomain()
+            throws Exception
     {
         assertEquals(TupleDomain.fromFixedValues(ImmutableMap.of()), TupleDomain.all());
     }
@@ -617,6 +635,7 @@ public class TestTupleDomain
 
     @Test
     public void testTransform()
+            throws Exception
     {
         Map<Integer, Domain> domains = ImmutableMap.<Integer, Domain>builder()
                 .put(1, Domain.singleValue(BIGINT, 1L))
@@ -638,6 +657,7 @@ public class TestTupleDomain
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testTransformFailsWithNonUniqueMapping()
+            throws Exception
     {
         Map<Integer, Domain> domains = ImmutableMap.<Integer, Domain>builder()
                 .put(1, Domain.singleValue(BIGINT, 1L))

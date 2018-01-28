@@ -13,17 +13,20 @@
  */
 package com.facebook.presto.tests;
 
-import io.prestodb.tempto.ProductTest;
-import io.prestodb.tempto.Requires;
-import io.prestodb.tempto.fulfillment.table.hive.tpch.ImmutableTpchTablesRequirements.ImmutableNationTable;
+import com.teradata.tempto.ProductTest;
+import com.teradata.tempto.Requires;
+import com.teradata.tempto.fulfillment.table.hive.tpch.ImmutableTpchTablesRequirements.ImmutableNationTable;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
 
 import static com.facebook.presto.tests.TestGroups.CREATE_DROP_VIEW;
 import static com.facebook.presto.tests.TestGroups.SMOKE;
-import static io.prestodb.tempto.assertions.QueryAssert.assertThat;
-import static io.prestodb.tempto.context.ContextDsl.executeWith;
-import static io.prestodb.tempto.query.QueryExecutor.query;
-import static io.prestodb.tempto.sql.SqlContexts.createViewAs;
+import static com.teradata.tempto.assertions.QueryAssert.assertThat;
+import static com.teradata.tempto.context.ContextDsl.executeWith;
+import static com.teradata.tempto.query.QueryExecutor.query;
+import static com.teradata.tempto.query.QueryType.UPDATE;
+import static com.teradata.tempto.sql.SqlContexts.createViewAs;
 import static java.lang.String.format;
 
 @Requires(ImmutableNationTable.class)
@@ -32,6 +35,7 @@ public class CreateDropViewTests
 {
     @Test(groups = CREATE_DROP_VIEW)
     public void createSimpleView()
+            throws IOException
     {
         executeWith(createViewAs("SELECT * FROM nation"), view -> {
             assertThat(query(format("SELECT * FROM %s", view.getName())))
@@ -41,6 +45,7 @@ public class CreateDropViewTests
 
     @Test(groups = CREATE_DROP_VIEW)
     public void querySimpleViewQualified()
+            throws IOException
     {
         executeWith(createViewAs("SELECT * FROM nation"), view -> {
             assertThat(query(format("SELECT %s.n_regionkey FROM %s", view.getName(), view.getName())))
@@ -50,6 +55,7 @@ public class CreateDropViewTests
 
     @Test(groups = CREATE_DROP_VIEW)
     public void createViewWithAggregate()
+            throws IOException
     {
         executeWith(createViewAs("SELECT n_regionkey, count(*) countries FROM nation GROUP BY n_regionkey ORDER BY n_regionkey"), view -> {
             assertThat(query(format("SELECT * FROM %s", view.getName())))
@@ -59,9 +65,10 @@ public class CreateDropViewTests
 
     @Test(groups = {CREATE_DROP_VIEW, SMOKE})
     public void createOrReplaceSimpleView()
+            throws IOException
     {
         executeWith(createViewAs("SELECT * FROM nation"), view -> {
-            assertThat(query(format("CREATE OR REPLACE VIEW %s AS SELECT * FROM nation", view.getName())))
+            assertThat(query(format("CREATE OR REPLACE VIEW %s AS SELECT * FROM nation", view.getName()), UPDATE))
                     .hasRowsCount(1);
             assertThat(query(format("SELECT * FROM %s", view.getName())))
                     .hasRowsCount(25);
@@ -70,9 +77,10 @@ public class CreateDropViewTests
 
     @Test(groups = CREATE_DROP_VIEW)
     public void createSimpleViewTwiceShouldFail()
+            throws IOException
     {
         executeWith(createViewAs("SELECT * FROM nation"), view -> {
-            assertThat(() -> query(format("CREATE VIEW %s AS SELECT * FROM nation", view.getName())))
+            assertThat(() -> query(format("CREATE VIEW %s AS SELECT * FROM nation", view.getName()), UPDATE))
                     .failsWithMessage("View already exists");
             assertThat(query(format("SELECT * FROM %s", view.getName())))
                     .hasRowsCount(25);
@@ -81,11 +89,12 @@ public class CreateDropViewTests
 
     @Test(groups = {CREATE_DROP_VIEW, SMOKE})
     public void dropViewTest()
+            throws IOException
     {
         executeWith(createViewAs("SELECT * FROM nation"), view -> {
             assertThat(query(format("SELECT * FROM %s", view.getName())))
                     .hasRowsCount(25);
-            assertThat(query(format("DROP VIEW %s", view.getName())))
+            assertThat(query(format("DROP VIEW %s", view.getName()), UPDATE))
                     .hasRowsCount(1);
             assertThat(() -> query(format("SELECT * FROM %s", view.getName())))
                     .failsWithMessage("does not exist");

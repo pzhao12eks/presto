@@ -444,11 +444,7 @@ public class ExpressionInterpreter
         @Override
         protected Object visitIdentifier(Identifier node, Object context)
         {
-            // Identifier only exists before planning.
-            // ExpressionInterpreter should only be invoked after planning.
-            // As a result, this method should be unreachable.
-            // However, RelationPlanner.visitUnnest and visitValues invokes evaluateConstantExpression.
-            return ((SymbolResolver) context).getValue(new Symbol(node.getValue()));
+            return node;
         }
 
         @Override

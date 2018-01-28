@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 
 import static com.facebook.presto.sql.tree.BooleanLiteral.FALSE_LITERAL;
 import static com.facebook.presto.sql.tree.BooleanLiteral.TRUE_LITERAL;
-import static java.util.Arrays.asList;
 
 public final class QueryUtil
 {
@@ -75,11 +74,6 @@ public final class QueryUtil
     }
 
     public static Select selectList(Expression... expressions)
-    {
-        return selectList(asList(expressions));
-    }
-
-    public static Select selectList(List<Expression> expressions)
     {
         ImmutableList.Builder<SelectItem> items = ImmutableList.builder();
         for (Expression expression : expressions) {

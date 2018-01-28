@@ -30,6 +30,7 @@ public class TestFeatureTransformations
 {
     @Test
     public void testUnitNormalizer()
+            throws Exception
     {
         FeatureTransformation transformation = new FeatureUnitNormalizer();
         Dataset dataset = getDataset();
@@ -54,6 +55,7 @@ public class TestFeatureTransformations
 
     @Test
     public void testUnitNormalizerSimple()
+            throws Exception
     {
         FeatureTransformation transformation = new FeatureUnitNormalizer();
         List<Double> labels = new ArrayList<>();

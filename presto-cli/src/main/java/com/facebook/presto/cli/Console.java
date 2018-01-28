@@ -20,6 +20,7 @@ import com.facebook.presto.sql.parser.SqlParser;
 import com.facebook.presto.sql.parser.SqlParserOptions;
 import com.facebook.presto.sql.parser.StatementSplitter;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import io.airlift.airline.Command;
@@ -37,7 +38,6 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UncheckedIOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,7 +142,7 @@ public class Console
                 executeCommand(queryRunner, query, clientOptions.outputFormat);
             }
             else {
-                runConsole(queryRunner, exiting);
+                runConsole(queryRunner, session, exiting);
             }
         }
     }
@@ -166,7 +166,7 @@ public class Console
         return "";
     }
 
-    private static void runConsole(QueryRunner queryRunner, AtomicBoolean exiting)
+    private static void runConsole(QueryRunner queryRunner, ClientSession session, AtomicBoolean exiting)
     {
         try (TableNameCompleter tableNameCompleter = new TableNameCompleter(queryRunner);
                 LineReader reader = new LineReader(getHistory(), commandCompleter(), lowerCaseCommandCompleter(), tableNameCompleter)) {
@@ -175,9 +175,8 @@ public class Console
             while (!exiting.get()) {
                 // read a line of input from user
                 String prompt = PROMPT_NAME;
-                String schema = queryRunner.getSession().getSchema();
-                if (schema != null) {
-                    prompt += ":" + schema;
+                if (session.getSchema() != null) {
+                    prompt += ":" + session.getSchema();
                 }
                 if (buffer.length() > 0) {
                     prompt = Strings.repeat(" ", prompt.length() - 1) + "-";
@@ -383,7 +382,7 @@ public class Console
             logging.configure(config);
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
         finally {
             System.setOut(out);

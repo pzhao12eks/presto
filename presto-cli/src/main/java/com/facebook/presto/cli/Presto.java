@@ -20,6 +20,7 @@ public final class Presto
     private Presto() {}
 
     public static void main(String[] args)
+            throws Exception
     {
         Console console = singleCommand(Console.class).parse(args);
 

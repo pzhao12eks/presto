@@ -49,8 +49,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -89,20 +87,20 @@ public class TestExchangeOperator
 
     private final LoadingCache<String, TaskBuffer> taskBuffers = CacheBuilder.newBuilder().build(CacheLoader.from(TaskBuffer::new));
 
-    private ScheduledExecutorService scheduler;
+    private ScheduledExecutorService executor;
     private ScheduledExecutorService scheduledExecutor;
     private HttpClient httpClient;
     private ExchangeClientSupplier exchangeClientSupplier;
-    private ExecutorService pageBufferClientCallbackExecutor;
 
     @SuppressWarnings("resource")
     @BeforeClass
     public void setUp()
+            throws Exception
     {
-        scheduler = newScheduledThreadPool(4, daemonThreadsNamed("test-%s"));
+        executor = newScheduledThreadPool(4, daemonThreadsNamed("test-%s"));
         scheduledExecutor = newScheduledThreadPool(2, daemonThreadsNamed("test-scheduledExecutor-%s"));
-        pageBufferClientCallbackExecutor = Executors.newSingleThreadExecutor();
-        httpClient = new TestingHttpClient(new HttpClientHandler(taskBuffers), scheduler);
+
+        httpClient = new TestingHttpClient(new HttpClientHandler(taskBuffers), executor);
 
         exchangeClientSupplier = (systemMemoryUsageListener) -> new ExchangeClient(
                 new DataSize(32, MEGABYTE),
@@ -111,25 +109,22 @@ public class TestExchangeOperator
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 httpClient,
-                scheduler,
-                systemMemoryUsageListener,
-                pageBufferClientCallbackExecutor);
+                executor,
+                systemMemoryUsageListener);
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         httpClient.close();
         httpClient = null;
 
-        scheduler.shutdownNow();
-        scheduler = null;
+        executor.shutdownNow();
+        executor = null;
 
         scheduledExecutor.shutdownNow();
         scheduledExecutor = null;
-
-        pageBufferClientCallbackExecutor.shutdownNow();
-        pageBufferClientCallbackExecutor = null;
     }
 
     @BeforeMethod
@@ -270,7 +265,7 @@ public class TestExchangeOperator
     {
         ExchangeOperatorFactory operatorFactory = new ExchangeOperatorFactory(0, new PlanNodeId("test"), exchangeClientSupplier, SERDE_FACTORY, TYPES);
 
-        DriverContext driverContext = createTaskContext(scheduler, scheduledExecutor, TEST_SESSION)
+        DriverContext driverContext = createTaskContext(executor, scheduledExecutor, TEST_SESSION)
                 .addPipelineContext(0, true, true)
                 .addDriverContext();
 

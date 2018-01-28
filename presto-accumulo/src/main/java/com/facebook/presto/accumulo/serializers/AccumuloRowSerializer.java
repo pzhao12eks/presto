@@ -26,6 +26,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -102,8 +103,10 @@ public interface AccumuloRowSerializer
      * Deserialize the given Accumulo entry, retrieving data for the Presto column.
      *
      * @param entry Entry to deserialize
+     * @throws IOException If an IO error occurs during deserialization
      */
-    void deserialize(Entry<Key, Value> entry);
+    void deserialize(Entry<Key, Value> entry)
+            throws IOException;
 
     /**
      * Gets a Boolean value indicating whether or not the Presto column is a null value.

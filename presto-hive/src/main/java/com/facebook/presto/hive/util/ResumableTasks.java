@@ -16,6 +16,7 @@ package com.facebook.presto.hive.util;
 import io.airlift.log.Logger;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ResumableTasks
 {
@@ -27,18 +28,15 @@ public final class ResumableTasks
 
     public static void submit(Executor executor, ResumableTask task)
     {
-        executor.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                ResumableTask.TaskStatus status = safeProcessTask(task);
-                if (!status.isFinished()) {
-                    // if task is not complete, schedule it it to run again when the future finishes
-                    status.getContinuationFuture().addListener(this, executor);
-                }
+        AtomicReference<Runnable> runnableReference = new AtomicReference<>();
+        Runnable runnable = () -> {
+            ResumableTask.TaskStatus status = safeProcessTask(task);
+            if (!status.isFinished()) {
+                status.getContinuationFuture().thenRun(() -> executor.execute(runnableReference.get()));
             }
-        });
+        };
+        runnableReference.set(runnable);
+        executor.execute(runnable);
     }
 
     private static ResumableTask.TaskStatus safeProcessTask(ResumableTask task)

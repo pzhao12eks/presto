@@ -32,6 +32,7 @@ public class TestColorFunctions
 {
     @Test
     public void testParseRgb()
+            throws Exception
     {
         assertEquals(parseRgb(toSlice("#000")), 0x00_00_00);
         assertEquals(parseRgb(toSlice("#FFF")), 0xFF_FF_FF);
@@ -47,6 +48,7 @@ public class TestColorFunctions
 
     @Test
     public void testGetComponent()
+            throws Exception
     {
         assertEquals(getRed(parseRgb(toSlice("#789"))), 0x77);
         assertEquals(getGreen(parseRgb(toSlice("#789"))), 0x88);
@@ -55,6 +57,7 @@ public class TestColorFunctions
 
     @Test
     public void testToRgb()
+            throws Exception
     {
         assertEquals(rgb(0xFF, 0, 0), 0xFF_00_00);
         assertEquals(rgb(0, 0xFF, 0), 0x00_FF_00);
@@ -63,6 +66,7 @@ public class TestColorFunctions
 
     @Test
     public void testColor()
+            throws Exception
     {
         assertEquals(color(toSlice("black")), -1);
         assertEquals(color(toSlice("red")), -2);
@@ -80,6 +84,7 @@ public class TestColorFunctions
 
     @Test
     public void testBar()
+            throws Exception
     {
         assertEquals(bar(0.6, 5, color(toSlice("#f0f")), color(toSlice("#00f"))),
                 toSlice("\u001B[38;5;201m\u2588\u001B[38;5;165m\u2588\u001B[38;5;129m\u2588\u001B[0m  "));
@@ -93,6 +98,7 @@ public class TestColorFunctions
 
     @Test
     public void testRenderBoolean()
+            throws Exception
     {
         assertEquals(render(true), toSlice("\u001b[38;5;2m✓\u001b[0m"));
         assertEquals(render(false), toSlice("\u001b[38;5;1m✗\u001b[0m"));
@@ -100,6 +106,7 @@ public class TestColorFunctions
 
     @Test
     public void testRenderString()
+            throws Exception
     {
         assertEquals(render(toSlice("hello"), color(toSlice("red"))), toSlice("\u001b[38;5;1mhello\u001b[0m"));
 
@@ -110,6 +117,7 @@ public class TestColorFunctions
 
     @Test
     public void testRenderLong()
+            throws Exception
     {
         assertEquals(render(1234, color(toSlice("red"))), toSlice("\u001b[38;5;1m1234\u001b[0m"));
 
@@ -120,6 +128,7 @@ public class TestColorFunctions
 
     @Test
     public void testRenderDouble()
+            throws Exception
     {
         assertEquals(render(1234.5678, color(toSlice("red"))), toSlice("\u001b[38;5;1m1234.5678\u001b[0m"));
         assertEquals(render(1234.5678f, color(toSlice("red"))), toSlice(format("\u001b[38;5;1m%s\u001b[0m", (double) 1234.5678f)));
@@ -131,6 +140,7 @@ public class TestColorFunctions
 
     @Test
     public void testInterpolate()
+            throws Exception
     {
         assertEquals(color(0, 0, 255, color(toSlice("#000")), color(toSlice("#fff"))), 0x00_00_00);
         assertEquals(color(0.0f, 0.0f, 255.0f, color(toSlice("#000")), color(toSlice("#fff"))), 0x00_00_00);

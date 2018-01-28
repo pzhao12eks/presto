@@ -530,9 +530,10 @@ public class PagesIndex
     public Iterator<Page> getSortedPages()
     {
         return new AbstractIterator<Page>() {
-            private int currentPosition;
+            private int currentPosition = 0;
             private PageBuilder pageBuilder = new PageBuilder(types);
             private int[] outputChannels = new int[types.size()];
+
             {
                 Arrays.setAll(outputChannels, IntUnaryOperator.identity());
             }

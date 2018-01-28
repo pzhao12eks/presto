@@ -995,8 +995,7 @@ public class HiveMetadata
                                 table.getStorage().getStorageFormat() :
                                 fromHiveStorageFormat(defaultStorageFormat))
                         .setLocation(partitionUpdate.getTargetPath().toString())
-                        .setBucketProperty(table.getStorage().getBucketProperty())
-                        .setSerdeParameters(table.getStorage().getSerdeParameters()))
+                        .setBucketProperty(table.getStorage().getBucketProperty()))
                 .build();
     }
 
@@ -1164,13 +1163,13 @@ public class HiveMetadata
     public List<ConnectorTableLayoutResult> getTableLayouts(ConnectorSession session, ConnectorTableHandle tableHandle, Constraint<ColumnHandle> constraint, Optional<Set<ColumnHandle>> desiredColumns)
     {
         HiveTableHandle handle = (HiveTableHandle) tableHandle;
+
         HivePartitionResult hivePartitionResult = partitionManager.getPartitions(metastore, tableHandle, constraint);
 
         return ImmutableList.of(new ConnectorTableLayoutResult(
                 getTableLayout(
                         session,
                         new HiveTableLayoutHandle(
-                                handle.getSchemaTableName(),
                                 ImmutableList.copyOf(hivePartitionResult.getPartitionColumns()),
                                 hivePartitionResult.getPartitions(),
                                 hivePartitionResult.getCompactEffectivePredicate(),

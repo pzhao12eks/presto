@@ -130,7 +130,6 @@ public class MockQueryExecution
                         17.0,
                         new DataSize(18, BYTE),
                         new DataSize(19, BYTE),
-                        new DataSize(20, BYTE),
 
                         true,
                         new Duration(20, NANOSECONDS),
@@ -148,9 +147,6 @@ public class MockQueryExecution
 
                         new DataSize(28, BYTE),
                         29,
-
-                        new DataSize(30, BYTE),
-
                         ImmutableList.of()),
                 Optional.empty(),
                 Optional.empty(),

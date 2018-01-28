@@ -46,6 +46,7 @@ public class TestMongoPlugin
 
     @Test
     public void testCreateConnector()
+            throws Exception
     {
         MongoPlugin plugin = new MongoPlugin();
 

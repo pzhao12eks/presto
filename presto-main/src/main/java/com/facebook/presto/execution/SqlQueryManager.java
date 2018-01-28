@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.execution;
 
-import com.facebook.presto.ExceededCpuLimitException;
 import com.facebook.presto.Session;
 import com.facebook.presto.SystemSessionProperties;
 import com.facebook.presto.event.query.QueryMonitor;
@@ -40,7 +39,6 @@ import com.facebook.presto.sql.tree.Explain;
 import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.Statement;
 import com.facebook.presto.transaction.TransactionManager;
-import com.google.common.collect.Ordering;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.airlift.concurrent.ThreadPoolExecutorMBean;
 import io.airlift.log.Logger;
@@ -50,7 +48,6 @@ import org.weakref.jmx.Flatten;
 import org.weakref.jmx.Managed;
 import org.weakref.jmx.Nested;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
@@ -73,7 +70,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static com.facebook.presto.SystemSessionProperties.getQueryMaxCpuTime;
 import static com.facebook.presto.execution.ParameterExtractor.getParameterCount;
 import static com.facebook.presto.execution.QueryState.RUNNING;
 import static com.facebook.presto.spi.NodeState.ACTIVE;
@@ -83,7 +79,6 @@ import static com.facebook.presto.spi.StandardErrorCode.NOT_SUPPORTED;
 import static com.facebook.presto.spi.StandardErrorCode.QUERY_TEXT_TOO_LARGE;
 import static com.facebook.presto.spi.StandardErrorCode.SERVER_SHUTTING_DOWN;
 import static com.facebook.presto.spi.StandardErrorCode.SERVER_STARTING_UP;
-import static com.facebook.presto.sql.ParsingUtil.createParsingOptions;
 import static com.facebook.presto.sql.analyzer.SemanticErrorCode.INVALID_PARAMETER_USAGE;
 import static com.facebook.presto.sql.planner.ExpressionInterpreter.verifyExpressionIsConstant;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -117,7 +112,6 @@ public class SqlQueryManager
     private final int initializationRequiredWorkers;
     private final Duration initializationTimeout;
     private final long initialNanos;
-    private final Duration maxQueryCpuTime;
 
     private final ConcurrentMap<QueryId, QueryExecution> queries = new ConcurrentHashMap<>();
     private final Queue<QueryExecution> expirationQueue = new LinkedBlockingQueue<>();
@@ -190,18 +184,12 @@ public class SqlQueryManager
         this.maxQueryHistory = queryManagerConfig.getMaxQueryHistory();
         this.clientTimeout = queryManagerConfig.getClientTimeout();
         this.maxQueryLength = queryManagerConfig.getMaxQueryLength();
-        this.maxQueryCpuTime = queryManagerConfig.getQueryMaxCpuTime();
         this.initializationRequiredWorkers = queryManagerConfig.getInitializationRequiredWorkers();
         this.initializationTimeout = queryManagerConfig.getInitializationTimeout();
         this.initialNanos = System.nanoTime();
 
         queryManagementExecutor = Executors.newScheduledThreadPool(queryManagerConfig.getQueryManagerExecutorPoolSize(), threadsNamed("query-management-%s"));
         queryManagementExecutorMBean = new ThreadPoolExecutorMBean((ThreadPoolExecutor) queryManagementExecutor);
-    }
-
-    @PostConstruct
-    public void start()
-    {
         queryManagementExecutor.scheduleWithFixedDelay(new Runnable()
         {
             @Override
@@ -211,42 +199,35 @@ public class SqlQueryManager
                     failAbandonedQueries();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Error cancelling abandoned queries");
+                    log.warn(e, "Error cancelling abandoned queries");
                 }
 
                 try {
                     enforceMemoryLimits();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Error enforcing memory limits");
+                    log.warn(e, "Error enforcing memory limits");
                 }
 
                 try {
                     enforceTimeLimits();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Error enforcing query timeout limits");
-                }
-
-                try {
-                    enforceCpuLimits();
-                }
-                catch (Throwable e) {
-                    log.error(e, "Error enforcing query CPU time limits");
+                    log.warn(e, "Error enforcing query timeout limits");
                 }
 
                 try {
                     removeExpiredQueries();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Error removing expired queries");
+                    log.warn(e, "Error removing expired queries");
                 }
 
                 try {
                     pruneExpiredQueries();
                 }
                 catch (Throwable e) {
-                    log.error(e, "Error pruning expired queries");
+                    log.warn(e, "Error pruning expired queries");
                 }
             }
         }, 1, 1, TimeUnit.SECONDS);
@@ -413,7 +394,8 @@ public class SqlQueryManager
                 query = query.substring(0, maxQueryLength);
                 throw new PrestoException(QUERY_TEXT_TOO_LARGE, format("Query text length (%s) exceeds the maximum length (%s)", queryLength, maxQueryLength));
             }
-            Statement wrappedStatement = sqlParser.createStatement(query, createParsingOptions(session));
+
+            Statement wrappedStatement = sqlParser.createStatement(query);
             statement = unwrapExecuteStatement(wrappedStatement, sqlParser, session);
             List<Expression> parameters = wrappedStatement instanceof Execute ? ((Execute) wrappedStatement).getParameters() : emptyList();
             validateParameters(statement, parameters);
@@ -498,7 +480,7 @@ public class SqlQueryManager
         }
 
         String sql = session.getPreparedStatementFromExecute((Execute) statement);
-        return sqlParser.createStatement(sql, createParsingOptions(session));
+        return sqlParser.createStatement(sql);
     }
 
     public static void validateParameters(Statement node, List<Expression> parameterValues)
@@ -509,18 +491,6 @@ public class SqlQueryManager
         }
         for (Expression expression : parameterValues) {
             verifyExpressionIsConstant(emptySet(), expression);
-        }
-    }
-
-    @Override
-    public void failQuery(QueryId queryId, Throwable cause)
-    {
-        requireNonNull(queryId, "queryId is null");
-        requireNonNull(cause, "cause is null");
-
-        QueryExecution query = queries.get(queryId);
-        if (query != null) {
-            query.fail(cause);
         }
     }
 
@@ -605,21 +575,6 @@ public class SqlQueryManager
     }
 
     /**
-     * Enforce query CPU time limits
-     */
-    public void enforceCpuLimits()
-    {
-        for (QueryExecution query : queries.values()) {
-            Duration cpuTime = query.getTotalCpuTime();
-            Duration sessionLimit = getQueryMaxCpuTime(query.getSession());
-            Duration limit = Ordering.natural().min(maxQueryCpuTime, sessionLimit);
-            if (cpuTime.compareTo(limit) > 0) {
-                query.fail(new ExceededCpuLimitException(limit));
-            }
-        }
-    }
-
-    /**
      * Prune extraneous info from old queries
      */
     private void pruneExpiredQueries()
@@ -669,19 +624,14 @@ public class SqlQueryManager
     public void failAbandonedQueries()
     {
         for (QueryExecution queryExecution : queries.values()) {
-            try {
-                QueryInfo queryInfo = queryExecution.getQueryInfo();
-                if (queryInfo.getState().isDone()) {
-                    continue;
-                }
-
-                if (isAbandoned(queryInfo)) {
-                    log.info("Failing abandoned query %s", queryExecution.getQueryId());
-                    queryExecution.fail(new PrestoException(ABANDONED_QUERY, format("Query %s has not been accessed since %s: currentTime %s", queryInfo.getQueryId(), queryInfo.getQueryStats().getLastHeartbeat(), DateTime.now())));
-                }
+            QueryInfo queryInfo = queryExecution.getQueryInfo();
+            if (queryInfo.getState().isDone()) {
+                continue;
             }
-            catch (RuntimeException e) {
-                log.error(e, "Exception failing abandoned query %s", queryExecution.getQueryId());
+
+            if (isAbandoned(queryInfo)) {
+                log.info("Failing abandoned query %s", queryExecution.getQueryId());
+                queryExecution.fail(new PrestoException(ABANDONED_QUERY, format("Query %s has not been accessed since %s: currentTime %s", queryInfo.getQueryId(), queryInfo.getQueryStats().getLastHeartbeat(), DateTime.now())));
             }
         }
     }

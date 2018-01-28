@@ -188,8 +188,8 @@ public class MapStreamReader
             }
         }
 
-        Block newKeys = keys.copyPositions(nonNullPositions.elements(), 0, nonNullPositions.size());
-        Block newValues = values.copyPositions(nonNullPositions.elements(), 0, nonNullPositions.size());
+        Block newKeys = keys.copyPositions(nonNullPositions);
+        Block newValues = values.copyPositions(nonNullPositions);
         return new Block[] {newKeys, newValues};
     }
 

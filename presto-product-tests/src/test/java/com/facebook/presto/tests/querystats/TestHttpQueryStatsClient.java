@@ -55,6 +55,7 @@ public class TestHttpQueryStatsClient
 
     @BeforeMethod
     public void setUp()
+            throws Exception
     {
         ObjectMapper objectMapper = new ObjectMapperProvider().get();
         TestingHttpClient httpClient = new TestingHttpClient(httpRequest -> httpResponse);
@@ -63,6 +64,7 @@ public class TestHttpQueryStatsClient
 
     @Test
     public void testGetInfoForQuery()
+            throws Exception
     {
         mockHttpResponse(SINGLE_QUERY_INFO);
         Optional<QueryStats> infoForQuery = queryStatsClient.getQueryStats("20150505_160116_00005_sdzex");
@@ -72,6 +74,7 @@ public class TestHttpQueryStatsClient
 
     @Test
     public void testGetInfoForUnknownQuery()
+            throws Exception
     {
         mockErrorHttpResponse(HttpStatus.GONE);
         Optional<QueryStats> infoForQuery = queryStatsClient.getQueryStats("20150505_160116_00005_sdzex");
@@ -79,11 +82,13 @@ public class TestHttpQueryStatsClient
     }
 
     private void mockHttpResponse(String answerJson)
+            throws IOException
     {
         httpResponse = new TestingResponse(HttpStatus.OK, ImmutableListMultimap.of(), answerJson.getBytes());
     }
 
     private void mockErrorHttpResponse(HttpStatus statusCode)
+            throws IOException
     {
         httpResponse = new TestingResponse(statusCode, ImmutableListMultimap.of(), new byte[0]);
     }

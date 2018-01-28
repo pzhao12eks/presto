@@ -187,6 +187,7 @@ public class DeleteOperator
 
     @Override
     public void close()
+            throws Exception
     {
         if (!closed) {
             closed = true;

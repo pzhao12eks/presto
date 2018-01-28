@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.sql.analyzer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import io.airlift.configuration.Config;
@@ -23,11 +22,9 @@ import io.airlift.units.DataSize;
 import io.airlift.units.Duration;
 import io.airlift.units.MaxDataSize;
 
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,19 +42,12 @@ import static java.util.concurrent.TimeUnit.MINUTES;
         "optimizer.processing-optimization"})
 public class FeaturesConfig
 {
-    @VisibleForTesting
-    static final String SPILL_ENABLED = "experimental.spill-enabled";
-    @VisibleForTesting
-    static final String SPILLER_SPILL_PATH = "experimental.spiller-spill-path";
-
     private boolean distributedIndexJoinsEnabled;
     private boolean distributedJoinsEnabled = true;
     private boolean colocatedJoinsEnabled;
     private boolean fastInequalityJoins = true;
     private boolean reorderJoins = true;
     private boolean redistributeWrites = true;
-    private boolean scaleWriters;
-    private DataSize writerMinSize = new DataSize(32, DataSize.Unit.MEGABYTE);
     private boolean optimizeMetadataQueries;
     private boolean optimizeHashGeneration = true;
     private boolean optimizeSingleDistinct = true;
@@ -66,7 +56,6 @@ public class FeaturesConfig
     private boolean exchangeCompressionEnabled;
     private boolean legacyArrayAgg;
     private boolean legacyOrderBy;
-    private boolean legacyTimestamp = true;
     private boolean legacyMapSubscript;
     private boolean optimizeMixedDistinctAggregations;
     private boolean forceSingleNodeOutput = true;
@@ -87,7 +76,6 @@ public class FeaturesConfig
     private boolean pushAggregationThroughJoin = true;
     private double memoryRevokingTarget = 0.5;
     private double memoryRevokingThreshold = 0.9;
-    private boolean parseDecimalLiteralsAsDouble = true;
 
     private Duration iterativeOptimizerTimeout = new Duration(3, MINUTES); // by default let optimizer wait a long time in case it retrieves some data from ConnectorMetadata
 
@@ -145,18 +133,6 @@ public class FeaturesConfig
     public boolean isLegacyOrderBy()
     {
         return legacyOrderBy;
-    }
-
-    @Config("deprecated.legacy-timestamp")
-    public FeaturesConfig setLegacyTimestamp(boolean value)
-    {
-        this.legacyTimestamp = value;
-        return this;
-    }
-
-    public boolean isLegacyTimestamp()
-    {
-        return legacyTimestamp;
     }
 
     @Config("deprecated.legacy-map-subscript")
@@ -226,32 +202,6 @@ public class FeaturesConfig
     public FeaturesConfig setRedistributeWrites(boolean redistributeWrites)
     {
         this.redistributeWrites = redistributeWrites;
-        return this;
-    }
-
-    public boolean isScaleWriters()
-    {
-        return scaleWriters;
-    }
-
-    @Config("scale-writers")
-    public FeaturesConfig setScaleWriters(boolean scaleWriters)
-    {
-        this.scaleWriters = scaleWriters;
-        return this;
-    }
-
-    @NotNull
-    public DataSize getWriterMinSize()
-    {
-        return writerMinSize;
-    }
-
-    @Config("writer-min-size")
-    @ConfigDescription("Target minimum size of writer output when scaling writers")
-    public FeaturesConfig setWriterMinSize(DataSize writerMinSize)
-    {
-        this.writerMinSize = writerMinSize;
         return this;
     }
 
@@ -358,7 +308,7 @@ public class FeaturesConfig
         return spillEnabled;
     }
 
-    @Config(SPILL_ENABLED)
+    @Config("experimental.spill-enabled")
     public FeaturesConfig setSpillEnabled(boolean spillEnabled)
     {
         this.spillEnabled = spillEnabled;
@@ -406,7 +356,7 @@ public class FeaturesConfig
         return spillerSpillPaths;
     }
 
-    @Config(SPILLER_SPILL_PATH)
+    @Config("experimental.spiller-spill-path")
     public FeaturesConfig setSpillerSpillPaths(String spillPaths)
     {
         List<String> spillPathsSplit = ImmutableList.copyOf(Splitter.on(",").trimResults().omitEmptyStrings().split(spillPaths));
@@ -414,13 +364,6 @@ public class FeaturesConfig
         return this;
     }
 
-    @AssertTrue(message = SPILLER_SPILL_PATH + " must be configured when " + SPILL_ENABLED + " is set to true")
-    public boolean isSpillerSpillPathsConfiguredIfSpillEnabled()
-    {
-        return !isSpillEnabled() || !spillerSpillPaths.isEmpty();
-    }
-
-    @Min(1)
     public int getSpillerThreads()
     {
         return spillerThreads;
@@ -520,18 +463,6 @@ public class FeaturesConfig
     public FeaturesConfig setPushAggregationThroughJoin(boolean value)
     {
         this.pushAggregationThroughJoin = value;
-        return this;
-    }
-
-    public boolean isParseDecimalLiteralsAsDouble()
-    {
-        return parseDecimalLiteralsAsDouble;
-    }
-
-    @Config("parse-decimal-literals-as-double")
-    public FeaturesConfig setParseDecimalLiteralsAsDouble(boolean parseDecimalLiteralsAsDouble)
-    {
-        this.parseDecimalLiteralsAsDouble = parseDecimalLiteralsAsDouble;
         return this;
     }
 

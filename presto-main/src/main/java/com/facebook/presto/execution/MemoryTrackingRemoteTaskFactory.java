@@ -64,6 +64,7 @@ public class MemoryTrackingRemoteTaskFactory
             implements StateChangeListener<TaskStatus>
     {
         private final QueryStateMachine stateMachine;
+        private long previousMemory;
 
         public UpdatePeakMemory(QueryStateMachine stateMachine)
         {
@@ -73,9 +74,10 @@ public class MemoryTrackingRemoteTaskFactory
         @Override
         public synchronized void stateChanged(TaskStatus newStatus)
         {
-            long currentUserMemory = newStatus.getMemoryReservation().toBytes();
-            long currentSystemMemory = newStatus.getSystemMemoryReservation().toBytes();
-            stateMachine.updateMemoryUsage(currentUserMemory, currentSystemMemory);
+            long currentMemory = newStatus.getMemoryReservation().toBytes();
+            long deltaMemoryInBytes = currentMemory - previousMemory;
+            previousMemory = currentMemory;
+            stateMachine.updateMemoryUsage(deltaMemoryInBytes);
         }
     }
 }

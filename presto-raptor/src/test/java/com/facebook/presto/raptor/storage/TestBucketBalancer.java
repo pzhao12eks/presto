@@ -66,6 +66,7 @@ public class TestBucketBalancer
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         TypeRegistry typeRegistry = new TypeRegistry();
         dbi = new DBI("jdbc:h2:mem:test" + System.nanoTime());
@@ -93,6 +94,7 @@ public class TestBucketBalancer
 
     @Test
     public void testSingleDistributionUnbalanced()
+            throws Exception
     {
         long distributionId = createDistribution("distA", 16);
         createBucketedTable("testA", distributionId);
@@ -105,6 +107,7 @@ public class TestBucketBalancer
 
     @Test
     public void testSingleDistributionSlightlyUnbalanced()
+            throws Exception
     {
         long distributionId = createDistribution("distA", 16);
         createBucketedTable("testA", distributionId);
@@ -117,6 +120,7 @@ public class TestBucketBalancer
 
     @Test
     public void testSingleDistributionBalanced()
+            throws Exception
     {
         long distributionId = createDistribution("distA", 16);
         createBucketedTable("testA", distributionId);
@@ -129,6 +133,7 @@ public class TestBucketBalancer
 
     @Test
     public void testSingleDistributionUnbalancedWithDeadNode()
+            throws Exception
     {
         long distributionId = createDistribution("distA", 16);
         createBucketedTable("testA", distributionId);
@@ -142,6 +147,7 @@ public class TestBucketBalancer
 
     @Test
     public void testSingleDistributionUnbalancedWithNewNode()
+            throws Exception
     {
         long distributionId = createDistribution("distA", 16);
         createBucketedTable("testA", distributionId);
@@ -155,6 +161,7 @@ public class TestBucketBalancer
 
     @Test
     public void testMultipleDistributionUnbalanced()
+            throws Exception
     {
         long distributionA = createDistribution("distA", 17);
         createBucketedTable("testA", distributionA);
@@ -173,6 +180,7 @@ public class TestBucketBalancer
 
     @Test
     public void testMultipleDistributionUnbalancedWithDiskSpace()
+            throws Exception
     {
         long distributionA = createDistribution("distA", 4);
         createBucketedTable("testA", distributionA, DataSize.valueOf("4B"));
@@ -196,6 +204,7 @@ public class TestBucketBalancer
 
     @Test
     public void testMultipleDistributionUnbalancedWithDiskSpace2()
+            throws Exception
     {
         long distributionA = createDistribution("distA", 4);
         createBucketedTable("testA", distributionA, DataSize.valueOf("4B"));
@@ -210,6 +219,7 @@ public class TestBucketBalancer
 
     @Test
     public void testMultipleDistributionUnbalancedWorstCase()
+            throws Exception
     {
         // we will end up with only one bucket on node1
         long distributionA = createDistribution("distA", 4);

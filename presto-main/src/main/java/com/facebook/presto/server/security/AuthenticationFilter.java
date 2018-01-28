@@ -14,7 +14,7 @@
 package com.facebook.presto.server.security;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import javax.inject.Inject;
 import javax.servlet.Filter;
@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.io.ByteStreams.copy;
@@ -42,12 +41,12 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 public class AuthenticationFilter
         implements Filter
 {
-    private final List<Authenticator> authenticators;
+    private final Set<Authenticator> authenticators;
 
     @Inject
-    public AuthenticationFilter(List<Authenticator> authenticators)
+    public AuthenticationFilter(Set<Authenticator> authenticators)
     {
-        this.authenticators = ImmutableList.copyOf(authenticators);
+        this.authenticators = ImmutableSet.copyOf(authenticators);
     }
 
     @Override

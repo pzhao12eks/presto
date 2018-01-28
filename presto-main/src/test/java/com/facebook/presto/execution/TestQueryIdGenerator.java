@@ -24,6 +24,7 @@ public class TestQueryIdGenerator
 {
     @Test
     public void testCreateNextQueryId()
+            throws Exception
     {
         TestIdGenerator idGenerator = new TestIdGenerator();
 

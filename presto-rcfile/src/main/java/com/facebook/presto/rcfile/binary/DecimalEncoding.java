@@ -15,6 +15,7 @@ package com.facebook.presto.rcfile.binary;
 
 import com.facebook.presto.rcfile.ColumnData;
 import com.facebook.presto.rcfile.EncodeOutput;
+import com.facebook.presto.rcfile.RcFileCorruptionException;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.block.BlockBuilder;
 import com.facebook.presto.spi.block.BlockBuilderStatus;
@@ -52,6 +53,7 @@ public class DecimalEncoding
 
     @Override
     public void encodeColumn(Block block, SliceOutput output, EncodeOutput encodeOutput)
+            throws RcFileCorruptionException
     {
         for (int position = 0; position < block.getPositionCount(); position++) {
             if (!block.isNull(position)) {

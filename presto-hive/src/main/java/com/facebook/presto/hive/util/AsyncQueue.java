@@ -46,9 +46,9 @@ public class AsyncQueue<T>
     @GuardedBy("this")
     private SettableFuture<?> notEmptySignal = SettableFuture.create();
     @GuardedBy("this")
-    private boolean finishing;
+    private boolean finishing = false;
     @GuardedBy("this")
-    private int borrowerCount;
+    private int borrowerCount = 0;
 
     private final Executor executor;
 

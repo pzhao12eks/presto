@@ -37,6 +37,7 @@ public class TestLambdaCaptureDesugaringRewriter
 {
     @Test
     public void testRewriteBasicLambda()
+            throws Exception
     {
         final Map<Symbol, Type> symbols = ImmutableMap.of(new Symbol("a"), BigintType.BIGINT);
         final SymbolAllocator allocator = new SymbolAllocator(symbols);

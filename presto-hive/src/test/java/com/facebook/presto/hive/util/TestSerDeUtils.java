@@ -276,6 +276,7 @@ public class TestSerDeUtils
 
     @Test
     public void testReuse()
+            throws Exception
     {
         BytesWritable value = new BytesWritable();
 

@@ -149,6 +149,7 @@ class PrioritizedSplitRunner
     }
 
     public ListenableFuture<?> process()
+            throws Exception
     {
         try {
             long startNanos = ticker.read();

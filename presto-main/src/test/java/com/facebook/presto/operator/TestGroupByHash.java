@@ -64,6 +64,7 @@ public class TestGroupByHash
 
     @Test
     public void testAddPage()
+            throws Exception
     {
         GroupByHash groupByHash = createGroupByHash(TEST_SESSION, ImmutableList.of(BIGINT), new int[] {0}, Optional.of(1), 100, JOIN_COMPILER);
         for (int tries = 0; tries < 2; tries++) {
@@ -93,6 +94,7 @@ public class TestGroupByHash
 
     @Test
     public void testNullGroup()
+            throws Exception
     {
         GroupByHash groupByHash = createGroupByHash(TEST_SESSION, ImmutableList.of(BIGINT), new int[] {0}, Optional.of(1), 100, JOIN_COMPILER);
 
@@ -115,6 +117,7 @@ public class TestGroupByHash
 
     @Test
     public void testGetGroupIds()
+            throws Exception
     {
         GroupByHash groupByHash = createGroupByHash(TEST_SESSION, ImmutableList.of(BIGINT), new int[] {0}, Optional.of(1), 100, JOIN_COMPILER);
         for (int tries = 0; tries < 2; tries++) {
@@ -137,6 +140,7 @@ public class TestGroupByHash
 
     @Test
     public void testTypes()
+            throws Exception
     {
         GroupByHash groupByHash = createGroupByHash(TEST_SESSION, ImmutableList.of(VARCHAR), new int[] {0}, Optional.of(1), 100, JOIN_COMPILER);
         // Additional bigint channel for hash
@@ -145,6 +149,7 @@ public class TestGroupByHash
 
     @Test
     public void testAppendTo()
+            throws Exception
     {
         Block valuesBlock = BlockAssertions.createStringSequenceBlock(0, 100);
         Block hashBlock = TypeUtils.getHashBlock(ImmutableList.of(VARCHAR), valuesBlock);
@@ -175,6 +180,7 @@ public class TestGroupByHash
 
     @Test
     public void testAppendToMultipleTuplesPerGroup()
+            throws Exception
     {
         List<Long> values = new ArrayList<>();
         for (long i = 0; i < 100; i++) {
@@ -199,6 +205,7 @@ public class TestGroupByHash
 
     @Test
     public void testContains()
+            throws Exception
     {
         Block valuesBlock = BlockAssertions.createDoubleSequenceBlock(0, 10);
         Block hashBlock = TypeUtils.getHashBlock(ImmutableList.of(DOUBLE), valuesBlock);
@@ -216,6 +223,7 @@ public class TestGroupByHash
 
     @Test
     public void testContainsMultipleColumns()
+            throws Exception
     {
         Block valuesBlock = BlockAssertions.createDoubleSequenceBlock(0, 10);
         Block stringValuesBlock = BlockAssertions.createStringSequenceBlock(0, 10);
@@ -232,6 +240,7 @@ public class TestGroupByHash
 
     @Test
     public void testForceRehash()
+            throws Exception
     {
         // Create a page with positionCount >> expected size of groupByHash
         Block valuesBlock = BlockAssertions.createStringSequenceBlock(0, 100);
@@ -249,6 +258,7 @@ public class TestGroupByHash
 
     @Test(dataProvider = "dataType")
     public void testUpdateMemory(Type type)
+            throws Exception
     {
         // Create a page with positionCount >> expected size of groupByHash
         int length = 1_000_000;
@@ -285,6 +295,7 @@ public class TestGroupByHash
 
     @Test(dataProvider = "dataType")
     public void testMemoryReservationYield(Type type)
+            throws Exception
     {
         // Create a page with positionCount >> expected size of groupByHash
         int length = 1_000_000;
@@ -366,6 +377,7 @@ public class TestGroupByHash
 
     @Test
     public void testMemoryReservationYieldWithDictionary()
+            throws Exception
     {
         // Create a page with positionCount >> expected size of groupByHash
         int dictionaryLength = 1_000;

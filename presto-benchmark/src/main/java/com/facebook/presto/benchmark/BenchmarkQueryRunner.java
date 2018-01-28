@@ -18,8 +18,6 @@ import com.facebook.presto.testing.LocalQueryRunner;
 import com.facebook.presto.tpch.TpchConnectorFactory;
 import com.google.common.collect.ImmutableMap;
 
-import java.util.Map;
-
 import static com.facebook.presto.Session.SessionBuilder;
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 import static com.facebook.presto.tpch.TpchMetadata.TINY_SCHEMA_NAME;
@@ -32,21 +30,23 @@ public final class BenchmarkQueryRunner
 
     public static LocalQueryRunner createLocalQueryRunnerHashEnabled()
     {
-        return createLocalQueryRunner(ImmutableMap.of("optimizer.optimize_hash_generation", "true"));
+        return createLocalQueryRunner(true);
     }
 
     public static LocalQueryRunner createLocalQueryRunner()
     {
-        return createLocalQueryRunner(ImmutableMap.of());
+        return createLocalQueryRunner(false);
     }
 
-    public static LocalQueryRunner createLocalQueryRunner(Map<String, String> extraSessionProperties)
+    public static LocalQueryRunner createLocalQueryRunner(boolean hashingEnabled)
     {
         SessionBuilder sessionBuilder = testSessionBuilder()
                 .setCatalog("tpch")
                 .setSchema(TINY_SCHEMA_NAME);
 
-        extraSessionProperties.forEach(sessionBuilder::setSystemProperty);
+        if (hashingEnabled) {
+            sessionBuilder.setSystemProperty("optimizer.optimize_hash_generation", "true");
+        }
 
         Session session = sessionBuilder.build();
         LocalQueryRunner localQueryRunner = new LocalQueryRunner(session);

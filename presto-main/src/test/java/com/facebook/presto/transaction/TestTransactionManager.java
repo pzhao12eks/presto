@@ -34,6 +34,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -61,12 +62,14 @@ public class TestTransactionManager
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         finishingExecutor.shutdownNow();
     }
 
     @Test
     public void testTransactionWorkflow()
+            throws Exception
     {
         try (IdleCheckExecutor executor = new IdleCheckExecutor()) {
             CatalogManager catalogManager = new CatalogManager();
@@ -97,6 +100,7 @@ public class TestTransactionManager
 
     @Test
     public void testAbortedTransactionWorkflow()
+            throws Exception
     {
         try (IdleCheckExecutor executor = new IdleCheckExecutor()) {
             CatalogManager catalogManager = new CatalogManager();
@@ -127,6 +131,7 @@ public class TestTransactionManager
 
     @Test
     public void testFailedTransactionWorkflow()
+            throws Exception
     {
         try (IdleCheckExecutor executor = new IdleCheckExecutor()) {
             CatalogManager catalogManager = new CatalogManager();
@@ -232,6 +237,7 @@ public class TestTransactionManager
 
         @Override
         public void close()
+                throws IOException
         {
             executorService.shutdownNow();
         }

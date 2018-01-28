@@ -49,6 +49,7 @@ public class TestTransformExistsApplyToScalarLateralJoin
 
     @Test
     public void testRewrite()
+            throws Exception
     {
         tester().assertThat(new TransformExistsApplyToLateralNode(tester().getMetadata().getFunctionRegistry()))
                 .on(p ->

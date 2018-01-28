@@ -13,8 +13,8 @@
  */
 package com.facebook.presto.tests.sqlserver;
 
-import io.prestodb.tempto.fulfillment.table.jdbc.RelationalTableDefinition;
-import io.prestodb.tempto.fulfillment.table.jdbc.tpch.JdbcTpchTableDefinitions;
+import com.teradata.tempto.fulfillment.table.jdbc.RelationalTableDefinition;
+import com.teradata.tempto.fulfillment.table.jdbc.tpch.JdbcTpchTableDefinitions;
 
 import static com.facebook.presto.tests.sqlserver.TestConstants.CONNECTOR_NAME;
 

@@ -21,7 +21,6 @@ import com.facebook.presto.execution.buffer.LazyOutputBuffer;
 import com.facebook.presto.execution.buffer.OutputBuffer;
 import com.facebook.presto.memory.MemoryPool;
 import com.facebook.presto.memory.QueryContext;
-import com.facebook.presto.memory.context.SimpleLocalMemoryContext;
 import com.facebook.presto.metadata.Split;
 import com.facebook.presto.metadata.TableHandle;
 import com.facebook.presto.operator.TaskContext;
@@ -72,8 +71,6 @@ import static com.facebook.presto.OutputBuffers.BufferType.BROADCAST;
 import static com.facebook.presto.OutputBuffers.createInitialEmptyOutputBuffers;
 import static com.facebook.presto.SessionTestUtils.TEST_SESSION;
 import static com.facebook.presto.execution.StateMachine.StateChangeListener;
-import static com.facebook.presto.memory.context.AggregatedMemoryContext.newSimpleAggregatedMemoryContext;
-import static com.facebook.presto.operator.PipelineExecutionStrategy.UNGROUPED_EXECUTION;
 import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.sql.planner.SystemPartitioningHandle.SINGLE_DISTRIBUTION;
 import static com.facebook.presto.sql.planner.SystemPartitioningHandle.SOURCE_DISTRIBUTION;
@@ -114,8 +111,7 @@ public class MockRemoteTaskFactory
                 ImmutableMap.of(symbol, VARCHAR),
                 SOURCE_DISTRIBUTION,
                 ImmutableList.of(sourceId),
-                new PartitioningScheme(Partitioning.create(SINGLE_DISTRIBUTION, ImmutableList.of()), ImmutableList.of(symbol)),
-                UNGROUPED_EXECUTION);
+                new PartitioningScheme(Partitioning.create(SINGLE_DISTRIBUTION, ImmutableList.of()), ImmutableList.of(symbol)));
 
         ImmutableMultimap.Builder<PlanNodeId, Split> initialSplits = ImmutableMultimap.builder();
         for (Split sourceSplit : splits) {
@@ -158,7 +154,7 @@ public class MockRemoteTaskFactory
         private final Multimap<PlanNodeId, Split> splits = HashMultimap.create();
 
         @GuardedBy("this")
-        private int runningDrivers;
+        private int runningDrivers = 0;
 
         @GuardedBy("this")
         private SettableFuture<?> whenSplitQueueHasSpace = SettableFuture.create();
@@ -188,7 +184,7 @@ public class MockRemoteTaskFactory
                     TASK_INSTANCE_ID,
                     executor,
                     requireNonNull(new DataSize(1, BYTE), "maxBufferSize is null"),
-                    () -> new SimpleLocalMemoryContext(newSimpleAggregatedMemoryContext()));
+                    new UpdateSystemMemory(queryContext));
 
             this.fragment = requireNonNull(fragment, "fragment is null");
             this.nodeId = requireNonNull(nodeId, "nodeId is null");
@@ -219,22 +215,7 @@ public class MockRemoteTaskFactory
                 failures = toFailures(taskStateMachine.getFailureCauses());
             }
 
-            return new TaskInfo(
-                    new TaskStatus(
-                            taskStateMachine.getTaskId(),
-                            TASK_INSTANCE_ID,
-                            nextTaskInfoVersion.getAndIncrement(),
-                            state,
-                            location,
-                            nodeId,
-                            ImmutableSet.of(),
-                            failures,
-                            0,
-                            0,
-                            false,
-                            new DataSize(0, BYTE),
-                            new DataSize(0, BYTE),
-                            new DataSize(0, BYTE)),
+            return new TaskInfo(new TaskStatus(taskStateMachine.getTaskId(), TASK_INSTANCE_ID, nextTaskInfoVersion.getAndIncrement(), state, location, nodeId, failures, 0, 0, new DataSize(0, BYTE)),
                     DateTime.now(),
                     outputBuffer.getInfo(),
                     ImmutableSet.of(),
@@ -253,14 +234,10 @@ public class MockRemoteTaskFactory
                     taskStateMachine.getState(),
                     location,
                     nodeId,
-                    ImmutableSet.of(),
                     ImmutableList.of(),
                     stats.getQueuedPartitionedDrivers(),
                     stats.getRunningPartitionedDrivers(),
-                    false,
-                    stats.getPhysicalWrittenDataSize(),
-                    stats.getMemoryReservation(),
-                    stats.getSystemMemoryReservation());
+                    stats.getMemoryReservation());
         }
 
         private synchronized void updateSplitQueueSpace()
@@ -341,12 +318,6 @@ public class MockRemoteTaskFactory
         }
 
         @Override
-        public void noMoreSplits(PlanNodeId sourceId, Lifespan lifespan)
-        {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void setOutputBuffers(OutputBuffers outputBuffers)
         {
             outputBuffer.setOutputBuffers(outputBuffers);
@@ -400,6 +371,28 @@ public class MockRemoteTaskFactory
                 return 0;
             }
             return getPartitionedSplitCount() - runningDrivers;
+        }
+
+        private static final class UpdateSystemMemory
+                implements SystemMemoryUsageListener
+        {
+            private final QueryContext queryContext;
+
+            public UpdateSystemMemory(QueryContext queryContext)
+            {
+                this.queryContext = requireNonNull(queryContext, "queryContext is null");
+            }
+
+            @Override
+            public void updateSystemMemoryUsage(long deltaMemoryInBytes)
+            {
+                if (deltaMemoryInBytes > 0) {
+                    queryContext.reserveSystemMemory(deltaMemoryInBytes);
+                }
+                else {
+                    queryContext.freeSystemMemory(-deltaMemoryInBytes);
+                }
+            }
         }
     }
 }

@@ -45,15 +45,16 @@ public class TestHiveSplitSource
 {
     @Test
     public void testOutstandingSplitCount()
+            throws Exception
     {
-        HiveSplitSource hiveSplitSource = HiveSplitSource.allAtOnce(
+        HiveSplitSource hiveSplitSource = new HiveSplitSource(
                 SESSION,
                 "database",
                 "table",
                 TupleDomain.all(),
                 10,
                 10,
-                new DataSize(1, MEGABYTE),
+                new DataSize(32, MEGABYTE),
                 new TestingHiveSplitLoader(),
                 Executors.newFixedThreadPool(5),
                 new CounterStat());
@@ -79,15 +80,16 @@ public class TestHiveSplitSource
 
     @Test
     public void testFail()
+            throws Exception
     {
-        HiveSplitSource hiveSplitSource = HiveSplitSource.allAtOnce(
+        HiveSplitSource hiveSplitSource = new HiveSplitSource(
                 SESSION,
                 "database",
                 "table",
                 TupleDomain.all(),
                 10,
                 10,
-                new DataSize(1, MEGABYTE),
+                new DataSize(32, MEGABYTE),
                 new TestingHiveSplitLoader(),
                 Executors.newFixedThreadPool(5),
                 new CounterStat());
@@ -114,15 +116,15 @@ public class TestHiveSplitSource
         catch (RuntimeException e) {
             assertEquals(e.getMessage(), "test");
         }
-        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 4); // 3 splits + poison
+        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 3);
 
         // attempt to add another split and verify it does not work
         hiveSplitSource.addToQueue(new TestSplit(99));
-        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 4); // 3 splits + poison
+        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 3);
 
         // fail source again
         hiveSplitSource.fail(new RuntimeException("another failure"));
-        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 4); // 3 splits + poison
+        assertEquals(hiveSplitSource.getBufferedInternalSplitCount(), 3);
 
         // try to remove a split and verify we got the first exception
         try {
@@ -138,7 +140,7 @@ public class TestHiveSplitSource
     public void testReaderWaitsForSplits()
             throws Exception
     {
-        final HiveSplitSource hiveSplitSource = HiveSplitSource.allAtOnce(
+        final HiveSplitSource hiveSplitSource = new HiveSplitSource(
                 SESSION,
                 "database",
                 "table",
@@ -195,9 +197,10 @@ public class TestHiveSplitSource
 
     @Test(enabled = false)
     public void testOutstandingSplitSize()
+            throws Exception
     {
         DataSize maxOutstandingSplitsSize = new DataSize(1, MEGABYTE);
-        HiveSplitSource hiveSplitSource = HiveSplitSource.allAtOnce(
+        HiveSplitSource hiveSplitSource = new HiveSplitSource(
                 SESSION,
                 "database",
                 "table",

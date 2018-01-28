@@ -42,6 +42,7 @@ public class TestMapUnionAggregation
 
     @Test
     public void testSimpleWithDuplicates()
+            throws Exception
     {
         MapType mapType = mapType(DOUBLE, VARCHAR);
         InternalAggregationFunction aggFunc = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -79,6 +80,7 @@ public class TestMapUnionAggregation
 
     @Test
     public void testSimpleWithNulls()
+            throws Exception
     {
         MapType mapType = mapType(DOUBLE, VARCHAR);
         InternalAggregationFunction aggFunc = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -98,6 +100,7 @@ public class TestMapUnionAggregation
 
     @Test
     public void testStructural()
+            throws Exception
     {
         MapType mapType = mapType(DOUBLE, new ArrayType(VARCHAR));
         InternalAggregationFunction aggFunc = metadata.getFunctionRegistry().getAggregateFunctionImplementation(

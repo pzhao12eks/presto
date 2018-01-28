@@ -52,6 +52,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testDuplicateKeysValues()
+            throws Exception
     {
         MapType mapType = mapType(DOUBLE, VARCHAR);
         InternalAggregationFunction aggFunc = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -82,6 +83,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testSimpleMaps()
+            throws Exception
     {
         MapType mapType = mapType(DOUBLE, VARCHAR);
         InternalAggregationFunction aggFunc = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -125,6 +127,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testNull()
+            throws Exception
     {
         InternalAggregationFunction doubleDouble = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature(NAME,
@@ -157,6 +160,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testDoubleArrayMap()
+            throws Exception
     {
         ArrayType arrayType = new ArrayType(VARCHAR);
         MapType mapType = mapType(DOUBLE, arrayType);
@@ -177,6 +181,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testDoubleMapMap()
+            throws Exception
     {
         MapType innerMapType = mapType(VARCHAR, VARCHAR);
         MapType mapType = mapType(DOUBLE, innerMapType);
@@ -202,6 +207,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testDoubleRowMap()
+            throws Exception
     {
         RowType innerRowType = new RowType(ImmutableList.of(INTEGER, DOUBLE), Optional.of(ImmutableList.of("f1", "f2")));
         MapType mapType = mapType(DOUBLE, innerRowType);
@@ -227,6 +233,7 @@ public class TestMapAggAggregation
 
     @Test
     public void testArrayDoubleMap()
+            throws Exception
     {
         ArrayType arrayType = new ArrayType(VARCHAR);
         MapType mapType = mapType(arrayType, DOUBLE);

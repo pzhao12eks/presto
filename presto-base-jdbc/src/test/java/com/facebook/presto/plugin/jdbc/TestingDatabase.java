@@ -24,7 +24,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.getOnlyElement;
@@ -44,9 +43,9 @@ final class TestingDatabase
         String connectionUrl = "jdbc:h2:mem:test" + System.nanoTime();
         jdbcClient = new BaseJdbcClient(
                 new JdbcConnectorId(CONNECTOR_ID),
-                new BaseJdbcConfig(),
+                new BaseJdbcConfig().setConnectionUrl(connectionUrl),
                 "\"",
-                new DriverConnectionFactory(new Driver(), connectionUrl, new Properties()));
+                new Driver());
 
         connection = DriverManager.getConnection(connectionUrl);
         connection.createStatement().execute("CREATE SCHEMA example");
@@ -91,6 +90,7 @@ final class TestingDatabase
     }
 
     public JdbcSplit getSplit(String schemaName, String tableName)
+            throws InterruptedException
     {
         JdbcTableHandle jdbcTableHandle = jdbcClient.getTableHandle(new SchemaTableName(schemaName, tableName));
         JdbcTableLayoutHandle jdbcLayoutHandle = new JdbcTableLayoutHandle(jdbcTableHandle, TupleDomain.all());

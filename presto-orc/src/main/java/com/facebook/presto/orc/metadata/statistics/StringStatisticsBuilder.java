@@ -20,7 +20,6 @@ import java.util.Optional;
 
 import static com.facebook.presto.orc.metadata.statistics.StringStatistics.STRING_VALUE_BYTES_OVERHEAD;
 import static com.google.common.base.Verify.verify;
-import static java.lang.Math.addExact;
 import static java.util.Objects.requireNonNull;
 
 public class StringStatisticsBuilder
@@ -42,7 +41,7 @@ public class StringStatisticsBuilder
         requireNonNull(value, "value is null");
 
         nonNullValueCount++;
-        sum = addExact(sum, value.length());
+        sum += value.length();
         updateMinMax(value);
     }
 
@@ -67,7 +66,7 @@ public class StringStatisticsBuilder
         requireNonNull(value.getMax(), "value.getMax() is null");
 
         nonNullValueCount += valueCount;
-        sum = addExact(sum, value.getSum());
+        sum += value.getSum();
         updateMinMax(value.getMin());
         updateMinMax(value.getMax());
     }

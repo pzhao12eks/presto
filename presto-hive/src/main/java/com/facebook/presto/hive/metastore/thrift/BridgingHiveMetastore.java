@@ -18,6 +18,7 @@ import com.facebook.presto.hive.HiveUtil;
 import com.facebook.presto.hive.metastore.Database;
 import com.facebook.presto.hive.metastore.ExtendedHiveMetastore;
 import com.facebook.presto.hive.metastore.HiveColumnStatistics;
+import com.facebook.presto.hive.metastore.HiveMetastore;
 import com.facebook.presto.hive.metastore.HivePrivilegeInfo;
 import com.facebook.presto.hive.metastore.Partition;
 import com.facebook.presto.hive.metastore.PrincipalPrivileges;
@@ -213,7 +214,11 @@ public class BridgingHiveMetastore
         verifyCanDropColumn(this, databaseName, tableName, columnName);
         org.apache.hadoop.hive.metastore.api.Table table = delegate.getTable(databaseName, tableName)
                 .orElseThrow(() -> new TableNotFoundException(new SchemaTableName(databaseName, tableName)));
-        table.getSd().getCols().removeIf(fieldSchema -> fieldSchema.getName().equals(columnName));
+        for (FieldSchema fieldSchema : table.getSd().getCols()) {
+            if (fieldSchema.getName().equals(columnName)) {
+                table.getSd().getCols().remove(fieldSchema);
+            }
+        }
         alterTable(databaseName, tableName, table);
     }
 

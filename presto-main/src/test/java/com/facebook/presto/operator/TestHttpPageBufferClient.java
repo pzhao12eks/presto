@@ -39,8 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -63,28 +61,22 @@ import static org.testng.Assert.assertEquals;
 
 public class TestHttpPageBufferClient
 {
-    private ScheduledExecutorService scheduler;
-    private ExecutorService pageBufferClientCallbackExecutor;
+    private ScheduledExecutorService executor;
 
     private static final PagesSerde PAGES_SERDE = testingPagesSerde();
 
     @BeforeClass
     public void setUp()
     {
-        scheduler = newScheduledThreadPool(4, daemonThreadsNamed("test-%s"));
-        pageBufferClientCallbackExecutor = Executors.newSingleThreadExecutor();
+        executor = newScheduledThreadPool(4, daemonThreadsNamed("test-%s"));
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
     {
-        if (scheduler != null) {
-            scheduler.shutdownNow();
-            scheduler = null;
-        }
-        if (pageBufferClientCallbackExecutor != null) {
-            pageBufferClientCallbackExecutor.shutdownNow();
-            pageBufferClientCallbackExecutor = null;
+        if (executor != null) {
+            executor.shutdownNow();
+            executor = null;
         }
     }
 
@@ -102,14 +94,13 @@ public class TestHttpPageBufferClient
         TestingClientCallback callback = new TestingClientCallback(requestComplete);
 
         URI location = URI.create("http://localhost:8080");
-        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, scheduler),
+        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, executor),
                 expectedMaxSize,
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 location,
                 callback,
-                scheduler,
-                pageBufferClientCallbackExecutor);
+                executor);
 
         assertStatus(client, location, "queued", 0, 0, 0, 0, "not scheduled");
 
@@ -187,14 +178,13 @@ public class TestHttpPageBufferClient
         TestingClientCallback callback = new TestingClientCallback(requestComplete);
 
         URI location = URI.create("http://localhost:8080");
-        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, scheduler),
+        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, executor),
                 new DataSize(10, Unit.MEGABYTE),
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 location,
                 callback,
-                scheduler,
-                pageBufferClientCallbackExecutor);
+                executor);
 
         assertStatus(client, location, "queued", 0, 0, 0, 0, "not scheduled");
 
@@ -227,14 +217,13 @@ public class TestHttpPageBufferClient
         TestingClientCallback callback = new TestingClientCallback(requestComplete);
 
         URI location = URI.create("http://localhost:8080");
-        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, scheduler),
+        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, executor),
                 new DataSize(10, Unit.MEGABYTE),
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 location,
                 callback,
-                scheduler,
-                pageBufferClientCallbackExecutor);
+                executor);
 
         assertStatus(client, location, "queued", 0, 0, 0, 0, "not scheduled");
 
@@ -295,14 +284,13 @@ public class TestHttpPageBufferClient
         TestingClientCallback callback = new TestingClientCallback(requestComplete);
 
         URI location = URI.create("http://localhost:8080");
-        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, scheduler),
+        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, executor),
                 new DataSize(10, Unit.MEGABYTE),
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 location,
                 callback,
-                scheduler,
-                pageBufferClientCallbackExecutor);
+                executor);
 
         assertStatus(client, location, "queued", 0, 0, 0, 0, "not scheduled");
 
@@ -349,15 +337,14 @@ public class TestHttpPageBufferClient
         TestingClientCallback callback = new TestingClientCallback(requestComplete);
 
         URI location = URI.create("http://localhost:8080");
-        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, scheduler),
+        HttpPageBufferClient client = new HttpPageBufferClient(new TestingHttpClient(processor, executor),
                 new DataSize(10, Unit.MEGABYTE),
                 new Duration(1, TimeUnit.MINUTES),
                 new Duration(1, TimeUnit.MINUTES),
                 location,
                 callback,
-                scheduler,
-                ticker,
-                pageBufferClientCallbackExecutor);
+                executor,
+                ticker);
 
         assertStatus(client, location, "queued", 0, 0, 0, 0, "not scheduled");
 
@@ -400,6 +387,7 @@ public class TestHttpPageBufferClient
 
     @Test
     public void testErrorCodes()
+            throws Exception
     {
         assertEquals(new PageTooLargeException().getErrorCode(), PAGE_TOO_LARGE.toErrorCode());
         assertEquals(new PageTransportErrorException("").getErrorCode(), PAGE_TRANSPORT_ERROR.toErrorCode());

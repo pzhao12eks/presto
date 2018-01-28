@@ -26,6 +26,7 @@ import com.facebook.presto.spi.block.LongArrayBlock;
 import com.facebook.presto.spi.block.RunLengthEncodedBlock;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -59,6 +60,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test
     public void testDelegateMethods()
+            throws Exception
     {
         DictionaryAwarePageProjection projection = createProjection();
         assertEquals(projection.isDeterministic(), true);
@@ -68,6 +70,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testSimpleBlock(boolean forceYield)
+            throws Exception
     {
         Block block = createLongSequenceBlock(0, 100);
         testProject(block, block.getClass(), forceYield);
@@ -75,6 +78,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testRleBlock(boolean forceYield)
+            throws Exception
     {
         Block value = createLongSequenceBlock(42, 43);
         RunLengthEncodedBlock block = new RunLengthEncodedBlock(value, 100);
@@ -84,6 +88,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testRleBlockWithFailure(boolean forceYield)
+            throws Exception
     {
         Block value = createLongSequenceBlock(-43, -42);
         RunLengthEncodedBlock block = new RunLengthEncodedBlock(value, 100);
@@ -93,6 +98,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testDictionaryBlock(boolean forceYield)
+            throws Exception
     {
         DictionaryBlock block = createDictionaryBlock(10, 100);
 
@@ -101,6 +107,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testDictionaryBlockWithFailure(boolean forceYield)
+            throws Exception
     {
         DictionaryBlock block = createDictionaryBlockWithFailure(10, 100);
 
@@ -109,6 +116,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testDictionaryBlockProcessingWithUnusedFailure(boolean forceYield)
+            throws Exception
     {
         DictionaryBlock block = createDictionaryBlockWithUnusedEntries(10, 100);
 
@@ -118,6 +126,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test
     public void testDictionaryProcessingIgnoreYield()
+            throws Exception
     {
         DictionaryAwarePageProjection projection = createProjection();
 
@@ -131,6 +140,7 @@ public class TestDictionaryAwarePageProjection
 
     @Test(dataProvider = "forceYield")
     public void testDictionaryProcessingEnableDisable(boolean forceYield)
+            throws Exception
     {
         DictionaryAwarePageProjection projection = createProjection();
 
@@ -252,7 +262,7 @@ public class TestDictionaryAwarePageProjection
         assertBlockEquals(
                 BIGINT,
                 result,
-                block.copyPositions(positions, 0, positions.length));
+                block.copyPositions(new IntArrayList(positions)));
         assertInstanceOf(result, expectedResultType);
     }
 

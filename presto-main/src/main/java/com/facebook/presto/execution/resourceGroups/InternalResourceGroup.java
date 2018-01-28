@@ -292,7 +292,7 @@ public class InternalResourceGroup
             boolean oldCanRun = canRunMore();
             this.softMemoryLimitBytes = limit.toBytes();
             if (canRunMore() != oldCanRun) {
-                updateEligibility();
+                updateEligiblility();
             }
         }
     }
@@ -315,7 +315,7 @@ public class InternalResourceGroup
             boolean oldCanRun = canRunMore();
             this.softCpuLimitMillis = limit.toMillis();
             if (canRunMore() != oldCanRun) {
-                updateEligibility();
+                updateEligiblility();
             }
         }
     }
@@ -338,7 +338,7 @@ public class InternalResourceGroup
             boolean oldCanRun = canRunMore();
             this.hardCpuLimitMillis = limit.toMillis();
             if (canRunMore() != oldCanRun) {
-                updateEligibility();
+                updateEligiblility();
             }
         }
     }
@@ -376,7 +376,7 @@ public class InternalResourceGroup
             boolean oldCanRun = canRunMore();
             this.softConcurrencyLimit = softConcurrencyLimit;
             if (canRunMore() != oldCanRun) {
-                updateEligibility();
+                updateEligiblility();
             }
         }
     }
@@ -399,7 +399,7 @@ public class InternalResourceGroup
             boolean oldCanRun = canRunMore();
             this.hardConcurrencyLimit = hardConcurrencyLimit;
             if (canRunMore() != oldCanRun) {
-                updateEligibility();
+                updateEligiblility();
             }
         }
     }
@@ -619,12 +619,12 @@ public class InternalResourceGroup
                 group.parent.get().descendantQueuedQueries++;
                 group = group.parent.get();
             }
-            updateEligibility();
+            updateEligiblility();
         }
     }
 
     // This method must be called whenever the group's eligibility to run more queries may have changed.
-    private void updateEligibility()
+    private void updateEligiblility()
     {
         checkState(Thread.holdsLock(root), "Must hold lock to update eligibility");
         synchronized (root) {
@@ -637,7 +637,7 @@ public class InternalResourceGroup
             else {
                 parent.get().eligibleSubGroups.remove(this);
             }
-            parent.get().updateEligibility();
+            parent.get().updateEligiblility();
         }
     }
 
@@ -652,7 +652,7 @@ public class InternalResourceGroup
                 group.parent.get().dirtySubGroups.add(group);
                 group = group.parent.get();
             }
-            updateEligibility();
+            updateEligiblility();
             executor.execute(query::start);
         }
     }
@@ -693,7 +693,7 @@ public class InternalResourceGroup
                     group = group.parent.get();
                 }
             }
-            updateEligibility();
+            updateEligiblility();
         }
     }
 
@@ -719,7 +719,7 @@ public class InternalResourceGroup
                         iterator.remove();
                     }
                     if (oldMemoryUsageBytes != subGroup.cachedMemoryUsageBytes) {
-                        subGroup.updateEligibility();
+                        subGroup.updateEligiblility();
                     }
                 }
             }

@@ -80,6 +80,7 @@ public class TestQueryStateInfoResource
 
     @Test
     public void testGetAllQueryStateInfos()
+            throws Exception
     {
         List<QueryStateInfo> infos = client.execute(
                 prepareGet().setUri(server.resolve("/v1/queryState")).build(),
@@ -90,6 +91,7 @@ public class TestQueryStateInfoResource
 
     @Test
     public void testGetQueryStateInfosForUser()
+            throws Exception
     {
         List<QueryStateInfo> infos = client.execute(
                 prepareGet().setUri(server.resolve("/v1/queryState?user=user2")).build(),
@@ -100,6 +102,7 @@ public class TestQueryStateInfoResource
 
     @Test
     public void testGetQueryStateInfosForUserNoResult()
+            throws Exception
     {
         List<QueryStateInfo> infos = client.execute(
                 prepareGet().setUri(server.resolve("/v1/queryState?user=user3")).build(),
@@ -110,6 +113,7 @@ public class TestQueryStateInfoResource
 
     @Test
     public void testGetQueryStateInfo()
+            throws Exception
     {
         QueryStateInfo info = client.execute(
                 prepareGet().setUri(server.resolve("/v1/queryState/" + queryResults.getId())).build(),
@@ -120,6 +124,7 @@ public class TestQueryStateInfoResource
 
     @Test(expectedExceptions = {UnexpectedResponseException.class}, expectedExceptionsMessageRegExp = ".*404: Not Found")
     public void testGetQueryStateInfoNo()
+            throws Exception
     {
         client.execute(
                 prepareGet().setUri(server.resolve("/v1/queryState/123")).build(),

@@ -23,15 +23,17 @@ public class TestAccumuloIntegrationSmokeTest
         extends AbstractTestIntegrationSmokeTest
 {
     public TestAccumuloIntegrationSmokeTest()
+            throws Exception
     {
         super(() -> AccumuloQueryRunner.createAccumuloQueryRunner(ImmutableMap.of()));
     }
 
     @Override
     public void testDescribeTable()
+            throws Exception
     {
         // Override base class because table descriptions for Accumulo connector include comments
-        MaterializedResult actual = computeActual("DESC ORDERS").toTestTypes();
+        MaterializedResult actual = computeActual("DESC ORDERS").toJdbcTypes();
         assertEquals(actual.getMaterializedRows().get(0).getField(0), "orderkey");
         assertEquals(actual.getMaterializedRows().get(0).getField(1), "bigint");
         assertEquals(actual.getMaterializedRows().get(1).getField(0), "custkey");

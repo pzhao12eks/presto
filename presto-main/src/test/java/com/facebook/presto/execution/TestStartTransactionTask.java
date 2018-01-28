@@ -67,6 +67,7 @@ public class TestStartTransactionTask
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         executor.shutdownNow();
         scheduledExecutor.shutdownNow();
@@ -74,6 +75,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testNonTransactionalClient()
+            throws Exception
     {
         Session session = sessionBuilder().build();
         TransactionManager transactionManager = createTestTransactionManager();
@@ -101,6 +103,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testNestedTransaction()
+            throws Exception
     {
         TransactionManager transactionManager = createTestTransactionManager();
         AccessControl accessControl = new AccessControlManager(transactionManager);
@@ -131,6 +134,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testStartTransaction()
+            throws Exception
     {
         Session session = sessionBuilder()
                 .setClientTransactionSupport()
@@ -151,6 +155,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testStartTransactionExplicitModes()
+            throws Exception
     {
         Session session = sessionBuilder()
                 .setClientTransactionSupport()
@@ -179,6 +184,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testStartTransactionTooManyIsolationLevels()
+            throws Exception
     {
         Session session = sessionBuilder()
                 .setClientTransactionSupport()
@@ -214,6 +220,7 @@ public class TestStartTransactionTask
 
     @Test
     public void testStartTransactionTooManyAccessModes()
+            throws Exception
     {
         Session session = sessionBuilder()
                 .setClientTransactionSupport()

@@ -106,6 +106,7 @@ public class TestTypeValidator
 
     @Test
     public void testValidProject()
+            throws Exception
     {
         Expression expression1 = new Cast(columnB.toSymbolReference(), StandardTypes.BIGINT);
         Expression expression2 = new Cast(columnC.toSymbolReference(), StandardTypes.BIGINT);
@@ -123,6 +124,7 @@ public class TestTypeValidator
 
     @Test
     public void testValidUnion()
+            throws Exception
     {
         Symbol outputSymbol = symbolAllocator.newSymbol("output", DATE);
         ListMultimap<Symbol, Symbol> mappings = ImmutableListMultimap.<Symbol, Symbol>builder()
@@ -141,6 +143,7 @@ public class TestTypeValidator
 
     @Test
     public void testValidWindow()
+            throws Exception
     {
         Symbol windowSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
         Signature signature = new Signature(
@@ -178,6 +181,7 @@ public class TestTypeValidator
 
     @Test
     public void testValidAggregation()
+            throws Exception
     {
         Symbol aggregationSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
 
@@ -194,7 +198,9 @@ public class TestTypeValidator
                                 DOUBLE.getTypeSignature(),
                                 ImmutableList.of(DOUBLE.getTypeSignature()),
                                 false),
-                        Optional.empty())),
+                        Optional.empty(),
+                        ImmutableList.of(),
+                        ImmutableList.of())),
                 ImmutableList.of(ImmutableList.of(columnA, columnB)),
                 SINGLE,
                 Optional.empty(),
@@ -205,6 +211,7 @@ public class TestTypeValidator
 
     @Test
     public void testValidTypeOnlyCoercion()
+            throws Exception
     {
         Expression expression = new Cast(columnB.toSymbolReference(), StandardTypes.BIGINT);
         Assignments assignments = Assignments.builder()
@@ -218,6 +225,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'expr(_[0-9]+)?' is expected to be bigint, but the actual type is integer")
     public void testInvalidProject()
+            throws Exception
     {
         Expression expression1 = new Cast(columnB.toSymbolReference(), StandardTypes.INTEGER);
         Expression expression2 = new Cast(columnA.toSymbolReference(), StandardTypes.INTEGER);
@@ -235,6 +243,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'sum(_[0-9]+)?' is expected to be double, but the actual type is bigint")
     public void testInvalidAggregationFunctionCall()
+            throws Exception
     {
         Symbol aggregationSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
 
@@ -251,7 +260,9 @@ public class TestTypeValidator
                                 DOUBLE.getTypeSignature(),
                                 ImmutableList.of(DOUBLE.getTypeSignature()),
                                 false),
-                        Optional.empty())),
+                        Optional.empty(),
+                        ImmutableList.of(),
+                        ImmutableList.of())),
                 ImmutableList.of(ImmutableList.of(columnA, columnB)),
                 SINGLE,
                 Optional.empty(),
@@ -262,6 +273,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'sum(_[0-9]+)?' is expected to be double, but the actual type is bigint")
     public void testInvalidAggregationFunctionSignature()
+            throws Exception
     {
         Symbol aggregationSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
 
@@ -278,7 +290,9 @@ public class TestTypeValidator
                                 BIGINT.getTypeSignature(), // should be DOUBLE
                                 ImmutableList.of(DOUBLE.getTypeSignature()),
                                 false),
-                        Optional.empty())),
+                        Optional.empty(),
+                        ImmutableList.of(),
+                        ImmutableList.of())),
                 ImmutableList.of(ImmutableList.of(columnA, columnB)),
                 SINGLE,
                 Optional.empty(),
@@ -289,6 +303,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'sum(_[0-9]+)?' is expected to be double, but the actual type is bigint")
     public void testInvalidWindowFunctionCall()
+            throws Exception
     {
         Symbol windowSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
         Signature signature = new Signature(
@@ -326,6 +341,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'sum(_[0-9]+)?' is expected to be double, but the actual type is bigint")
     public void testInvalidWindowFunctionSignature()
+            throws Exception
     {
         Symbol windowSymbol = symbolAllocator.newSymbol("sum", DOUBLE);
         Signature signature = new Signature(
@@ -363,6 +379,7 @@ public class TestTypeValidator
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "type of symbol 'output(_[0-9]+)?' is expected to be date, but the actual type is bigint")
     public void testInvalidUnion()
+            throws Exception
     {
         Symbol outputSymbol = symbolAllocator.newSymbol("output", DATE);
         ListMultimap<Symbol, Symbol> mappings = ImmutableListMultimap.<Symbol, Symbol>builder()

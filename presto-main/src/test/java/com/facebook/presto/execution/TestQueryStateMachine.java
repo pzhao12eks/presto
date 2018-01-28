@@ -92,6 +92,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testBasicStateChanges()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertState(stateMachine, QUEUED);
@@ -112,6 +113,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testQueued()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertState(stateMachine, QUEUED);
@@ -139,6 +141,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testPlanning()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertTrue(stateMachine.transitionToPlanning());
@@ -169,6 +172,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testStarting()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertTrue(stateMachine.transitionToStarting());
@@ -197,6 +201,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testRunning()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertTrue(stateMachine.transitionToRunning());
@@ -223,6 +228,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testFinished()
+            throws InterruptedException
     {
         QueryStateMachine stateMachine = createQueryStateMachine();
         assertTrue(stateMachine.transitionToFinishing());
@@ -248,6 +254,7 @@ public class TestQueryStateMachine
 
     @Test
     public void testPlanningTimeDuration()
+            throws InterruptedException
     {
         TestingTicker mockTicker = new TestingTicker();
         QueryStateMachine stateMachine = createQueryStateMachineWithTicker(mockTicker);

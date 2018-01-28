@@ -4,14 +4,9 @@ select
   table_schema,
   table_name,
   column_name,
-  data_type,
-  is_nullable,
+  ordinal_position,
   column_default,
+  is_nullable,
+  data_type,
   comment
 from SYSTEM.information_schema.columns
-where table_schema <> 'jdbc'
-order by
-  table_catalog,
-  table_schema,
-  table_name,
-  ordinal_position

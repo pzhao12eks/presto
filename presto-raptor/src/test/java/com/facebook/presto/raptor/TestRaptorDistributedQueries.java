@@ -23,6 +23,7 @@ public class TestRaptorDistributedQueries
 {
     @SuppressWarnings("unused")
     public TestRaptorDistributedQueries()
+            throws Exception
     {
         this(() -> createRaptorQueryRunner(ImmutableMap.of(), true, false));
     }

@@ -25,6 +25,7 @@ public class TestBooleanOperators
 {
     @Test
     public void testLiteral()
+            throws Exception
     {
         assertFunction("true", BOOLEAN, true);
         assertFunction("false", BOOLEAN, false);
@@ -32,6 +33,7 @@ public class TestBooleanOperators
 
     @Test
     public void testTypeConstructor()
+            throws Exception
     {
         assertFunction("BOOLEAN 'true'", BOOLEAN, true);
         assertFunction("BOOLEAN 'false'", BOOLEAN, false);
@@ -39,6 +41,7 @@ public class TestBooleanOperators
 
     @Test
     public void testEqual()
+            throws Exception
     {
         assertFunction("true = true", BOOLEAN, true);
         assertFunction("true = false", BOOLEAN, false);
@@ -48,6 +51,7 @@ public class TestBooleanOperators
 
     @Test
     public void testNotEqual()
+            throws Exception
     {
         assertFunction("true <> true", BOOLEAN, false);
         assertFunction("true <> false", BOOLEAN, true);
@@ -57,6 +61,7 @@ public class TestBooleanOperators
 
     @Test
     public void testLessThan()
+            throws Exception
     {
         assertFunction("true < true", BOOLEAN, false);
         assertFunction("true < false", BOOLEAN, false);
@@ -66,6 +71,7 @@ public class TestBooleanOperators
 
     @Test
     public void testLessThanOrEqual()
+            throws Exception
     {
         assertFunction("true <= true", BOOLEAN, true);
         assertFunction("true <= false", BOOLEAN, false);
@@ -75,6 +81,7 @@ public class TestBooleanOperators
 
     @Test
     public void testGreaterThan()
+            throws Exception
     {
         assertFunction("true > true", BOOLEAN, false);
         assertFunction("true > false", BOOLEAN, true);
@@ -84,6 +91,7 @@ public class TestBooleanOperators
 
     @Test
     public void testGreaterThanOrEqual()
+            throws Exception
     {
         assertFunction("true >= true", BOOLEAN, true);
         assertFunction("true >= false", BOOLEAN, true);
@@ -93,6 +101,7 @@ public class TestBooleanOperators
 
     @Test
     public void testBetween()
+            throws Exception
     {
         assertFunction("true BETWEEN true AND true", BOOLEAN, true);
         assertFunction("true BETWEEN true AND false", BOOLEAN, false);
@@ -106,6 +115,7 @@ public class TestBooleanOperators
 
     @Test
     public void testCastToReal()
+            throws Exception
     {
         assertFunction("cast(true as real)", REAL, 1.0f);
         assertFunction("cast(false as real)", REAL, 0.0f);
@@ -113,6 +123,7 @@ public class TestBooleanOperators
 
     @Test
     public void testCastToVarchar()
+            throws Exception
     {
         assertFunction("cast(true as varchar)", VARCHAR, "true");
         assertFunction("cast(false as varchar)", VARCHAR, "false");
@@ -120,6 +131,7 @@ public class TestBooleanOperators
 
     @Test
     public void testCastFromVarchar()
+            throws Exception
     {
         assertFunction("cast('true' as boolean)", BOOLEAN, true);
         assertFunction("cast('false' as boolean)", BOOLEAN, false);
@@ -127,6 +139,7 @@ public class TestBooleanOperators
 
     @Test
     public void testIsDistinctFrom()
+            throws Exception
     {
         assertFunction("CAST(NULL AS BOOLEAN) IS DISTINCT FROM CAST(NULL AS BOOLEAN)", BOOLEAN, false);
         assertFunction("FALSE IS DISTINCT FROM FALSE", BOOLEAN, false);

@@ -22,14 +22,12 @@ public class AggregationHeader
     private final String name;
     private final Optional<String> description;
     private final boolean decomposable;
-    private final boolean orderSensitive;
 
-    public AggregationHeader(String name, Optional<String> description, boolean decomposable, boolean orderSensitive)
+    public AggregationHeader(String name, Optional<String> description, boolean decomposable)
     {
         this.name = requireNonNull(name, "name cannot be null");
         this.description = requireNonNull(description, "description cannot be null");
         this.decomposable = decomposable;
-        this.orderSensitive = orderSensitive;
     }
 
     public String getName()
@@ -45,10 +43,5 @@ public class AggregationHeader
     public boolean isDecomposable()
     {
         return decomposable;
-    }
-
-    public boolean isOrderSensitive()
-    {
-        return orderSensitive;
     }
 }

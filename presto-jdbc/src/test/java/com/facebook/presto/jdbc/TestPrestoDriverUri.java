@@ -154,6 +154,14 @@ public class TestPrestoDriverUri
     }
 
     @Test
+    public void testUriWithSslPortDoesNotUseSsl()
+            throws SQLException
+    {
+        PrestoDriverUri parameters = createDriverUri("presto://somelocalhost:443/blackhole");
+        assertUriPortScheme(parameters, 443, "http");
+    }
+
+    @Test
     public void testUriWithSslDisabled()
             throws SQLException
     {
@@ -171,22 +179,6 @@ public class TestPrestoDriverUri
         Properties properties = parameters.getProperties();
         assertNull(properties.getProperty(SSL_TRUST_STORE_PATH.getKey()));
         assertNull(properties.getProperty(SSL_TRUST_STORE_PASSWORD.getKey()));
-    }
-
-    @Test
-    public void testUriWithSslDisabledUsing443()
-            throws SQLException
-    {
-        PrestoDriverUri parameters = createDriverUri("presto://localhost:443/blackhole?SSL=false");
-        assertUriPortScheme(parameters, 443, "http");
-    }
-
-    @Test
-    public void testUriWithSslEnabledUsing443()
-            throws SQLException
-    {
-        PrestoDriverUri parameters = createDriverUri("presto://localhost:443/blackhole");
-        assertUriPortScheme(parameters, 443, "https");
     }
 
     @Test

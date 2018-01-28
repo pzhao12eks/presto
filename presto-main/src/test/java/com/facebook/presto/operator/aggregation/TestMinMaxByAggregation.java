@@ -112,6 +112,7 @@ public class TestMinMaxByAggregation
 
     @Test
     public void testMinDoubleDouble()
+            throws Exception
     {
         InternalAggregationFunction function = METADATA.getFunctionRegistry().getAggregateFunctionImplementation(
                 new Signature("min_by", AGGREGATE, parseTypeSignature(StandardTypes.DOUBLE), parseTypeSignature(StandardTypes.DOUBLE), parseTypeSignature(StandardTypes.DOUBLE)));

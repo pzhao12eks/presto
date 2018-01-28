@@ -17,14 +17,12 @@ import com.facebook.presto.orc.OrcCorruptionException;
 import com.facebook.presto.orc.OrcDataSourceId;
 import com.facebook.presto.orc.metadata.PostScript.HiveWriterVersion;
 import com.facebook.presto.orc.metadata.statistics.HiveBloomFilter;
-import com.facebook.presto.spi.PrestoException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Throwables.propagateIfPossible;
 import static java.util.Objects.requireNonNull;
 
 public class ExceptionWrappingMetadataReader
@@ -48,7 +46,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readPostScript(data, offset, length);
         }
         catch (IOException | RuntimeException e) {
-            throw propagate(e, "Invalid postscript");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid postscript");
         }
     }
 
@@ -60,7 +58,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readMetadata(hiveWriterVersion, inputStream);
         }
         catch (IOException | RuntimeException e) {
-            throw propagate(e, "Invalid file metadata");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid file metadata");
         }
     }
 
@@ -72,7 +70,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readFooter(hiveWriterVersion, inputStream);
         }
         catch (IOException | RuntimeException e) {
-            throw propagate(e, "Invalid file footer");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid file footer");
         }
     }
 
@@ -84,7 +82,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readStripeFooter(types, inputStream);
         }
         catch (IOException e) {
-            throw propagate(e, "Invalid stripe footer");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid stripe footer");
         }
     }
 
@@ -96,7 +94,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readRowIndexes(hiveWriterVersion, inputStream);
         }
         catch (IOException | RuntimeException e) {
-            throw propagate(e, "Invalid stripe row index");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid stripe row index");
         }
     }
 
@@ -108,13 +106,7 @@ public class ExceptionWrappingMetadataReader
             return delegate.readBloomFilterIndexes(inputStream);
         }
         catch (IOException | RuntimeException e) {
-            throw propagate(e, "Invalid bloom filter");
+            throw new OrcCorruptionException(e, orcDataSourceId, "Invalid bloom filter");
         }
-    }
-
-    private OrcCorruptionException propagate(Throwable throwable, String message)
-    {
-        propagateIfPossible(throwable, PrestoException.class);
-        return new OrcCorruptionException(throwable, orcDataSourceId, message);
     }
 }

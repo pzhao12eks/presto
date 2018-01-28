@@ -21,6 +21,7 @@ public class TestThriftDistributedQueries
         extends AbstractTestQueries
 {
     public TestThriftDistributedQueries()
+            throws Exception
     {
         super(() -> createThriftQueryRunner(3, 3, false));
     }

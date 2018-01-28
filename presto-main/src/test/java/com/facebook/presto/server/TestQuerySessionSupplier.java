@@ -66,6 +66,7 @@ public class TestQuerySessionSupplier
 
     @Test
     public void testCreateSession()
+            throws Exception
     {
         HttpRequestSessionContext context = new HttpRequestSessionContext(TEST_REQUEST);
         QuerySessionSupplier sessionSupplier = new QuerySessionSupplier(
@@ -97,6 +98,7 @@ public class TestQuerySessionSupplier
 
     @Test
     public void testApplySessionPropertyConfigurationManager()
+            throws Exception
     {
         HttpRequestSessionContext context = new HttpRequestSessionContext(TEST_REQUEST);
         QuerySessionSupplier sessionSupplier = new QuerySessionSupplier(
@@ -142,6 +144,7 @@ public class TestQuerySessionSupplier
 
     @Test(expectedExceptions = PrestoException.class)
     public void testInvalidTimeZone()
+            throws Exception
     {
         HttpServletRequest request = new MockHttpServletRequest(
                 ImmutableListMultimap.<String, String>builder()

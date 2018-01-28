@@ -101,6 +101,7 @@ public class TestRaptorMetadata
 
     @BeforeMethod
     public void setupDatabase()
+            throws Exception
     {
         TypeRegistry typeRegistry = new TypeRegistry();
         dbi = new DBI("jdbc:h2:mem:test" + System.nanoTime());
@@ -124,6 +125,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testRenameColumn()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, getOrdersTable(), false);
@@ -141,6 +143,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testDropColumn()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, buildTable(ImmutableMap.of(), tableMetadataBuilder(DEFAULT_TEST_ORDERS)
@@ -159,6 +162,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testDropColumnDisallowed()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         Map<String, Object> properties = ImmutableMap.of(
@@ -200,6 +204,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testRenameTable()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, getOrdersTable(), false);
@@ -242,6 +247,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTableProperties()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -275,6 +281,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTablePropertiesWithOrganization()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -429,6 +436,7 @@ public class TestRaptorMetadata
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "Ordering column does not exist: orderdatefoo")
     public void testInvalidOrderingColumns()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -439,6 +447,7 @@ public class TestRaptorMetadata
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "Temporal column does not exist: foo")
     public void testInvalidTemporalColumn()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -449,6 +458,7 @@ public class TestRaptorMetadata
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "Temporal column must be of type timestamp or date: orderkey")
     public void testInvalidTemporalColumnType()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, getOrdersTable(ImmutableMap.of(TEMPORAL_COLUMN_PROPERTY, "orderkey")), false);
@@ -456,6 +466,7 @@ public class TestRaptorMetadata
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "Table with temporal columns cannot be organized")
     public void testInvalidTemporalOrganization()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, getOrdersTable(ImmutableMap.of(
@@ -466,6 +477,7 @@ public class TestRaptorMetadata
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "Table organization requires an ordering")
     public void testInvalidOrderingOrganization()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
         metadata.createTable(SESSION, getOrdersTable(ImmutableMap.of(ORGANIZED_PROPERTY, true)), false);
@@ -473,6 +485,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testSortOrderProperty()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -500,6 +513,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTemporalColumn()
+            throws Exception
     {
         assertNull(metadata.getTableHandle(SESSION, DEFAULT_TEST_ORDERS));
 
@@ -553,6 +567,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTableIdentity()
+            throws Exception
     {
         // Test TableIdentity round trip.
         metadata.createTable(SESSION, getOrdersTable(), false);
@@ -574,6 +589,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testColumnIdentity()
+            throws Exception
     {
         // Test ColumnIdentity round trip.
         metadata.createTable(SESSION, getOrdersTable(), false);
@@ -659,6 +675,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTransactionSelect()
+            throws Exception
     {
         metadata.createTable(SESSION, getOrdersTable(), false);
 
@@ -670,6 +687,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTransactionTableWrite()
+            throws Exception
     {
         // start table creation
         long transactionId = 1;
@@ -687,6 +705,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTransactionInsert()
+            throws Exception
     {
         // creating a table allocates a transaction
         long transactionId = 1;
@@ -710,6 +729,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTransactionDelete()
+            throws Exception
     {
         // creating a table allocates a transaction
         long transactionId = 1;
@@ -752,6 +772,7 @@ public class TestRaptorMetadata
 
     @Test
     public void testTransactionAbort()
+            throws Exception
     {
         // start table creation
         long transactionId = 1;

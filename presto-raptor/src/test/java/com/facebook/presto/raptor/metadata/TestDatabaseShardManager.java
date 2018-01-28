@@ -122,6 +122,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testCommit()
+            throws Exception
     {
         long tableId = createTable("test");
 
@@ -241,6 +242,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testGetNodeTableShards()
+            throws Exception
     {
         long tableId = createTable("test");
         List<ColumnInfo> columns = ImmutableList.of(new ColumnInfo(1, BIGINT));
@@ -269,6 +271,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testGetExistingShards()
+            throws Exception
     {
         long tableId = createTable("test");
         UUID shard1 = UUID.randomUUID();
@@ -287,6 +290,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testReplaceShardUuids()
+            throws Exception
     {
         long tableId = createTable("test");
         List<ColumnInfo> columns = ImmutableList.of(new ColumnInfo(1, BIGINT));
@@ -348,6 +352,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testExternalBatches()
+            throws Exception
     {
         long tableId = createTable("test");
         Optional<String> externalBatchId = Optional.of("foo");
@@ -436,6 +441,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testTemporalColumnTableCreation()
+            throws Exception
     {
         long tableId = createTable("test");
         List<ColumnInfo> columns = ImmutableList.of(new ColumnInfo(1, TIMESTAMP));
@@ -448,6 +454,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testShardPruning()
+            throws Exception
     {
         ShardInfo shard1 = shardInfo(
                 UUID.randomUUID(),
@@ -578,6 +585,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testShardPruningTruncatedValues()
+            throws Exception
     {
         String prefix = repeat("x", MAX_BINARY_INDEX_SIZE);
 
@@ -617,6 +625,7 @@ public class TestDatabaseShardManager
 
     @Test
     public void testShardPruningNoStats()
+            throws Exception
     {
         ShardInfo shard = shardInfo(UUID.randomUUID(), "node");
         List<ShardInfo> shards = ImmutableList.of(shard);

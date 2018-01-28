@@ -81,6 +81,7 @@ public class TestShardCompactor
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
         IDBI dbi = new DBI("jdbc:h2:mem:test" + System.nanoTime());

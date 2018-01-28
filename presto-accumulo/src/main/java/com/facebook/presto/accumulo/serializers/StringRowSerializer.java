@@ -22,6 +22,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -61,7 +62,7 @@ public class StringRowSerializer
     private final Text qualifier = new Text();
     private final Text value = new Text();
 
-    private boolean rowOnly;
+    private boolean rowOnly = false;
     private String rowIdName;
 
     @Override
@@ -97,6 +98,7 @@ public class StringRowSerializer
 
     @Override
     public void deserialize(Entry<Key, Value> entry)
+            throws IOException
     {
         if (!columnValues.containsKey(rowIdName)) {
             entry.getKey().getRow(rowId);

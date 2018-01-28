@@ -22,6 +22,7 @@ public class TestPartitionOfflineException
 {
     @Test
     public void testMessage()
+            throws Exception
     {
         assertMessage(new SchemaTableName("schema", "table"), "pk=1", false, "", "Table 'schema.table' partition 'pk=1' is offline");
         assertMessage(new SchemaTableName("schema", "table"), "pk=1", false, null, "Table 'schema.table' partition 'pk=1' is offline");

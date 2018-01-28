@@ -42,12 +42,14 @@ public class TestAsyncQueue
 
     @BeforeClass
     public void setUpClass()
+            throws Exception
     {
         executor = Executors.newFixedThreadPool(8, Threads.daemonThreadsNamed("test-async-queue-%s"));
     }
 
     @AfterClass
     public void tearDownClass()
+            throws Exception
     {
         executor.shutdownNow();
     }

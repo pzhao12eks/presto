@@ -254,6 +254,7 @@ public class TestTypeRegistry
 
     @Test
     public void testCoerceTypeBase()
+            throws Exception
     {
         assertEquals(typeRegistry.coerceTypeBase(createDecimalType(21, 1), "decimal"), Optional.of(createDecimalType(21, 1)));
         assertEquals(typeRegistry.coerceTypeBase(BIGINT, "decimal"), Optional.of(createDecimalType(19, 0)));
@@ -264,6 +265,7 @@ public class TestTypeRegistry
 
     @Test
     public void testCanCoerceIsTransitive()
+            throws Exception
     {
         Set<Type> types = getStandardPrimitiveTypes();
         for (Type transitiveType : types) {

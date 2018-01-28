@@ -43,6 +43,7 @@ public class TestShardPredicate
 
     @Test
     public void testSimpleShardUuidPredicate()
+            throws Exception
     {
         String uuid = randomUUID().toString();
         TupleDomain<RaptorColumnHandle> tupleDomain = withColumnDomains(ImmutableMap.of(
@@ -57,6 +58,7 @@ public class TestShardPredicate
 
     @Test
     public void testDiscreteShardUuidPredicate()
+            throws Exception
     {
         Slice uuid0 = utf8Slice(randomUUID().toString());
         Slice uuid1 = utf8Slice(randomUUID().toString());
@@ -73,6 +75,7 @@ public class TestShardPredicate
 
     @Test
     public void testInvalidUuid()
+            throws Exception
     {
         Slice uuid0 = utf8Slice("test1");
         Slice uuid1 = utf8Slice("test2");
@@ -87,6 +90,7 @@ public class TestShardPredicate
 
     @Test
     public void testRangeShardUuidPredicate()
+            throws Exception
     {
         Slice uuid0 = utf8Slice(randomUUID().toString());
         TupleDomain<RaptorColumnHandle> tupleDomain = withColumnDomains(ImmutableMap.of(
@@ -99,6 +103,7 @@ public class TestShardPredicate
 
     @Test
     public void testBucketNumber()
+            throws Exception
     {
         TupleDomain<RaptorColumnHandle> tupleDomain = withColumnDomains(ImmutableMap.of(
                 bucketNumberColumnHandle("test"),
@@ -110,6 +115,7 @@ public class TestShardPredicate
 
     @Test
     public void testBucketNumberForNonBucketed()
+            throws Exception
     {
         TupleDomain<RaptorColumnHandle> tupleDomain = withColumnDomains(ImmutableMap.of(
                 bucketNumberColumnHandle("test"),

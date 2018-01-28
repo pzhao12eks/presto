@@ -32,10 +32,9 @@ public final class InternalAggregationFunction
     private final Type intermediateType;
     private final Type finalType;
     private final boolean decomposable;
-    private final boolean orderSensitive;
     private final AccumulatorFactoryBinder factory;
 
-    public InternalAggregationFunction(String name, List<Type> parameterTypes, Type intermediateType, Type finalType, boolean decomposable, boolean orderSensitive, AccumulatorFactoryBinder factory)
+    public InternalAggregationFunction(String name, List<Type> parameterTypes, Type intermediateType, Type finalType, boolean decomposable, AccumulatorFactoryBinder factory)
     {
         this.name = requireNonNull(name, "name is null");
         checkArgument(!name.isEmpty(), "name is empty");
@@ -43,7 +42,6 @@ public final class InternalAggregationFunction
         this.intermediateType = requireNonNull(intermediateType, "intermediateType is null");
         this.finalType = requireNonNull(finalType, "finalType is null");
         this.decomposable = decomposable;
-        this.orderSensitive = orderSensitive;
         this.factory = requireNonNull(factory, "factory is null");
     }
 
@@ -73,14 +71,6 @@ public final class InternalAggregationFunction
     public boolean isDecomposable()
     {
         return decomposable;
-    }
-
-    /**
-     * Indicates that the aggregation is sensitive to input order
-     */
-    public boolean isOrderSensitive()
-    {
-        return orderSensitive;
     }
 
     public AccumulatorFactory bind(List<Integer> inputChannels, Optional<Integer> maskChannel)

@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -65,6 +66,7 @@ public class TestRealHistogramAggregation
 
     @Test
     public void test()
+            throws Exception
     {
         Accumulator singleStep = factory.createAccumulator();
         singleStep.addInput(input);
@@ -83,6 +85,7 @@ public class TestRealHistogramAggregation
 
     @Test
     public void testMerge()
+            throws Exception
     {
         Accumulator singleStep = factory.createAccumulator();
         singleStep.addInput(input);
@@ -105,6 +108,7 @@ public class TestRealHistogramAggregation
 
     @Test
     public void testNull()
+            throws Exception
     {
         Accumulator accumulator = factory.createAccumulator();
         Block result = getFinalBlock(accumulator);
@@ -122,6 +126,7 @@ public class TestRealHistogramAggregation
     }
 
     private static Map<Float, Float> extractSingleValue(Block block)
+            throws IOException
     {
         MapType mapType = mapType(REAL, REAL);
         return (Map<Float, Float>) mapType.getObjectValue(null, block, 0);

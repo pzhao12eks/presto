@@ -30,6 +30,7 @@ public class TestShardRange
 {
     @Test
     public void testEnclosesIsSymmetric()
+            throws Exception
     {
         List<Type> types = ImmutableList.of(BIGINT, VARCHAR, BOOLEAN, TIMESTAMP);
         ShardRange range = ShardRange.of(new Tuple(types, 2L, "aaa", true, 1L), new Tuple(types, 5L, "ccc", false, 2L));
@@ -38,6 +39,7 @@ public class TestShardRange
 
     @Test
     public void testEnclosingRange()
+            throws Exception
     {
         List<Type> types1 = ImmutableList.of(BIGINT);
         ShardRange range1 = ShardRange.of(new Tuple(types1, 2L), new Tuple(types1, 5L));
@@ -60,6 +62,7 @@ public class TestShardRange
 
     @Test
     public void testOverlapsIsSymmetric()
+            throws Exception
     {
         List<Type> types = ImmutableList.of(BIGINT, VARCHAR, BOOLEAN, TIMESTAMP);
         ShardRange range = ShardRange.of(new Tuple(types, 2L, "aaa", true, 1L), new Tuple(types, 5L, "ccc", false, 2L));
@@ -68,6 +71,7 @@ public class TestShardRange
 
     @Test
     public void testOverlappingRange()
+            throws Exception
     {
         List<Type> types1 = ImmutableList.of(BIGINT);
         ShardRange range1 = ShardRange.of(new Tuple(types1, 2L), new Tuple(types1, 5L));
@@ -93,6 +97,7 @@ public class TestShardRange
 
     @Test
     public void testAdjacentRange()
+            throws Exception
     {
         List<Type> types1 = ImmutableList.of(BIGINT);
         ShardRange range1 = ShardRange.of(new Tuple(types1, 2L), new Tuple(types1, 5L));

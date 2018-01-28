@@ -28,6 +28,7 @@ import com.facebook.presto.sql.planner.plan.ValuesNode;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.facebook.presto.sql.planner.optimizations.PlanNodeSearcher.searchFrom;
 import static com.facebook.presto.sql.planner.plan.SimplePlanRewriter.rewriteWith;
@@ -81,12 +82,12 @@ public class TransformCorrelatedSingleRowSubqueryToProject
                 return rewrittenLateral;
             }
 
-            List<ValuesNode> values = searchFrom(lateral.getSubquery())
+            Optional<ValuesNode> values = searchFrom(lateral.getSubquery())
                     .recurseOnlyWhen(ProjectNode.class::isInstance)
                     .where(ValuesNode.class::isInstance)
-                    .findAll();
+                    .findSingle();
 
-            if (values.size() != 1 || !isSingleRowValuesWithNoColumns(values.get(0))) {
+            if (!values.isPresent() || !isSingleRowValuesWithNoColumns(values.get())) {
                 return rewrittenLateral;
             }
 

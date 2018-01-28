@@ -42,12 +42,14 @@ public class TestPrioritizedFifoExecutor
 
     @BeforeMethod
     public void setUp()
+            throws Exception
     {
         executor = newCachedThreadPool();
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         executor.shutdownNow();
     }
@@ -103,12 +105,14 @@ public class TestPrioritizedFifoExecutor
 
     @Test
     public void testSingleThreadBound()
+            throws Exception
     {
         testBound(1, 100_000);
     }
 
     @Test
     public void testDoubleThreadBound()
+            throws Exception
     {
         testBound(2, 100_000);
     }

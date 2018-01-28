@@ -65,8 +65,8 @@ public class MergingPageOutput
     private final int minRowCount;
 
     @Nullable
-    private PageProcessorOutput currentInput;
-    private boolean finishing;
+    private PageProcessorOutput currentInput = null;
+    private boolean finishing = false;
 
     public MergingPageOutput(Iterable<? extends Type> types, long minPageSizeInBytes, int minRowCount)
     {

@@ -19,87 +19,88 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import javax.net.ssl.SSLContext;
-
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
-import java.util.Optional;
-
-import static java.net.Proxy.Type.SOCKS;
+import java.net.SocketAddress;
 
 public final class Transport
 {
-    public static TTransport create(
-            HostAndPort address,
-            Optional<SSLContext> sslContext,
-            Optional<HostAndPort> socksProxy,
-            int timeoutMillis,
-            HiveMetastoreAuthentication authentication)
+    public static TTransport create(String host, int port, HostAndPort socksProxy, int timeoutMillis, HiveMetastoreAuthentication authentication)
             throws TTransportException
     {
         try {
-            TTransport rawTransport = createRaw(address, sslContext, socksProxy, timeoutMillis);
-            TTransport authenticatedTransport = authentication.authenticate(rawTransport, address.getHost());
+            TTransport rawTransport = createRaw(host, port, socksProxy, timeoutMillis);
+            TTransport authenticatedTransport = authentication.authenticate(rawTransport, host);
             if (!authenticatedTransport.isOpen()) {
                 authenticatedTransport.open();
             }
-            return new TTransportWrapper(authenticatedTransport, address);
+            return new TTransportWrapper(authenticatedTransport, host);
         }
         catch (TTransportException e) {
-            throw rewriteException(e, address);
+            throw rewriteException(e, host);
         }
     }
 
     private Transport() {}
 
-    private static TTransport createRaw(HostAndPort address, Optional<SSLContext> sslContext, Optional<HostAndPort> socksProxy, int timeoutMillis)
+    private static TTransport createRaw(String host, int port, HostAndPort socksProxy, int timeoutMillis)
             throws TTransportException
     {
-        Proxy proxy = socksProxy
-                .map(socksAddress -> new Proxy(SOCKS, InetSocketAddress.createUnresolved(socksAddress.getHost(), socksAddress.getPort())))
-                .orElse(Proxy.NO_PROXY);
-
-        Socket socket = new Socket(proxy);
-        try {
-            socket.connect(new InetSocketAddress(address.getHost(), address.getPort()), timeoutMillis);
-
-            if (sslContext.isPresent()) {
-                // SSL will connect to the SOCKS address when present
-                HostAndPort sslConnectAddress = socksProxy.orElse(address);
-
-                socket = sslContext.get().getSocketFactory().createSocket(socket, sslConnectAddress.getHost(), sslConnectAddress.getPort(), true);
-            }
-            return new TSocket(socket);
+        if (socksProxy == null) {
+            return new TSocket(host, port, timeoutMillis);
         }
-        catch (Throwable t) {
-            // something went wrong, close the socket and rethrow
+
+        Socket socks = createSocksSocket(socksProxy);
+        try {
             try {
-                socket.close();
+                socks.connect(InetSocketAddress.createUnresolved(host, port), timeoutMillis);
+                socks.setSoTimeout(timeoutMillis);
+                return new TSocket(socks);
             }
-            catch (IOException e) {
-                t.addSuppressed(e);
+            catch (Throwable t) {
+                closeQuietly(socks);
+                throw t;
             }
-            throw new TTransportException(t);
+        }
+        catch (IOException e) {
+            throw new TTransportException(e);
         }
     }
 
-    private static TTransportException rewriteException(TTransportException e, HostAndPort address)
+    private static void closeQuietly(Closeable closeable)
     {
-        return new TTransportException(e.getType(), String.format("%s: %s", address, e.getMessage()), e.getCause());
+        try {
+            closeable.close();
+        }
+        catch (IOException e) {
+            // ignored
+        }
+    }
+
+    private static Socket createSocksSocket(HostAndPort proxy)
+    {
+        SocketAddress address = InetSocketAddress.createUnresolved(proxy.getHost(), proxy.getPort());
+        return new Socket(new Proxy(Proxy.Type.SOCKS, address));
+    }
+
+    private static TTransportException rewriteException(TTransportException e, String host)
+    {
+        return new TTransportException(e.getType(), String.format("%s: %s", host, e.getMessage()), e.getCause());
     }
 
     private static class TTransportWrapper
             extends TTransport
     {
         private final TTransport transport;
-        private final HostAndPort address;
+        private final String host;
 
-        TTransportWrapper(TTransport transport, HostAndPort address)
+        TTransportWrapper(TTransport transport, String host)
         {
             this.transport = transport;
-            this.address = address;
+            this.host = host;
         }
 
         @Override
@@ -152,7 +153,7 @@ public final class Transport
                 transport.open();
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
 
@@ -164,7 +165,7 @@ public final class Transport
                 return transport.readAll(bytes, off, len);
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
 
@@ -176,7 +177,7 @@ public final class Transport
                 return transport.read(bytes, off, len);
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
 
@@ -188,7 +189,7 @@ public final class Transport
                 transport.write(bytes);
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
 
@@ -200,7 +201,7 @@ public final class Transport
                 transport.write(bytes, off, len);
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
 
@@ -212,7 +213,7 @@ public final class Transport
                 transport.flush();
             }
             catch (TTransportException e) {
-                throw rewriteException(e, address);
+                throw rewriteException(e, host);
             }
         }
     }

@@ -34,6 +34,7 @@ public class TestTuple
 {
     @Test
     public void testComparableTuple()
+            throws Exception
     {
         List<Type> types = ImmutableList.of(BIGINT, VARCHAR, BOOLEAN, DOUBLE, DATE, TIMESTAMP);
 
@@ -49,6 +50,7 @@ public class TestTuple
 
     @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "types must be the same")
     public void testMismatchedTypes()
+            throws Exception
     {
         List<Type> types1 = ImmutableList.of(createVarcharType(3));
         List<Type> types2 = ImmutableList.of(createVarcharType(4));

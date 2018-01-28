@@ -20,6 +20,9 @@ import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.type.Type;
+import com.google.common.primitives.Ints;
+
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -61,7 +64,9 @@ public class InputPageProjection
 
         Block result;
         if (selectedPositions.isList()) {
-            result = block.copyPositions(selectedPositions.getPositions(), selectedPositions.getOffset(), selectedPositions.size());
+            List<Integer> positionList = Ints.asList(selectedPositions.getPositions())
+                    .subList(selectedPositions.getOffset(), selectedPositions.getOffset() + selectedPositions.size());
+            result = block.copyPositions(positionList);
         }
         else {
             result = block.getRegion(selectedPositions.getOffset(), selectedPositions.size());

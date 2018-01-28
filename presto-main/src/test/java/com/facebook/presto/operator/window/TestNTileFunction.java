@@ -25,6 +25,7 @@ public class TestNTileFunction
 {
     @Test
     public void testNTile()
+            throws Exception
     {
         assertWindowQuery("ntile(4) OVER (ORDER BY orderkey)",
                 resultBuilder(TEST_SESSION, BIGINT, VARCHAR, BIGINT)

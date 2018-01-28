@@ -87,6 +87,7 @@ public class TestAggregationOperator
 
     @Test
     public void testAggregation()
+            throws Exception
     {
         MetadataManager metadata = MetadataManager.createTestMetadataManager();
         InternalAggregationFunction countVarcharColumn = metadata.getFunctionRegistry().getAggregateFunctionImplementation(

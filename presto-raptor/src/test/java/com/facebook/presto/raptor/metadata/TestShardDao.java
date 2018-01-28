@@ -46,6 +46,7 @@ public class TestShardDao
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         dbi = new DBI("jdbc:h2:mem:test" + System.nanoTime());
         dummyHandle = dbi.open();
@@ -82,6 +83,7 @@ public class TestShardDao
 
     @Test
     public void testInsertCreatedShard()
+            throws Exception
     {
         long transactionId = dao.insertTransaction();
         dao.insertCreatedShard(UUID.randomUUID(), transactionId);
@@ -90,6 +92,7 @@ public class TestShardDao
 
     @Test
     public void testInsertDeletedShards()
+            throws Exception
     {
         dao.insertDeletedShards(ImmutableList.of(UUID.randomUUID(), UUID.randomUUID()));
         dao.insertDeletedShards(0);
@@ -97,6 +100,7 @@ public class TestShardDao
 
     @Test
     public void testNodeInsert()
+            throws Exception
     {
         assertEquals(dao.getAllNodesInUse(), ImmutableSet.of());
 
@@ -127,6 +131,7 @@ public class TestShardDao
 
     @Test
     public void testInsertShardNodeUsingShardUuid()
+            throws Exception
     {
         int nodeId = dao.insertNode("node");
 
@@ -141,6 +146,7 @@ public class TestShardDao
 
     @Test
     public void testNodeShards()
+            throws Exception
     {
         assertEquals(dao.getAllNodesInUse(), ImmutableSet.of());
 
@@ -221,6 +227,7 @@ public class TestShardDao
 
     @Test
     public void testShardSelection()
+            throws Exception
     {
         assertEquals(dao.getAllNodesInUse(), ImmutableSet.of());
 

@@ -17,7 +17,6 @@ import com.facebook.presto.connector.ConnectorId;
 import com.facebook.presto.metadata.FunctionKind;
 import com.facebook.presto.metadata.Signature;
 import com.facebook.presto.metadata.TableHandle;
-import com.facebook.presto.metadata.TableLayoutHandle;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.block.SortOrder;
 import com.facebook.presto.spi.predicate.Domain;
@@ -48,10 +47,8 @@ import com.facebook.presto.sql.tree.GenericLiteral;
 import com.facebook.presto.sql.tree.IsNullPredicate;
 import com.facebook.presto.sql.tree.LongLiteral;
 import com.facebook.presto.sql.tree.QualifiedName;
-import com.facebook.presto.testing.TestingHandle;
 import com.facebook.presto.testing.TestingMetadata.TestingColumnHandle;
 import com.facebook.presto.testing.TestingMetadata.TestingTableHandle;
-import com.facebook.presto.testing.TestingTransactionHandle;
 import com.facebook.presto.type.UnknownType;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
@@ -87,10 +84,6 @@ import static org.testng.Assert.assertEquals;
 public class TestEffectivePredicateExtractor
 {
     private static final TableHandle DUAL_TABLE_HANDLE = new TableHandle(new ConnectorId("test"), new TestingTableHandle());
-    private static final TableLayoutHandle TESTING_TABLE_LAYOUT = new TableLayoutHandle(
-            new ConnectorId("x"),
-            TestingTransactionHandle.create(),
-            TestingHandle.INSTANCE);
 
     private static final Symbol A = new Symbol("a");
     private static final Symbol B = new Symbol("b");
@@ -113,6 +106,7 @@ public class TestEffectivePredicateExtractor
 
     @BeforeMethod
     public void setUp()
+            throws Exception
     {
         scanAssignments = ImmutableMap.<Symbol, ColumnHandle>builder()
                 .put(A, new TestingColumnHandle("a"))
@@ -138,6 +132,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testAggregation()
+            throws Exception
     {
         PlanNode node = new AggregationNode(newId(),
                 filter(baseTableScan,
@@ -149,9 +144,8 @@ public class TestEffectivePredicateExtractor
                                 lessThan(CE, DE),
                                 greaterThan(AE, bigintLiteral(2)),
                                 equals(EE, FE))),
-                ImmutableMap.of(
-                        C, new Aggregation(fakeFunction(), fakeFunctionHandle("test", AGGREGATE), Optional.empty()),
-                        D, new Aggregation(fakeFunction(), fakeFunctionHandle("test", AGGREGATE), Optional.empty())),
+                ImmutableMap.of(C, new Aggregation(fakeFunction(), fakeFunctionHandle("test", AGGREGATE), Optional.empty(), ImmutableList.of(), ImmutableList.of()),
+                                D, new Aggregation(fakeFunction(), fakeFunctionHandle("test", AGGREGATE), Optional.empty(), ImmutableList.of(), ImmutableList.of())),
                 ImmutableList.of(ImmutableList.of(A, B, C)),
                 AggregationNode.Step.FINAL,
                 Optional.empty(),
@@ -170,6 +164,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testGroupByEmpty()
+            throws Exception
     {
         PlanNode node = new AggregationNode(
                 newId(),
@@ -187,6 +182,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testFilter()
+            throws Exception
     {
         PlanNode node = filter(baseTableScan,
                 and(
@@ -202,6 +198,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testProject()
+            throws Exception
     {
         PlanNode node = new ProjectNode(newId(),
                 filter(baseTableScan,
@@ -222,6 +219,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testTopN()
+            throws Exception
     {
         PlanNode node = new TopNNode(newId(),
                 filter(baseTableScan,
@@ -243,6 +241,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testLimit()
+            throws Exception
     {
         PlanNode node = new LimitNode(newId(),
                 filter(baseTableScan,
@@ -265,6 +264,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testSort()
+            throws Exception
     {
         PlanNode node = new SortNode(newId(),
                 filter(baseTableScan,
@@ -286,6 +286,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testWindow()
+            throws Exception
     {
         PlanNode node = new WindowNode(newId(),
                 filter(baseTableScan,
@@ -314,6 +315,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testTableScan()
+            throws Exception
     {
         // Effective predicate is True if there is no effective predicate
         Map<Symbol, ColumnHandle> assignments = Maps.filterKeys(scanAssignments, Predicates.in(ImmutableList.of(A, B, C, D)));
@@ -333,7 +335,7 @@ public class TestEffectivePredicateExtractor
                 DUAL_TABLE_HANDLE,
                 ImmutableList.copyOf(assignments.keySet()),
                 assignments,
-                Optional.of(TESTING_TABLE_LAYOUT),
+                Optional.empty(),
                 TupleDomain.none(),
                 null);
         effectivePredicate = EffectivePredicateExtractor.extract(node);
@@ -344,7 +346,7 @@ public class TestEffectivePredicateExtractor
                 DUAL_TABLE_HANDLE,
                 ImmutableList.copyOf(assignments.keySet()),
                 assignments,
-                Optional.of(TESTING_TABLE_LAYOUT),
+                Optional.empty(),
                 TupleDomain.withColumnDomains(ImmutableMap.of(scanAssignments.get(A), Domain.singleValue(BIGINT, 1L))),
                 null);
         effectivePredicate = EffectivePredicateExtractor.extract(node);
@@ -355,7 +357,7 @@ public class TestEffectivePredicateExtractor
                 DUAL_TABLE_HANDLE,
                 ImmutableList.copyOf(assignments.keySet()),
                 assignments,
-                Optional.of(TESTING_TABLE_LAYOUT),
+                Optional.empty(),
                 TupleDomain.withColumnDomains(ImmutableMap.of(
                         scanAssignments.get(A), Domain.singleValue(BIGINT, 1L),
                         scanAssignments.get(B), Domain.singleValue(BIGINT, 2L))),
@@ -377,6 +379,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testUnion()
+            throws Exception
     {
         ImmutableListMultimap<Symbol, Symbol> symbolMapping = ImmutableListMultimap.of(A, B, A, C, A, E);
         PlanNode node = new UnionNode(newId(),
@@ -396,6 +399,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testInnerJoin()
+            throws Exception
     {
         ImmutableList.Builder<JoinNode.EquiJoinClause> criteriaBuilder = ImmutableList.builder();
         criteriaBuilder.add(new JoinNode.EquiJoinClause(A, D));
@@ -460,6 +464,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testLeftJoin()
+            throws Exception
     {
         ImmutableList.Builder<JoinNode.EquiJoinClause> criteriaBuilder = ImmutableList.builder();
         criteriaBuilder.add(new JoinNode.EquiJoinClause(A, D));
@@ -523,6 +528,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testLeftJoinWithFalseInner()
+            throws Exception
     {
         List<JoinNode.EquiJoinClause> criteria = ImmutableList.of(new JoinNode.EquiJoinClause(A, D));
 
@@ -577,6 +583,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testRightJoin()
+            throws Exception
     {
         ImmutableList.Builder<JoinNode.EquiJoinClause> criteriaBuilder = ImmutableList.builder();
         criteriaBuilder.add(new JoinNode.EquiJoinClause(A, D));
@@ -640,6 +647,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testRightJoinWithFalseInner()
+            throws Exception
     {
         List<JoinNode.EquiJoinClause> criteria = ImmutableList.of(new JoinNode.EquiJoinClause(A, D));
 
@@ -693,6 +701,7 @@ public class TestEffectivePredicateExtractor
 
     @Test
     public void testSemiJoin()
+            throws Exception
     {
         PlanNode node = new SemiJoinNode(newId(),
                 filter(baseTableScan, and(greaterThan(AE, bigintLiteral(10)), lessThan(AE, bigintLiteral(100)))),

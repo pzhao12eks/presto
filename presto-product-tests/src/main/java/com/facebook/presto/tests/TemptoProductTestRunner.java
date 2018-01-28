@@ -13,8 +13,9 @@
  */
 package com.facebook.presto.tests;
 
-import io.prestodb.tempto.runner.TemptoRunner;
-import io.prestodb.tempto.runner.TemptoRunnerCommandLineParser;
+import com.teradata.tempto.internal.configuration.TestConfigurationFactory;
+import com.teradata.tempto.runner.TemptoRunner;
+import com.teradata.tempto.runner.TemptoRunnerCommandLineParser;
 import org.joda.time.DateTimeZone;
 
 public class TemptoProductTestRunner
@@ -23,8 +24,10 @@ public class TemptoProductTestRunner
 
     public static void main(String[] args)
     {
-        TemptoRunnerCommandLineParser parser = TemptoRunnerCommandLineParser.builder("Presto product tests")
+        TemptoRunnerCommandLineParser parser = TemptoRunnerCommandLineParser
+                .builder("presto product tests")
                 .setTestsPackage("com.facebook.presto.tests.*", false)
+                .setConfigFile(TestConfigurationFactory.DEFAULT_TEST_CONFIGURATION_LOCATION, false)
                 .setExcludedGroups("quarantine", true)
                 .build();
         TemptoRunner.runTempto(parser, args);

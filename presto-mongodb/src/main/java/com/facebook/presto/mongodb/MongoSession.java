@@ -277,17 +277,17 @@ public class MongoSession
         List<Document> disjuncts = new ArrayList<>();
         for (Range range : domain.getValues().getRanges().getOrderedRanges()) {
             if (range.isSingleValue()) {
-                singleValues.add(translateValue(range.getSingleValue(), type));
+                singleValues.add(range.getSingleValue());
             }
             else {
                 Document rangeConjuncts = new Document();
                 if (!range.getLow().isLowerUnbounded()) {
                     switch (range.getLow().getBound()) {
                         case ABOVE:
-                            rangeConjuncts.put(GT_OP, translateValue(range.getLow().getValue(), type));
+                            rangeConjuncts.put(GT_OP, range.getLow().getValue());
                             break;
                         case EXACTLY:
-                            rangeConjuncts.put(GTE_OP, translateValue(range.getLow().getValue(), type));
+                            rangeConjuncts.put(GTE_OP, range.getLow().getValue());
                             break;
                         case BELOW:
                             throw new IllegalArgumentException("Low Marker should never use BELOW bound: " + range);
@@ -300,10 +300,10 @@ public class MongoSession
                         case ABOVE:
                             throw new IllegalArgumentException("High Marker should never use ABOVE bound: " + range);
                         case EXACTLY:
-                            rangeConjuncts.put(LTE_OP, translateValue(range.getHigh().getValue(), type));
+                            rangeConjuncts.put(LTE_OP, range.getHigh().getValue());
                             break;
                         case BELOW:
-                            rangeConjuncts.put(LT_OP, translateValue(range.getHigh().getValue(), type));
+                            rangeConjuncts.put(LT_OP, range.getHigh().getValue());
                             break;
                         default:
                             throw new AssertionError("Unhandled bound: " + range.getHigh().getBound());
@@ -317,10 +317,12 @@ public class MongoSession
 
         // Add back all of the possible single values either as an equality or an IN predicate
         if (singleValues.size() == 1) {
-            disjuncts.add(documentOf(EQ_OP, singleValues.get(0)));
+            disjuncts.add(documentOf(EQ_OP, translateValue(singleValues.get(0), type)));
         }
         else if (singleValues.size() > 1) {
-            disjuncts.add(documentOf(IN_OP, singleValues));
+            disjuncts.add(documentOf(IN_OP, singleValues.stream()
+                    .map(value -> translateValue(value, type))
+                    .collect(toList())));
         }
 
         if (domain.isNullAllowed()) {

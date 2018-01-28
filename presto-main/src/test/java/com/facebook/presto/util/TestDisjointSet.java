@@ -33,6 +33,7 @@ public class TestDisjointSet
 {
     @Test
     public void testInitial()
+            throws Exception
     {
         DisjointSet<Integer> disjoint = new DisjointSet<>();
 
@@ -45,6 +46,7 @@ public class TestDisjointSet
 
     @Test
     public void testMergeAllSequentially()
+            throws Exception
     {
         DisjointSet<Integer> disjoint = new DisjointSet<>();
 
@@ -72,6 +74,7 @@ public class TestDisjointSet
 
     @Test
     public void testMergeAllBackwardsSequentially()
+            throws Exception
     {
         DisjointSet<Integer> disjoint = new DisjointSet<>();
 
@@ -99,6 +102,7 @@ public class TestDisjointSet
 
     @Test
     public void testMergeFourGroups()
+            throws Exception
     {
         DisjointSet<Integer> disjoint = new DisjointSet<>();
 
@@ -128,6 +132,7 @@ public class TestDisjointSet
 
     @Test
     public void testMergeRandomly()
+            throws Exception
     {
         DisjointSet<Double> disjoint = new DisjointSet<>();
 

@@ -98,6 +98,7 @@ public class TestShardOrganizerUtil
 
     @Test
     public void testGetOrganizationEligibleShards()
+            throws Exception
     {
         int day1 = 1111;
         int day2 = 2222;

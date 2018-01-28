@@ -45,6 +45,7 @@ public class TestColumnarPageProcessor
 
     @Test
     public void testProcess()
+            throws Exception
     {
         Page page = createPage(types, false);
         Page outputPage = getOnlyElement(processor.process(SESSION, new DriverYieldSignal(), page)).orElseThrow(() -> new AssertionError("page is not present"));
@@ -53,6 +54,7 @@ public class TestColumnarPageProcessor
 
     @Test
     public void testProcessWithDictionary()
+            throws Exception
     {
         Page page = createPage(types, true);
         Page outputPage = getOnlyElement(processor.process(SESSION, new DriverYieldSignal(), page)).orElseThrow(() -> new AssertionError("page is not present"));

@@ -68,6 +68,7 @@ public class TestCreateTableTask
 
     @BeforeMethod
     public void setUp()
+            throws Exception
     {
         catalogManager = new CatalogManager();
         typeManager = new TypeRegistry();
@@ -87,6 +88,7 @@ public class TestCreateTableTask
 
     @Test
     public void testCreateTableNotExistsTrue()
+            throws Exception
     {
         CreateTable statement = new CreateTable(QualifiedName.of("test_table"),
                 ImmutableList.of(new ColumnDefinition(identifier("a"), "BIGINT", Optional.empty())),
@@ -100,6 +102,7 @@ public class TestCreateTableTask
 
     @Test
     public void testCreateTableNotExistsFalse()
+            throws Exception
     {
         CreateTable statement = new CreateTable(QualifiedName.of("test_table"),
                 ImmutableList.of(new ColumnDefinition(identifier("a"), "BIGINT", Optional.empty())),

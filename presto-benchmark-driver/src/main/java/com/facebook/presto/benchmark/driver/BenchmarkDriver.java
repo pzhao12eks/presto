@@ -50,6 +50,7 @@ public class BenchmarkDriver
     }
 
     public void run(Suite suite)
+            throws Exception
     {
         // select queries to run
         List<BenchmarkQuery> queries = suite.selectQueries(this.queries);

@@ -21,6 +21,7 @@ public class TestRaptorDistributedQueriesBucketed
         extends TestRaptorDistributedQueries
 {
     public TestRaptorDistributedQueriesBucketed()
+            throws Exception
     {
         super(() -> createRaptorQueryRunner(ImmutableMap.of(), true, true));
     }

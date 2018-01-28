@@ -43,12 +43,14 @@ public class TestProcedureCall
     private Session session;
 
     public TestProcedureCall()
+            throws Exception
     {
         super(TpchQueryRunner::createQueryRunner);
     }
 
     @BeforeClass
     public void setUp()
+            throws Exception
     {
         TestingPrestoServer coordinator = ((DistributedQueryRunner) getQueryRunner()).getCoordinator();
         tester = coordinator.getProcedureTester();
@@ -68,6 +70,7 @@ public class TestProcedureCall
 
     @AfterClass(alwaysRun = true)
     public void tearDown()
+            throws Exception
     {
         tester = null;
         session = null;
@@ -81,6 +84,7 @@ public class TestProcedureCall
 
     @Test
     public void testProcedureCall()
+            throws Exception
     {
         assertCall("CALL test_simple()", "simple");
         assertCall(format("CALL %s.test_simple()", PROCEDURE_SCHEMA), "simple");

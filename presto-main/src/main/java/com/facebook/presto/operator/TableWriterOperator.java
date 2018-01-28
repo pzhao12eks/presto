@@ -14,7 +14,7 @@
 package com.facebook.presto.operator;
 
 import com.facebook.presto.Session;
-import com.facebook.presto.memory.context.LocalMemoryContext;
+import com.facebook.presto.memory.LocalMemoryContext;
 import com.facebook.presto.spi.ConnectorPageSink;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
@@ -128,14 +128,13 @@ public class TableWriterOperator
     private long rowCount;
     private boolean committed;
     private boolean closed;
-    private long writtenBytes;
 
     public TableWriterOperator(OperatorContext operatorContext,
             ConnectorPageSink pageSink,
             List<Integer> inputChannels)
     {
         this.operatorContext = requireNonNull(operatorContext, "operatorContext is null");
-        this.pageSinkMemoryContext = operatorContext.newLocalSystemMemoryContext();
+        this.pageSinkMemoryContext = operatorContext.getSystemMemoryContext().newLocalMemoryContext();
         this.pageSink = requireNonNull(pageSink, "pageSink is null");
         this.inputChannels = requireNonNull(inputChannels, "inputChannels is null");
     }
@@ -159,7 +158,6 @@ public class TableWriterOperator
             state = State.FINISHING;
             finishFuture = pageSink.finish();
             blocked = toListenableFuture(finishFuture);
-            updateWrittenBytes();
         }
     }
 
@@ -208,7 +206,6 @@ public class TableWriterOperator
             this.blocked = toListenableFuture(future);
         }
         rowCount += page.getPositionCount();
-        updateWrittenBytes();
     }
 
     @Override
@@ -221,7 +218,6 @@ public class TableWriterOperator
 
         Collection<Slice> fragments = getFutureValue(finishFuture);
         committed = true;
-        updateWrittenBytes();
 
         PageBuilder page = new PageBuilder(TYPES);
         BlockBuilder rowsBuilder = page.getBlockBuilder(0);
@@ -244,6 +240,7 @@ public class TableWriterOperator
 
     @Override
     public void close()
+            throws Exception
     {
         if (!closed) {
             closed = true;
@@ -251,12 +248,5 @@ public class TableWriterOperator
                 pageSink.abort();
             }
         }
-    }
-
-    private void updateWrittenBytes()
-    {
-        long current = pageSink.getCompletedBytes();
-        operatorContext.recordPhysicalWrittenData(current - writtenBytes);
-        writtenBytes = current;
     }
 }

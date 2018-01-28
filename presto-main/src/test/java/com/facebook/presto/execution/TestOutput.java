@@ -25,6 +25,7 @@ public class TestOutput
 
     @Test
     public void testRoundTrip()
+            throws Exception
     {
         Output expected = new Output(new ConnectorId("connectorId"), "schema", "table");
 

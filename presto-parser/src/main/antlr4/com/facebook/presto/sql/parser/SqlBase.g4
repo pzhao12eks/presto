@@ -443,7 +443,6 @@ identifier
 
 number
     : DECIMAL_VALUE  #decimalLiteral
-    | DOUBLE_VALUE   #doubleLiteral
     | INTEGER_VALUE  #integerLiteral
     ;
 
@@ -691,10 +690,7 @@ INTEGER_VALUE
 DECIMAL_VALUE
     : DIGIT+ '.' DIGIT*
     | '.' DIGIT+
-    ;
-
-DOUBLE_VALUE
-    : DIGIT+ ('.' DIGIT*)? EXPONENT
+    | DIGIT+ ('.' DIGIT*)? EXPONENT
     | '.' DIGIT+ EXPONENT
     ;
 

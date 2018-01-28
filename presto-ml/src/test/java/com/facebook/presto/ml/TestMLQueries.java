@@ -36,6 +36,7 @@ public class TestMLQueries
 
     @Test
     public void testPrediction()
+            throws Exception
     {
         assertQuery("SELECT classify(features(1, 2), model) " +
                 "FROM (SELECT learn_classifier(labels, features) AS model FROM (VALUES (1, features(1, 2))) t(labels, features)) t2", "SELECT 1");
@@ -43,6 +44,7 @@ public class TestMLQueries
 
     @Test
     public void testVarcharPrediction()
+            throws Exception
     {
         assertQuery("SELECT classify(features(1, 2), model) " +
                 "FROM (SELECT learn_classifier(labels, features) AS model FROM (VALUES ('cat', features(1, 2))) t(labels, features)) t2", "SELECT 'cat'");

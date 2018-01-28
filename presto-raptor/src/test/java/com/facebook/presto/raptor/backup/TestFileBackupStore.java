@@ -31,6 +31,7 @@ public class TestFileBackupStore
 {
     @BeforeClass
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
         store = new FileBackupStore(new File(temporary, "backup"));

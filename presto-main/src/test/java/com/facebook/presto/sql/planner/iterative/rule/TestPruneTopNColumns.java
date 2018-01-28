@@ -38,6 +38,7 @@ public class TestPruneTopNColumns
 
     @Test
     public void testNotAllInputsReferenced()
+            throws Exception
     {
         tester().assertThat(new PruneTopNColumns())
                 .on(p -> buildProjectedTopN(p, symbol -> symbol.getName().equals("b")))
@@ -54,6 +55,7 @@ public class TestPruneTopNColumns
 
     @Test
     public void testAllInputsRereferenced()
+            throws Exception
     {
         tester().assertThat(new PruneTopNColumns())
                 .on(p -> buildProjectedTopN(p, symbol -> symbol.getName().equals("a")))
@@ -62,6 +64,7 @@ public class TestPruneTopNColumns
 
     @Test
     public void testAllOutputsReferenced()
+            throws Exception
     {
         tester().assertThat(new PruneTopNColumns())
                 .on(p -> buildProjectedTopN(p, Predicates.alwaysTrue()))

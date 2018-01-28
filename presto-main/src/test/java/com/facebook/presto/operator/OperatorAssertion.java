@@ -168,6 +168,7 @@ public final class OperatorAssertion
     }
 
     public static void assertOperatorEquals(OperatorFactory operatorFactory, DriverContext driverContext, List<Page> input, List<Page> expected)
+            throws Exception
     {
         List<Page> actual = toPages(operatorFactory, driverContext, input);
         assertEquals(actual.size(), expected.size());
@@ -177,11 +178,13 @@ public final class OperatorAssertion
     }
 
     public static void assertOperatorEquals(OperatorFactory operatorFactory, DriverContext driverContext, List<Page> input, MaterializedResult expected)
+            throws Exception
     {
         assertOperatorEquals(operatorFactory, driverContext, input, expected, false, ImmutableList.of());
     }
 
     public static void assertOperatorEquals(OperatorFactory operatorFactory, DriverContext driverContext, List<Page> input, MaterializedResult expected, boolean hashEnabled, List<Integer> hashChannels)
+            throws Exception
     {
         List<Page> pages = toPages(operatorFactory, driverContext, input);
         MaterializedResult actual;

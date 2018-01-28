@@ -29,6 +29,7 @@ public class TestPruneOutputColumns
 {
     @Test
     public void testNotAllOutputsReferenced()
+            throws Exception
     {
         tester().assertThat(new PruneOutputColumns())
                 .on(p ->
@@ -50,6 +51,7 @@ public class TestPruneOutputColumns
 
     @Test
     public void testAllOutputsReferenced()
+            throws Exception
     {
         tester().assertThat(new PruneOutputColumns())
                 .on(p ->

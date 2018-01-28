@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.tests.cli;
 
-import io.prestodb.tempto.process.LocalCliProcess;
+import com.teradata.tempto.process.LocalCliProcess;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import static com.facebook.presto.client.KerberosUtil.defaultCredentialCachePath;
 import static com.facebook.presto.client.OkHttpUtil.basicAuth;
-import static com.facebook.presto.client.OkHttpUtil.setupCookieJar;
 import static com.facebook.presto.client.OkHttpUtil.setupHttpProxy;
 import static com.facebook.presto.client.OkHttpUtil.setupKerberos;
 import static com.facebook.presto.client.OkHttpUtil.setupSocksProxy;
@@ -42,7 +41,7 @@ import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_CONFIG_PATH
 import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_CREDENTIAL_CACHE_PATH;
 import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_KEYTAB_PATH;
 import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_PRINCIPAL;
-import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_REMOTE_SERVICE_NAME;
+import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_REMOTE_SERICE_NAME;
 import static com.facebook.presto.jdbc.ConnectionProperties.KERBEROS_USE_CANONICAL_HOSTNAME;
 import static com.facebook.presto.jdbc.ConnectionProperties.PASSWORD;
 import static com.facebook.presto.jdbc.ConnectionProperties.SOCKS_PROXY;
@@ -91,8 +90,7 @@ final class PrestoDriverUri
 
         validateConnectionProperties(properties);
 
-        // enable SSL by default for standard port
-        useSecureConnection = SSL.getValue(properties).orElse(uri.getPort() == 443);
+        useSecureConnection = SSL.getRequiredValue(properties);
 
         initCatalogAndSchema();
     }
@@ -132,7 +130,6 @@ final class PrestoDriverUri
             throws SQLException
     {
         try {
-            setupCookieJar(builder);
             setupSocksProxy(builder, SOCKS_PROXY.getValue(properties));
             setupHttpProxy(builder, HTTP_PROXY.getValue(properties));
 
@@ -154,13 +151,13 @@ final class PrestoDriverUri
                         SSL_TRUST_STORE_PASSWORD.getValue(properties));
             }
 
-            if (KERBEROS_REMOTE_SERVICE_NAME.getValue(properties).isPresent()) {
+            if (KERBEROS_REMOTE_SERICE_NAME.getValue(properties).isPresent()) {
                 if (!useSecureConnection) {
                     throw new SQLException("Authentication using Kerberos requires SSL to be enabled");
                 }
                 setupKerberos(
                         builder,
-                        KERBEROS_REMOTE_SERVICE_NAME.getRequiredValue(properties),
+                        KERBEROS_REMOTE_SERICE_NAME.getRequiredValue(properties),
                         KERBEROS_USE_CANONICAL_HOSTNAME.getRequiredValue(properties),
                         KERBEROS_PRINCIPAL.getValue(properties),
                         KERBEROS_CONFIG_PATH.getValue(properties),

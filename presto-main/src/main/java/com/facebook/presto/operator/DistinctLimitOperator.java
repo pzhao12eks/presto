@@ -13,20 +13,17 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.memory.context.LocalMemoryContext;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.gen.JoinCompiler;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.facebook.presto.SystemSessionProperties.isDictionaryAggregationEnabled;
 import static com.facebook.presto.operator.GroupByHash.createGroupByHash;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -97,10 +94,9 @@ public class DistinctLimitOperator
 
     private final OperatorContext operatorContext;
     private final List<Type> types;
-    private final LocalMemoryContext localUserMemoryContext;
 
     private final PageBuilder pageBuilder;
-    private Page inputPage;
+    private Page outputPage;
     private long remainingLimit;
 
     private boolean finishing;
@@ -108,15 +104,10 @@ public class DistinctLimitOperator
     private final GroupByHash groupByHash;
     private long nextDistinctId;
 
-    // for yield when memory is not available
-    private GroupByIdBlock groupByIds;
-    private Work<GroupByIdBlock> unfinishedWork;
-
     public DistinctLimitOperator(OperatorContext operatorContext, List<Type> types, List<Integer> distinctChannels, long limit, Optional<Integer> hashChannel, JoinCompiler joinCompiler)
     {
         this.operatorContext = requireNonNull(operatorContext, "operatorContext is null");
         this.types = ImmutableList.copyOf(requireNonNull(types, "types is null"));
-        this.localUserMemoryContext = operatorContext.localUserMemoryContext();
         requireNonNull(distinctChannels, "distinctChannels is null");
         checkArgument(limit >= 0, "limit must be at least zero");
         requireNonNull(hashChannel, "hashChannel is null");
@@ -126,13 +117,12 @@ public class DistinctLimitOperator
             distinctTypes.add(types.get(channel));
         }
         this.groupByHash = createGroupByHash(
+                operatorContext.getSession(),
                 distinctTypes.build(),
                 Ints.toArray(distinctChannels),
                 hashChannel,
                 Math.min((int) limit, 10_000),
-                isDictionaryAggregationEnabled(operatorContext.getSession()),
-                joinCompiler,
-                this::updateMemoryReservation);
+                joinCompiler);
         this.pageBuilder = new PageBuilder(types);
         remainingLimit = limit;
     }
@@ -159,45 +149,35 @@ public class DistinctLimitOperator
     @Override
     public boolean isFinished()
     {
-        return !hasUnfinishedInput() && (finishing || remainingLimit == 0);
+        return (finishing && outputPage == null) || (remainingLimit == 0 && outputPage == null);
     }
 
     @Override
     public boolean needsInput()
     {
-        return !finishing && remainingLimit > 0 && !hasUnfinishedInput();
+        operatorContext.setMemoryReservation(groupByHash.getEstimatedSize());
+        return !finishing && remainingLimit > 0 && outputPage == null;
     }
 
     @Override
     public void addInput(Page page)
     {
         checkState(needsInput());
+        operatorContext.setMemoryReservation(groupByHash.getEstimatedSize());
 
-        inputPage = page;
-        unfinishedWork = groupByHash.getGroupIds(page);
-        processUnfinishedWork();
-        updateMemoryReservation();
-    }
+        pageBuilder.reset();
 
-    @Override
-    public Page getOutput()
-    {
-        if (unfinishedWork != null && !processUnfinishedWork()) {
-            return null;
-        }
-
-        if (groupByIds == null) {
-            return null;
-        }
-
-        verify(pageBuilder.getPositionCount() == 0);
-        verify(inputPage != null);
-        for (int position = 0; position < groupByIds.getPositionCount(); position++) {
-            if (groupByIds.getGroupId(position) == nextDistinctId) {
+        Work<GroupByIdBlock> work = groupByHash.getGroupIds(page);
+        boolean done = work.process();
+        // TODO: this class does not yield wrt memory limit; enable it
+        verify(done);
+        GroupByIdBlock ids = work.getResult();
+        for (int position = 0; position < ids.getPositionCount(); position++) {
+            if (ids.getGroupId(position) == nextDistinctId) {
                 pageBuilder.declarePosition();
                 for (int channel = 0; channel < types.size(); channel++) {
                     Type type = types.get(channel);
-                    type.appendTo(inputPage.getBlock(channel), position, pageBuilder.getBlockBuilder(channel));
+                    type.appendTo(page.getBlock(channel), position, pageBuilder.getBlockBuilder(channel));
                 }
                 remainingLimit--;
                 nextDistinctId++;
@@ -206,55 +186,16 @@ public class DistinctLimitOperator
                 }
             }
         }
-        groupByIds = null;
-        inputPage = null;
-
-        Page result = null;
         if (!pageBuilder.isEmpty()) {
-            result = pageBuilder.build();
-            pageBuilder.reset();
+            outputPage = pageBuilder.build();
         }
+    }
 
-        updateMemoryReservation();
+    @Override
+    public Page getOutput()
+    {
+        Page result = outputPage;
+        outputPage = null;
         return result;
-    }
-
-    private boolean processUnfinishedWork()
-    {
-        verify(unfinishedWork != null);
-        if (!unfinishedWork.process()) {
-            return false;
-        }
-        groupByIds = unfinishedWork.getResult();
-        unfinishedWork = null;
-        return true;
-    }
-
-    private boolean hasUnfinishedInput()
-    {
-        return inputPage != null || unfinishedWork != null;
-    }
-
-    /**
-     * Update memory usage.
-     *
-     * @return true if the reservation is within the limit
-     */
-    // TODO: update in the interface after the new memory tracking framework is landed (#9049)
-    // Essentially we would love to have clean interfaces to support both pushing and pulling memory usage
-    // The following implementation is a hybrid model, where the push model is going to call the pull model causing reentrancy
-    private boolean updateMemoryReservation()
-    {
-        // Operator/driver will be blocked on memory after we call localUserMemoryContext.setBytes().
-        // If memory is not available, once we return, this operator will be blocked until memory is available.
-        localUserMemoryContext.setBytes(groupByHash.getEstimatedSize());
-        // If memory is not available, inform the caller that we cannot proceed for allocation.
-        return operatorContext.isWaitingForMemory().isDone();
-    }
-
-    @VisibleForTesting
-    public int getCapacity()
-    {
-        return groupByHash.getCapacity();
     }
 }

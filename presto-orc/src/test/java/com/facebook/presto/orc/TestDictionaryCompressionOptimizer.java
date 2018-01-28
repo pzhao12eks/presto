@@ -40,6 +40,7 @@ public class TestDictionaryCompressionOptimizer
 {
     @Test
     public void testNoDictionariesBytesLimit()
+            throws Exception
     {
         int stripeMaxBytes = megabytes(100);
         int bytesPerRow = 1024;
@@ -70,6 +71,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testSingleDictionaryColumnRowLimit()
+            throws Exception
     {
         int bytesPerEntry = 1024;
         TestDictionaryColumn column = dictionaryColumn(bytesPerEntry, 1024);
@@ -106,6 +108,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testSingleDictionaryColumnByteLimit()
+            throws Exception
     {
         int bytesPerEntry = 1024;
         int dictionaryEntries = 1024;
@@ -144,6 +147,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testSingleDictionaryColumnMemoryLimit()
+            throws Exception
     {
         int bytesPerEntry = 1024;
         int dictionaryMaxMemoryBytes = megabytes(32);
@@ -183,6 +187,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testSingleDictionaryColumnMemoryLimitHighlyCompressed()
+            throws Exception
     {
         int bytesPerEntry = 1024 * 1024;
         int dictionaryMaxMemoryBytes = megabytes(8) + 100;
@@ -221,6 +226,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testSingleDirectBytesLimit()
+            throws Exception
     {
         int bytesPerEntry = 1024;
         int dictionaryMaxMemoryBytes = megabytes(16);
@@ -267,6 +273,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testDictionaryAndDirectBytesLimit()
+            throws Exception
     {
         int bytesPerEntry = 1024;
         int dictionaryMaxMemoryBytes = megabytes(8);
@@ -319,6 +326,7 @@ public class TestDictionaryCompressionOptimizer
 
     @Test
     public void testWideDictionaryAndNarrowDirectBytesLimit()
+            throws Exception
     {
         int dictionaryMaxMemoryBytes = megabytes(32);
         int directBytesPerEntry = 100;

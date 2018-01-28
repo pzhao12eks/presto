@@ -20,28 +20,27 @@ import com.facebook.presto.spi.block.BlockBuilder;
 import com.facebook.presto.spi.block.BlockBuilderStatus;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.gen.JoinCompiler;
-import com.google.common.annotations.VisibleForTesting;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.facebook.presto.SystemSessionProperties.isDictionaryAggregationEnabled;
 import static com.facebook.presto.operator.GroupByHash.createGroupByHash;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
+import static com.google.common.base.Verify.verify;
 
 public class MarkDistinctHash
 {
     private final GroupByHash groupByHash;
     private long nextDistinctId;
 
-    public MarkDistinctHash(Session session, List<Type> types, int[] channels, Optional<Integer> hashChannel, JoinCompiler joinCompiler, UpdateMemory updateMemory)
+    public MarkDistinctHash(Session session, List<Type> types, int[] channels, Optional<Integer> hashChannel, JoinCompiler joinCompiler)
     {
-        this(session, types, channels, hashChannel, 10_000, joinCompiler, updateMemory);
+        this(session, types, channels, hashChannel, 10_000, joinCompiler);
     }
 
-    public MarkDistinctHash(Session session, List<Type> types, int[] channels, Optional<Integer> hashChannel, int expectedDistinctValues, JoinCompiler joinCompiler, UpdateMemory updateMemory)
+    public MarkDistinctHash(Session session, List<Type> types, int[] channels, Optional<Integer> hashChannel, int expectedDistinctValues, JoinCompiler joinCompiler)
     {
-        this.groupByHash = createGroupByHash(types, channels, hashChannel, expectedDistinctValues, isDictionaryAggregationEnabled(session), joinCompiler, updateMemory);
+        this.groupByHash = createGroupByHash(session, types, channels, hashChannel, expectedDistinctValues, joinCompiler);
     }
 
     public long getEstimatedSize()
@@ -49,28 +48,24 @@ public class MarkDistinctHash
         return groupByHash.getEstimatedSize();
     }
 
-    public Work<Block> markDistinctRows(Page page)
+    public Block markDistinctRows(Page page)
     {
-        return new TransformWork<>(
-                groupByHash.getGroupIds(page),
-                ids -> {
-                    BlockBuilder blockBuilder = BOOLEAN.createBlockBuilder(new BlockBuilderStatus(), ids.getPositionCount());
-                    for (int i = 0; i < ids.getPositionCount(); i++) {
-                        if (ids.getGroupId(i) == nextDistinctId) {
-                            BOOLEAN.writeBoolean(blockBuilder, true);
-                            nextDistinctId++;
-                        }
-                        else {
-                            BOOLEAN.writeBoolean(blockBuilder, false);
-                        }
-                    }
-                    return blockBuilder.build();
-                });
-    }
+        Work<GroupByIdBlock> work = groupByHash.getGroupIds(page);
+        boolean done = work.process();
+        // TODO: this class does not yield wrt memory limit; enable it
+        verify(done);
+        GroupByIdBlock ids = work.getResult();
+        BlockBuilder blockBuilder = BOOLEAN.createBlockBuilder(new BlockBuilderStatus(), ids.getPositionCount());
+        for (int i = 0; i < ids.getPositionCount(); i++) {
+            if (ids.getGroupId(i) == nextDistinctId) {
+                BOOLEAN.writeBoolean(blockBuilder, true);
+                nextDistinctId++;
+            }
+            else {
+                BOOLEAN.writeBoolean(blockBuilder, false);
+            }
+        }
 
-    @VisibleForTesting
-    public int getCapacity()
-    {
-        return groupByHash.getCapacity();
+        return blockBuilder.build();
     }
 }

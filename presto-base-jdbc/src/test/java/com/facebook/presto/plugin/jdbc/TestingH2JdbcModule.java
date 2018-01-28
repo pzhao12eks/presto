@@ -36,7 +36,7 @@ class TestingH2JdbcModule
     @Provides
     public JdbcClient provideJdbcClient(JdbcConnectorId id, BaseJdbcConfig config)
     {
-        return new BaseJdbcClient(id, config, "\"", new DriverConnectionFactory(new Driver(), config));
+        return new BaseJdbcClient(id, config, "\"", new Driver());
     }
 
     public static Map<String, String> createProperties()

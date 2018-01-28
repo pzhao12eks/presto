@@ -15,7 +15,6 @@ package com.facebook.presto.plugin.redshift;
 
 import com.facebook.presto.plugin.jdbc.BaseJdbcClient;
 import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
-import com.facebook.presto.plugin.jdbc.DriverConnectionFactory;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcOutputTableHandle;
 import com.facebook.presto.spi.PrestoException;
@@ -34,8 +33,9 @@ public class RedshiftClient
 {
     @Inject
     public RedshiftClient(JdbcConnectorId connectorId, BaseJdbcConfig config)
+            throws SQLException
     {
-        super(connectorId, config, "\"", new DriverConnectionFactory(new Driver(), config));
+        super(connectorId, config, "\"", new Driver());
     }
 
     @Override

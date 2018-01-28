@@ -41,6 +41,7 @@ public class TestDomain
 {
     @Test
     public void testOrderableNone()
+            throws Exception
     {
         Domain domain = Domain.none(BIGINT);
         assertTrue(domain.isNone());
@@ -59,6 +60,7 @@ public class TestDomain
 
     @Test
     public void testEquatableNone()
+            throws Exception
     {
         Domain domain = Domain.none(ID);
         assertTrue(domain.isNone());
@@ -75,6 +77,7 @@ public class TestDomain
 
     @Test
     public void testUncomparableNone()
+            throws Exception
     {
         Domain domain = Domain.none(HYPER_LOG_LOG);
         assertTrue(domain.isNone());
@@ -91,6 +94,7 @@ public class TestDomain
 
     @Test
     public void testOrderableAll()
+            throws Exception
     {
         Domain domain = Domain.all(BIGINT);
         assertFalse(domain.isNone());
@@ -110,6 +114,7 @@ public class TestDomain
 
     @Test
     public void testEquatableAll()
+            throws Exception
     {
         Domain domain = Domain.all(ID);
         assertFalse(domain.isNone());
@@ -127,6 +132,7 @@ public class TestDomain
 
     @Test
     public void testUncomparableAll()
+            throws Exception
     {
         Domain domain = Domain.all(HYPER_LOG_LOG);
         assertFalse(domain.isNone());
@@ -144,6 +150,7 @@ public class TestDomain
 
     @Test
     public void testOrderableNullOnly()
+            throws Exception
     {
         Domain domain = Domain.onlyNull(BIGINT);
         assertFalse(domain.isNone());
@@ -164,6 +171,7 @@ public class TestDomain
 
     @Test
     public void testEquatableNullOnly()
+            throws Exception
     {
         Domain domain = Domain.onlyNull(ID);
         assertFalse(domain.isNone());
@@ -182,6 +190,7 @@ public class TestDomain
 
     @Test
     public void testUncomparableNullOnly()
+            throws Exception
     {
         Domain domain = Domain.onlyNull(HYPER_LOG_LOG);
         assertFalse(domain.isNone());
@@ -200,6 +209,7 @@ public class TestDomain
 
     @Test
     public void testOrderableNotNull()
+            throws Exception
     {
         Domain domain = Domain.notNull(BIGINT);
         assertFalse(domain.isNone());
@@ -219,6 +229,7 @@ public class TestDomain
 
     @Test
     public void testEquatableNotNull()
+            throws Exception
     {
         Domain domain = Domain.notNull(ID);
         assertFalse(domain.isNone());
@@ -236,6 +247,7 @@ public class TestDomain
 
     @Test
     public void testUncomparableNotNull()
+            throws Exception
     {
         Domain domain = Domain.notNull(HYPER_LOG_LOG);
         assertFalse(domain.isNone());
@@ -253,6 +265,7 @@ public class TestDomain
 
     @Test
     public void testOrderableSingleValue()
+            throws Exception
     {
         Domain domain = Domain.singleValue(BIGINT, 0L);
         assertFalse(domain.isNone());
@@ -280,6 +293,7 @@ public class TestDomain
 
     @Test
     public void testEquatableSingleValue()
+            throws Exception
     {
         Domain domain = Domain.singleValue(ID, 0L);
         assertFalse(domain.isNone());
@@ -306,12 +320,14 @@ public class TestDomain
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testUncomparableSingleValue()
+            throws Exception
     {
         Domain.singleValue(HYPER_LOG_LOG, Slices.EMPTY_SLICE);
     }
 
     @Test
     public void testOverlaps()
+            throws Exception
     {
         assertTrue(Domain.all(BIGINT).overlaps(Domain.all(BIGINT)));
         assertFalse(Domain.all(BIGINT).overlaps(Domain.none(BIGINT)));
@@ -346,6 +362,7 @@ public class TestDomain
 
     @Test
     public void testContains()
+            throws Exception
     {
         assertTrue(Domain.all(BIGINT).contains(Domain.all(BIGINT)));
         assertTrue(Domain.all(BIGINT).contains(Domain.none(BIGINT)));
@@ -380,6 +397,7 @@ public class TestDomain
 
     @Test
     public void testIntersect()
+            throws Exception
     {
         assertEquals(
                 Domain.all(BIGINT).intersect(Domain.all(BIGINT)),
@@ -416,6 +434,7 @@ public class TestDomain
 
     @Test
     public void testUnion()
+            throws Exception
     {
         assertUnion(Domain.all(BIGINT), Domain.all(BIGINT), Domain.all(BIGINT));
         assertUnion(Domain.none(BIGINT), Domain.none(BIGINT), Domain.none(BIGINT));
@@ -436,6 +455,7 @@ public class TestDomain
 
     @Test
     public void testSubtract()
+            throws Exception
     {
         assertEquals(
                 Domain.all(BIGINT).subtract(Domain.all(BIGINT)),

@@ -40,7 +40,7 @@ public class MemoryPagesStore
     private final long maxBytes;
 
     @GuardedBy("this")
-    private long currentBytes;
+    private long currentBytes = 0;
 
     private final Map<Long, TableData> tables = new HashMap<>();
 

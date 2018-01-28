@@ -38,7 +38,6 @@ import com.facebook.presto.testing.TestingHandleResolver;
 import com.facebook.presto.type.TypeDeserializer;
 import com.facebook.presto.type.TypeRegistry;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Binder;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -398,14 +397,10 @@ public class TestHttpRemoteTask
                     taskState,
                     initialTaskStatus.getSelf(),
                     "fake",
-                    ImmutableSet.of(),
                     initialTaskStatus.getFailures(),
                     initialTaskStatus.getQueuedPartitionedDrivers(),
                     initialTaskStatus.getRunningPartitionedDrivers(),
-                    initialTaskStatus.isOutputBufferOverutilized(),
-                    initialTaskStatus.getPhysicalWrittenDataSize(),
-                    initialTaskStatus.getMemoryReservation(),
-                    initialTaskStatus.getSystemMemoryReservation());
+                    initialTaskStatus.getMemoryReservation());
         }
     }
 }

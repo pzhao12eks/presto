@@ -18,6 +18,7 @@ import com.facebook.presto.hive.PartitionNotFoundException;
 import com.facebook.presto.hive.RetryDriver;
 import com.facebook.presto.hive.SchemaAlreadyExistsException;
 import com.facebook.presto.hive.TableAlreadyExistsException;
+import com.facebook.presto.hive.metastore.HiveMetastore;
 import com.facebook.presto.hive.metastore.HivePrincipal;
 import com.facebook.presto.hive.metastore.HivePrivilegeInfo;
 import com.facebook.presto.spi.PrestoException;
@@ -793,6 +794,7 @@ public class ThriftHiveMetastore
             String tableName,
             HivePrincipal hivePrincipal,
             Set<PrivilegeGrantInfo> privilegeGrantInfos)
+            throws TException
     {
         ImmutableList.Builder<HiveObjectPrivilege> privilegeBagBuilder = ImmutableList.builder();
         for (PrivilegeGrantInfo privilegeGrantInfo : privilegeGrantInfos) {

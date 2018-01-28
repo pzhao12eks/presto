@@ -24,8 +24,6 @@ import org.testng.annotations.Test;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.facebook.presto.plugin.jdbc.TestingJdbcTypeHandle.JDBC_BIGINT;
-import static com.facebook.presto.plugin.jdbc.TestingJdbcTypeHandle.JDBC_VARCHAR;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.spi.type.VarcharType.createVarcharType;
@@ -59,22 +57,23 @@ public class TestJdbcRecordSet
 
     @Test
     public void testGetColumnTypes()
+            throws Exception
     {
         RecordSet recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of(
-                new JdbcColumnHandle("test", "text", JDBC_VARCHAR, VARCHAR),
-                new JdbcColumnHandle("test", "text_short", JDBC_VARCHAR, createVarcharType(32)),
-                new JdbcColumnHandle("test", "value", JDBC_BIGINT, BIGINT)));
+                new JdbcColumnHandle("test", "text", VARCHAR),
+                new JdbcColumnHandle("test", "text_short", createVarcharType(32)),
+                new JdbcColumnHandle("test", "value", BIGINT)));
         assertEquals(recordSet.getColumnTypes(), ImmutableList.of(VARCHAR, createVarcharType(32), BIGINT));
 
         recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of(
-                new JdbcColumnHandle("test", "value", JDBC_BIGINT, BIGINT),
-                new JdbcColumnHandle("test", "text", JDBC_VARCHAR, VARCHAR)));
+                new JdbcColumnHandle("test", "value", BIGINT),
+                new JdbcColumnHandle("test", "text", VARCHAR)));
         assertEquals(recordSet.getColumnTypes(), ImmutableList.of(BIGINT, VARCHAR));
 
         recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of(
-                new JdbcColumnHandle("test", "value", JDBC_BIGINT, BIGINT),
-                new JdbcColumnHandle("test", "value", JDBC_BIGINT, BIGINT),
-                new JdbcColumnHandle("test", "text", JDBC_VARCHAR, VARCHAR)));
+                new JdbcColumnHandle("test", "value", BIGINT),
+                new JdbcColumnHandle("test", "value", BIGINT),
+                new JdbcColumnHandle("test", "text", VARCHAR)));
         assertEquals(recordSet.getColumnTypes(), ImmutableList.of(BIGINT, BIGINT, VARCHAR));
 
         recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of());
@@ -83,6 +82,7 @@ public class TestJdbcRecordSet
 
     @Test
     public void testCursorSimple()
+            throws Exception
     {
         RecordSet recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of(
                 columnHandles.get("text"),
@@ -116,6 +116,7 @@ public class TestJdbcRecordSet
 
     @Test
     public void testCursorMixedOrder()
+            throws Exception
     {
         RecordSet recordSet = new JdbcRecordSet(jdbcClient, split, ImmutableList.of(
                 columnHandles.get("value"),

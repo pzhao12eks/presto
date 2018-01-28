@@ -16,6 +16,7 @@ package com.facebook.presto.verifier;
 import com.facebook.presto.spi.ErrorCode;
 import com.facebook.presto.spi.PrestoException;
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import io.airlift.event.client.EventClient;
 import io.airlift.log.Logger;
@@ -244,7 +245,7 @@ public class Verifier
             return completionService.take().get();
         }
         catch (ExecutionException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

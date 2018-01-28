@@ -15,7 +15,7 @@ package com.facebook.presto.tests;
 
 import com.facebook.presto.Session;
 import com.facebook.presto.connector.ConnectorId;
-import com.facebook.presto.cost.StatsCalculator;
+import com.facebook.presto.cost.CostCalculator;
 import com.facebook.presto.execution.QueryInfo;
 import com.facebook.presto.execution.QueryManager;
 import com.facebook.presto.metadata.AllNodes;
@@ -28,23 +28,21 @@ import com.facebook.presto.spi.Node;
 import com.facebook.presto.spi.Plugin;
 import com.facebook.presto.spi.QueryId;
 import com.facebook.presto.sql.parser.SqlParserOptions;
-import com.facebook.presto.sql.planner.NodePartitioningManager;
 import com.facebook.presto.sql.planner.Plan;
 import com.facebook.presto.testing.MaterializedResult;
 import com.facebook.presto.testing.QueryRunner;
 import com.facebook.presto.testing.TestingAccessControlManager;
 import com.facebook.presto.transaction.TransactionManager;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Closer;
-import io.airlift.discovery.server.testing.TestingDiscoveryServer;
 import io.airlift.log.Logger;
 import io.airlift.testing.Assertions;
 import io.airlift.units.Duration;
 import org.intellij.lang.annotations.Language;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +57,6 @@ import static com.facebook.presto.testing.TestingSession.TESTING_CATALOG;
 import static com.facebook.presto.testing.TestingSession.createBogusTestingCatalog;
 import static com.facebook.presto.tests.AbstractTestQueries.TEST_CATALOG_PROPERTIES;
 import static com.facebook.presto.tests.AbstractTestQueries.TEST_SYSTEM_PROPERTIES;
-import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static io.airlift.units.Duration.nanosSince;
 import static java.util.Objects.requireNonNull;
@@ -107,8 +104,7 @@ public class DistributedQueryRunner
 
         try {
             long start = System.nanoTime();
-            discoveryServer = new TestingDiscoveryServer(environment);
-            closer.register(() -> closeUnchecked(discoveryServer));
+            discoveryServer = closer.register(new TestingDiscoveryServer(environment));
             log.info("Created TestingDiscoveryServer in %s", nanosSince(start).convertToMostSuccinctTimeUnit());
 
             ImmutableList.Builder<TestingPrestoServer> servers = ImmutableList.builder();
@@ -245,15 +241,9 @@ public class DistributedQueryRunner
     }
 
     @Override
-    public NodePartitioningManager getNodePartitioningManager()
+    public CostCalculator getCostCalculator()
     {
-        return coordinator.getNodePartitioningManager();
-    }
-
-    @Override
-    public StatsCalculator getStatsCalculator()
-    {
-        return coordinator.getStatsCalculator();
+        return coordinator.getCostCalculator();
     }
 
     @Override
@@ -307,7 +297,7 @@ public class DistributedQueryRunner
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
         log.info("Announced catalog %s (%s) in %s", catalogName, connectorId, nanosSince(start));
@@ -408,7 +398,7 @@ public class DistributedQueryRunner
             closer.close();
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -419,17 +409,6 @@ public class DistributedQueryRunner
             if (!queryInfo.getState().isDone()) {
                 queryManager.cancelQuery(queryInfo.getQueryId());
             }
-        }
-    }
-
-    private static void closeUnchecked(AutoCloseable closeable)
-    {
-        try {
-            closeable.close();
-        }
-        catch (Exception e) {
-            throwIfUnchecked(e);
-            throw new RuntimeException(e);
         }
     }
 }

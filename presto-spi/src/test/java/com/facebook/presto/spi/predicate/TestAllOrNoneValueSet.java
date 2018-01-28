@@ -32,6 +32,7 @@ public class TestAllOrNoneValueSet
 {
     @Test
     public void testAll()
+            throws Exception
     {
         AllOrNoneValueSet valueSet = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         assertEquals(valueSet.getType(), HYPER_LOG_LOG);
@@ -50,6 +51,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testNone()
+            throws Exception
     {
         AllOrNoneValueSet valueSet = AllOrNoneValueSet.none(HYPER_LOG_LOG);
         assertEquals(valueSet.getType(), HYPER_LOG_LOG);
@@ -68,6 +70,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testIntersect()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);
@@ -80,6 +83,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testUnion()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);
@@ -92,6 +96,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testComplement()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);
@@ -102,6 +107,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testOverlaps()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);
@@ -114,6 +120,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testSubtract()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);
@@ -126,6 +133,7 @@ public class TestAllOrNoneValueSet
 
     @Test
     public void testContains()
+            throws Exception
     {
         AllOrNoneValueSet all = AllOrNoneValueSet.all(HYPER_LOG_LOG);
         AllOrNoneValueSet none = AllOrNoneValueSet.none(HYPER_LOG_LOG);

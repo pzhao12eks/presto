@@ -34,7 +34,10 @@ import com.facebook.presto.orc.protobuf.CodedInputStream;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
+import io.airlift.slice.SliceUtf8;
 import io.airlift.slice.Slices;
 import io.airlift.units.DataSize;
 
@@ -59,7 +62,6 @@ import static com.facebook.presto.orc.metadata.statistics.IntegerStatistics.INTE
 import static com.facebook.presto.orc.metadata.statistics.ShortDecimalStatisticsBuilder.SHORT_DECIMAL_VALUE_BYTES;
 import static com.facebook.presto.orc.metadata.statistics.StringStatistics.STRING_VALUE_BYTES_OVERHEAD;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static io.airlift.slice.SliceUtf8.lengthOfCodePoint;
 import static io.airlift.slice.SliceUtf8.tryGetCodePointAt;
 import static io.airlift.units.DataSize.Unit.GIGABYTE;
@@ -70,6 +72,11 @@ public class OrcMetadataReader
         implements MetadataReader
 {
     private static final int REPLACEMENT_CHARACTER_CODE_POINT = 0xFFFD;
+    @VisibleForTesting
+    static final Slice REPLACEMENT_CHARACTER_UTF8 = SliceUtf8.codePointToUtf8(REPLACEMENT_CHARACTER_CODE_POINT);
+    private static final Slice MAX_BYTE = Slices.wrappedBuffer(new byte[] {(byte) 0xFF});
+    private static final Logger log = Logger.get(OrcMetadataReader.class);
+
     private static final int PROTOBUF_MESSAGE_MAX_LIMIT = toIntExact(new DataSize(1, GIGABYTE).toBytes());
 
     @Override
@@ -108,9 +115,7 @@ public class OrcMetadataReader
 
     private static List<StripeStatistics> toStripeStatistics(HiveWriterVersion hiveWriterVersion, List<OrcProto.StripeStatistics> types)
     {
-        return types.stream()
-                .map(stripeStatistics -> toStripeStatistics(hiveWriterVersion, stripeStatistics))
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(types, stripeStatistics -> toStripeStatistics(hiveWriterVersion, stripeStatistics)));
     }
 
     private static StripeStatistics toStripeStatistics(HiveWriterVersion hiveWriterVersion, OrcProto.StripeStatistics stripeStatistics)
@@ -136,9 +141,7 @@ public class OrcMetadataReader
 
     private static List<StripeInformation> toStripeInformation(List<OrcProto.StripeInformation> types)
     {
-        return types.stream()
-                .map(OrcMetadataReader::toStripeInformation)
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(types, OrcMetadataReader::toStripeInformation));
     }
 
     private static StripeInformation toStripeInformation(OrcProto.StripeInformation stripeInformation)
@@ -167,9 +170,7 @@ public class OrcMetadataReader
 
     private static List<Stream> toStream(List<OrcProto.Stream> streams)
     {
-        return streams.stream()
-                .map(OrcMetadataReader::toStream)
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(streams, OrcMetadataReader::toStream));
     }
 
     private static ColumnEncoding toColumnEncoding(OrcProto.ColumnEncoding columnEncoding)
@@ -179,9 +180,7 @@ public class OrcMetadataReader
 
     private static List<ColumnEncoding> toColumnEncoding(List<OrcProto.ColumnEncoding> columnEncodings)
     {
-        return columnEncodings.stream()
-                .map(OrcMetadataReader::toColumnEncoding)
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(columnEncodings, OrcMetadataReader::toColumnEncoding));
     }
 
     @Override
@@ -190,9 +189,7 @@ public class OrcMetadataReader
     {
         CodedInputStream input = CodedInputStream.newInstance(inputStream);
         OrcProto.RowIndex rowIndex = OrcProto.RowIndex.parseFrom(input);
-        return rowIndex.getEntryList().stream()
-                .map(rowIndexEntry -> toRowGroupIndex(hiveWriterVersion, rowIndexEntry))
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(rowIndex.getEntryList(), rowIndexEntry -> toRowGroupIndex(hiveWriterVersion, rowIndexEntry)));
     }
 
     @Override
@@ -279,12 +276,10 @@ public class OrcMetadataReader
         if (columnStatistics == null) {
             return ImmutableList.of();
         }
-        return columnStatistics.stream()
-                .map(statistics -> toColumnStatistics(hiveWriterVersion, statistics, isRowGroup))
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(columnStatistics, statistics -> toColumnStatistics(hiveWriterVersion, statistics, isRowGroup)));
     }
 
-    private static Map<String, Slice> toUserMetadata(List<OrcProto.UserMetadataItem> metadataList)
+    private Map<String, Slice> toUserMetadata(List<OrcProto.UserMetadataItem> metadataList)
     {
         ImmutableMap.Builder<String, Slice> mapBuilder = ImmutableMap.builder();
         for (OrcProto.UserMetadataItem item : metadataList) {
@@ -310,8 +305,7 @@ public class OrcMetadataReader
 
         return new IntegerStatistics(
                 integerStatistics.hasMinimum() ? integerStatistics.getMinimum() : null,
-                integerStatistics.hasMaximum() ? integerStatistics.getMaximum() : null,
-                integerStatistics.hasSum() ? integerStatistics.getSum() : null);
+                integerStatistics.hasMaximum() ? integerStatistics.getMaximum() : null);
     }
 
     private static DoubleStatistics toDoubleStatistics(OrcProto.DoubleStatistics doubleStatistics)
@@ -420,11 +414,11 @@ public class OrcMetadataReader
                 break;
             }
 
-            // The original ORC writers round trip string min and max values through java.lang.String which
+            // Currently, all versions of the ORC writer round trip string min and max values through java.lang.String which
             // replaces invalid UTF-8 sequences with the unicode replacement character.  This can cause the min value to be
             // greater than expected which can result in data sections being skipped instead of being processed. As a work around,
             // the string stats are truncated at the first replacement character.
-            if (version == ORIGINAL && codePoint == REPLACEMENT_CHARACTER_CODE_POINT) {
+            if (codePoint == REPLACEMENT_CHARACTER_CODE_POINT) {
                 break;
             }
 
@@ -488,9 +482,7 @@ public class OrcMetadataReader
 
     private static List<OrcType> toType(List<OrcProto.Type> types)
     {
-        return types.stream()
-                .map(OrcMetadataReader::toType)
-                .collect(toImmutableList());
+        return ImmutableList.copyOf(Iterables.transform(types, OrcMetadataReader::toType));
     }
 
     private static OrcTypeKind toTypeKind(OrcProto.Type.Kind typeKind)

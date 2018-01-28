@@ -28,6 +28,7 @@ public class TestNumericHistogram
 {
     @Test
     public void testBasic()
+            throws Exception
     {
         double[] data = {
                 2.9, 3.1, 3.4, 3.5, 3.1, 2.9, 3, 3.8, 3.6, 3.1, 3.6, 2.5, 2.8, 2.3, 3, 3,
@@ -66,6 +67,7 @@ public class TestNumericHistogram
 
     @Test
     public void testSameValues()
+            throws Exception
     {
         NumericHistogram histogram = new NumericHistogram(4);
 
@@ -84,6 +86,7 @@ public class TestNumericHistogram
 
     @Test
     public void testRoundtrip()
+            throws Exception
     {
         NumericHistogram histogram = new NumericHistogram(100, 20);
         for (int i = 0; i < 1000; i++) {
@@ -98,6 +101,7 @@ public class TestNumericHistogram
 
     @Test
     public void testMergeSame()
+            throws Exception
     {
         NumericHistogram histogram = new NumericHistogram(10, 3);
         for (int i = 0; i < 1000; i++) {
@@ -113,6 +117,7 @@ public class TestNumericHistogram
 
     @Test
     public void testMergeDifferent()
+            throws Exception
     {
         NumericHistogram histogram1 = new NumericHistogram(10, 3);
         NumericHistogram histogram2 = new NumericHistogram(10, 3);

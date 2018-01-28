@@ -80,6 +80,7 @@ public class FairBatchExecutor
             {
                 @Override
                 public Void call()
+                        throws Exception
                 {
                     return null;
                 }

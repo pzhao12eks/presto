@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.verifier;
 
-import com.facebook.presto.sql.parser.ParsingOptions;
 import com.facebook.presto.sql.parser.SqlParser;
 import com.facebook.presto.sql.tree.CreateTable;
 import com.facebook.presto.sql.tree.CreateTableAsSelect;
@@ -53,10 +52,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.facebook.presto.sql.SqlFormatter.formatSql;
-import static com.facebook.presto.sql.parser.ParsingOptions.DecimalLiteralTreatment.AS_DOUBLE;
 import static com.facebook.presto.sql.tree.LikeClause.PropertiesOption.INCLUDING;
+import static com.facebook.presto.verifier.PrestoVerifier.statementToQueryType;
 import static com.facebook.presto.verifier.QueryType.READ;
-import static com.facebook.presto.verifier.VerifyCommand.statementToQueryType;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -100,7 +98,7 @@ public class QueryRewriter
             throw new QueryRewriteException("Cannot rewrite queries that use post-queries");
         }
 
-        Statement statement = parser.createStatement(query.getQuery(), new ParsingOptions(AS_DOUBLE /* anything */));
+        Statement statement = parser.createStatement(query.getQuery());
         try (Connection connection = DriverManager.getConnection(gatewayUrl, usernameOverride.orElse(query.getUsername()), passwordOverride.orElse(query.getPassword()))) {
             trySetConnectionProperties(query, connection);
             if (statement instanceof CreateTableAsSelect) {
@@ -226,7 +224,7 @@ public class QueryRewriter
     }
 
     private String checksumSql(List<Column> columns, QualifiedName table)
-            throws QueryRewriteException
+            throws SQLException, QueryRewriteException
     {
         if (columns.isEmpty()) {
             throw new QueryRewriteException("Table " + table + " has no columns");

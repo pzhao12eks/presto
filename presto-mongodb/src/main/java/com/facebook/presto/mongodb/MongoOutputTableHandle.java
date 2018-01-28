@@ -33,6 +33,7 @@ public class MongoOutputTableHandle
     public MongoOutputTableHandle(
             @JsonProperty("schemaTableName") SchemaTableName schemaTableName,
             @JsonProperty("columns") List<MongoColumnHandle> columns)
+
     {
         this.schemaTableName = requireNonNull(schemaTableName, "schemaTableName is null");
         this.columns = ImmutableList.copyOf(requireNonNull(columns, "columns is null"));

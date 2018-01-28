@@ -82,6 +82,7 @@ public class TestJsonDecoder
 
     @Test
     public void testNonExistent()
+            throws Exception
     {
         byte[] json = "{}".getBytes(StandardCharsets.UTF_8);
 
@@ -107,6 +108,7 @@ public class TestJsonDecoder
 
     @Test
     public void testStringNumber()
+            throws Exception
     {
         byte[] json = "{\"a_number\":481516,\"a_string\":\"2342\"}".getBytes(StandardCharsets.UTF_8);
 

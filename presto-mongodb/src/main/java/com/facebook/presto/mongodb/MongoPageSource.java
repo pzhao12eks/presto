@@ -30,7 +30,7 @@ import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.joda.time.chrono.ISOChronology;
 
-import java.util.Collection;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -52,11 +52,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static io.airlift.slice.Slices.utf8Slice;
 import static io.airlift.slice.Slices.wrappedBuffer;
 import static java.util.stream.Collectors.toList;
+import static org.joda.time.DateTimeZone.UTC;
 
 public class MongoPageSource
         implements ConnectorPageSource
 {
-    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstanceUTC();
+    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstance(UTC);
     private static final int ROWS_PER_REQUEST = 1024;
 
     private final MongoCursor<Document> cursor;
@@ -64,6 +65,7 @@ public class MongoPageSource
     private final List<Type> columnTypes;
     private Document currentDoc;
     private long count;
+    private long totalCount;
     private boolean finished;
 
     public MongoPageSource(
@@ -122,6 +124,7 @@ public class MongoPageSource
             }
         }
 
+        totalCount += count;
         return pageBuilder.build();
     }
 
@@ -177,22 +180,11 @@ public class MongoPageSource
         }
     }
 
-    private String toVarcharValue(Object value)
-    {
-        if (value instanceof Collection<?>) {
-            return "[" + String.join(", ", ((Collection<?>) value).stream().map(this::toVarcharValue).collect(toList())) + "]";
-        }
-        if (value instanceof Document) {
-            return ((Document) value).toJson();
-        }
-        return String.valueOf(value);
-    }
-
     private void writeSlice(BlockBuilder output, Type type, Object value)
     {
         String base = type.getTypeSignature().getBase();
         if (base.equals(StandardTypes.VARCHAR)) {
-            type.writeSlice(output, utf8Slice(toVarcharValue(value)));
+            type.writeSlice(output, utf8Slice(value.toString()));
         }
         else if (type.equals(OBJECT_ID)) {
             type.writeSlice(output, wrappedBuffer(((ObjectId) value).toByteArray()));
@@ -241,16 +233,6 @@ public class MongoPageSource
                 output.closeEntry();
                 return;
             }
-            else if (value instanceof Map) {
-                BlockBuilder builder = output.beginBlockEntry();
-                Map<?, ?> document = (Map<?, ?>) value;
-                for (Map.Entry<?, ?> entry : document.entrySet()) {
-                    appendTo(type.getTypeParameters().get(0), entry.getKey(), builder);
-                    appendTo(type.getTypeParameters().get(1), entry.getValue(), builder);
-                }
-                output.closeEntry();
-                return;
-            }
         }
         else if (isRowType(type)) {
             if (value instanceof Map) {
@@ -292,6 +274,7 @@ public class MongoPageSource
 
     @Override
     public void close()
+            throws IOException
     {
         cursor.close();
     }

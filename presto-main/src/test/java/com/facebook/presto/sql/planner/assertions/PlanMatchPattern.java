@@ -14,7 +14,7 @@
 package com.facebook.presto.sql.planner.assertions;
 
 import com.facebook.presto.Session;
-import com.facebook.presto.cost.PlanNodeStatsEstimate;
+import com.facebook.presto.cost.PlanNodeCost;
 import com.facebook.presto.metadata.Metadata;
 import com.facebook.presto.spi.block.SortOrder;
 import com.facebook.presto.spi.predicate.Domain;
@@ -24,7 +24,6 @@ import com.facebook.presto.sql.planner.plan.AggregationNode;
 import com.facebook.presto.sql.planner.plan.AggregationNode.Step;
 import com.facebook.presto.sql.planner.plan.ApplyNode;
 import com.facebook.presto.sql.planner.plan.AssignUniqueId;
-import com.facebook.presto.sql.planner.plan.EnforceSingleRowNode;
 import com.facebook.presto.sql.planner.plan.ExceptNode;
 import com.facebook.presto.sql.planner.plan.ExchangeNode;
 import com.facebook.presto.sql.planner.plan.FilterNode;
@@ -49,7 +48,6 @@ import com.facebook.presto.sql.tree.Expression;
 import com.facebook.presto.sql.tree.FrameBound;
 import com.facebook.presto.sql.tree.FunctionCall;
 import com.facebook.presto.sql.tree.QualifiedName;
-import com.facebook.presto.sql.tree.SortItem;
 import com.facebook.presto.sql.tree.WindowFrame;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -304,17 +302,11 @@ public final class PlanMatchPattern
 
     public static PlanMatchPattern join(JoinNode.Type joinType, List<ExpectedValueProvider<JoinNode.EquiJoinClause>> expectedEquiCriteria, Optional<String> expectedFilter, PlanMatchPattern left, PlanMatchPattern right)
     {
-        return join(joinType, expectedEquiCriteria, expectedFilter, Optional.empty(), left, right);
-    }
-
-    public static PlanMatchPattern join(JoinNode.Type joinType, List<ExpectedValueProvider<JoinNode.EquiJoinClause>> expectedEquiCriteria, Optional<String> expectedFilter, Optional<JoinNode.DistributionType> expectedDistributionType, PlanMatchPattern left, PlanMatchPattern right)
-    {
         return node(JoinNode.class, left, right).with(
                 new JoinMatcher(
                         joinType,
                         expectedEquiCriteria,
-                        expectedFilter.map(predicate -> rewriteIdentifiersToSymbolReferences(new SqlParser().createExpression(predicate))),
-                        expectedDistributionType));
+                        expectedFilter.map(predicate -> rewriteIdentifiersToSymbolReferences(new SqlParser().createExpression(predicate)))));
     }
 
     public static PlanMatchPattern exchange(PlanMatchPattern... sources)
@@ -426,11 +418,6 @@ public final class PlanMatchPattern
         return node(LimitNode.class, source).with(new LimitMatcher(limit));
     }
 
-    public static PlanMatchPattern enforceSingleRow(PlanMatchPattern source)
-    {
-        return node(EnforceSingleRowNode.class, source);
-    }
-
     public static PlanMatchPattern tableWriter(List<String> columns, List<String> columnNames, PlanMatchPattern source)
     {
         return node(TableWriterNode.class, source).with(new TableWriterMatcher(columns, columnNames));
@@ -461,12 +448,12 @@ public final class PlanMatchPattern
         return states.build();
     }
 
-    MatchResult detailMatches(PlanNode node, PlanNodeStatsEstimate stats, Session session, Metadata metadata, SymbolAliases symbolAliases)
+    MatchResult detailMatches(PlanNode node, PlanNodeCost planNodeCost, Session session, Metadata metadata, SymbolAliases symbolAliases)
     {
         SymbolAliases.Builder newAliases = SymbolAliases.builder();
 
         for (Matcher matcher : matchers) {
-            MatchResult matchResult = matcher.detailMatches(node, stats, session, metadata, symbolAliases);
+            MatchResult matchResult = matcher.detailMatches(node, planNodeCost, session, metadata, symbolAliases);
             if (!matchResult.isMatch()) {
                 return NO_MATCH;
             }
@@ -548,9 +535,9 @@ public final class PlanMatchPattern
         return this;
     }
 
-    public PlanMatchPattern withStats(PlanNodeStatsEstimate stats)
+    public PlanMatchPattern withCost(PlanNodeCost cost)
     {
-        matchers.add(new PlanStatsMatcher(stats));
+        matchers.add(new PlanCostMatcher(cost));
         return this;
     }
 
@@ -594,11 +581,6 @@ public final class PlanMatchPattern
     public static ExpectedValueProvider<FunctionCall> functionCall(String name, List<String> args)
     {
         return new FunctionCallProvider(QualifiedName.of(name), toSymbolAliases(args));
-    }
-
-    public static ExpectedValueProvider<FunctionCall> functionCall(String name, List<String> args, List<Ordering> orderBy)
-    {
-        return new FunctionCallProvider(QualifiedName.of(name), toSymbolAliases(args), orderBy);
     }
 
     public static ExpectedValueProvider<FunctionCall> functionCall(
@@ -653,11 +635,6 @@ public final class PlanMatchPattern
                         .collect(toImmutableMap(entry -> new SymbolAlias(entry.getKey()), Map.Entry::getValue)));
     }
 
-    public static Ordering sort(String field, SortItem.Ordering sortOrder, SortItem.NullOrdering nullOrder)
-    {
-        return new Ordering(field, sortOrder, nullOrder);
-    }
-
     @Override
     public String toString()
     {
@@ -705,45 +682,5 @@ public final class PlanMatchPattern
     private static String indentString(int indent)
     {
         return Strings.repeat("    ", indent);
-    }
-
-    public static class Ordering
-    {
-        private final String field;
-        private final SortItem.Ordering sortOrder;
-        private final SortItem.NullOrdering nullOrder;
-
-        private Ordering(String field, SortItem.Ordering sortOrder, SortItem.NullOrdering nullOrder)
-        {
-            this.field = field;
-            this.sortOrder = sortOrder;
-            this.nullOrder = nullOrder;
-        }
-
-        public String getField()
-        {
-            return field;
-        }
-
-        public SortItem.Ordering getSortOrder()
-        {
-            return sortOrder;
-        }
-
-        public SortItem.NullOrdering getNullOrder()
-        {
-            return nullOrder;
-        }
-
-        @Override
-        public String toString()
-        {
-            String result = field + " " + sortOrder;
-            if (nullOrder != SortItem.NullOrdering.UNDEFINED) {
-                result += " NULLS " + nullOrder;
-            }
-
-            return result;
-        }
     }
 }

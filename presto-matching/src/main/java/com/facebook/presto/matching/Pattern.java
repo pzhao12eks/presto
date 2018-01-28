@@ -21,7 +21,6 @@ import com.google.common.collect.Iterables;
 
 import java.util.function.Predicate;
 
-import static com.facebook.presto.matching.DefaultMatcher.DEFAULT_MATCHER;
 import static com.google.common.base.Predicates.not;
 
 public abstract class Pattern<T>
@@ -84,11 +83,6 @@ public abstract class Pattern<T>
     public abstract Match<T> accept(Matcher matcher, Object object, Captures captures);
 
     public abstract void accept(PatternVisitor patternVisitor);
-
-    public boolean matches(Object object)
-    {
-        return DEFAULT_MATCHER.match(this, object).isPresent();
-    }
 
     @Override
     public String toString()

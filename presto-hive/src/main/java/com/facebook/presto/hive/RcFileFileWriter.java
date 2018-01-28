@@ -26,8 +26,8 @@ import com.facebook.presto.spi.block.BlockBuilderStatus;
 import com.facebook.presto.spi.block.RunLengthEncodedBlock;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.CountingOutputStream;
 import io.airlift.slice.OutputStreamSliceOutput;
+import io.airlift.slice.SliceOutput;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,7 +47,6 @@ import static java.util.Objects.requireNonNull;
 public class RcFileFileWriter
         implements HiveFileWriter
 {
-    private final CountingOutputStream outputStream;
     private final RcFileWriter rcFileWriter;
     private final Callable<Void> rollbackAction;
     private final int[] fileInputColumnIndexes;
@@ -65,9 +64,8 @@ public class RcFileFileWriter
             Optional<Supplier<RcFileDataSource>> validationInputFactory)
             throws IOException
     {
-        this.outputStream = new CountingOutputStream(outputStream);
         rcFileWriter = new RcFileWriter(
-                new OutputStreamSliceOutput(this.outputStream),
+                outputStream instanceof SliceOutput ? ((SliceOutput) outputStream) : new OutputStreamSliceOutput(outputStream),
                 fileColumnTypes,
                 rcFileEncoding,
                 codecName,
@@ -86,12 +84,6 @@ public class RcFileFileWriter
         }
         this.nullBlocks = nullBlocks.build();
         this.validationInputFactory = validationInputFactory;
-    }
-
-    @Override
-    public long getWrittenBytes()
-    {
-        return outputStream.getCount();
     }
 
     @Override

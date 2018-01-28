@@ -13,9 +13,9 @@
  */
 package com.facebook.presto.tests.utils;
 
-import io.prestodb.tempto.query.QueryExecutor;
+import com.teradata.tempto.query.QueryExecutor;
 
-import static io.prestodb.tempto.context.ThreadLocalTestContextHolder.testContext;
+import static com.teradata.tempto.context.ThreadLocalTestContextHolder.testContext;
 
 public class QueryExecutors
 {

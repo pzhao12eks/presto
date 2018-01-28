@@ -13,8 +13,8 @@
  */
 package com.facebook.presto.operator;
 
+import com.facebook.presto.execution.SystemMemoryUsageListener;
 import com.facebook.presto.execution.buffer.SerializedPage;
-import com.facebook.presto.memory.context.LocalMemoryContext;
 import com.facebook.presto.operator.HttpPageBufferClient.ClientCallback;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +61,7 @@ public class ExchangeClient
     private final Duration minErrorDuration;
     private final Duration maxErrorDuration;
     private final HttpClient httpClient;
-    private final ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService executor;
 
     @GuardedBy("this")
     private boolean noMoreLocations;
@@ -90,8 +89,7 @@ public class ExchangeClient
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicReference<Throwable> failure = new AtomicReference<>();
 
-    private final LocalMemoryContext systemMemoryContext;
-    private final Executor pageBufferClientCallbackExecutor;
+    private final SystemMemoryUsageListener systemMemoryUsageListener;
 
     // ExchangeClientStatus.mergeWith assumes all clients have the same bufferCapacity.
     // Please change that method accordingly when this assumption becomes not true.
@@ -102,9 +100,8 @@ public class ExchangeClient
             Duration minErrorDuration,
             Duration maxErrorDuration,
             HttpClient httpClient,
-            ScheduledExecutorService scheduler,
-            LocalMemoryContext systemMemoryContext,
-            Executor pageBufferClientCallbackExecutor)
+            ScheduledExecutorService executor,
+            SystemMemoryUsageListener systemMemoryUsageListener)
     {
         this.bufferCapacity = bufferCapacity.toBytes();
         this.maxResponseSize = maxResponseSize;
@@ -112,10 +109,9 @@ public class ExchangeClient
         this.minErrorDuration = minErrorDuration;
         this.maxErrorDuration = maxErrorDuration;
         this.httpClient = httpClient;
-        this.scheduler = scheduler;
-        this.systemMemoryContext = systemMemoryContext;
+        this.executor = executor;
+        this.systemMemoryUsageListener = systemMemoryUsageListener;
         this.maxBufferBytes = Long.MIN_VALUE;
-        this.pageBufferClientCallbackExecutor = requireNonNull(pageBufferClientCallbackExecutor, "pageBufferClientCallbackExecutor is null");
     }
 
     public ExchangeClientStatus getStatus()
@@ -161,8 +157,7 @@ public class ExchangeClient
                 maxErrorDuration,
                 location,
                 new ExchangeClientCallback(),
-                scheduler,
-                pageBufferClientCallbackExecutor);
+                executor);
         allClients.put(location, client);
         queuedClients.add(client);
 
@@ -211,7 +206,7 @@ public class ExchangeClient
         synchronized (this) {
             if (!closed.get()) {
                 bufferBytes -= page.getRetainedSizeInBytes();
-                systemMemoryContext.setBytes(bufferBytes);
+                systemMemoryUsageListener.updateSystemMemoryUsage(-page.getRetainedSizeInBytes());
                 if (pageBuffer.peek() == NO_MORE_PAGES) {
                     close();
                 }
@@ -244,7 +239,7 @@ public class ExchangeClient
             closeQuietly(client);
         }
         pageBuffer.clear();
-        systemMemoryContext.setBytes(0);
+        systemMemoryUsageListener.updateSystemMemoryUsage(-bufferBytes);
         bufferBytes = 0;
         if (pageBuffer.peekLast() != NO_MORE_PAGES) {
             checkState(pageBuffer.add(NO_MORE_PAGES), "Could not add no more pages marker");
@@ -320,7 +315,7 @@ public class ExchangeClient
 
         bufferBytes += memorySize;
         maxBufferBytes = Math.max(maxBufferBytes, bufferBytes);
-        systemMemoryContext.setBytes(bufferBytes);
+        systemMemoryUsageListener.updateSystemMemoryUsage(memorySize);
         successfulRequests++;
 
         long responseSize = pages.stream()
@@ -338,7 +333,7 @@ public class ExchangeClient
         blockedCallers.clear();
         for (SettableFuture<?> blockedCaller : callers) {
             // Notify callers in a separate thread to avoid callbacks while holding a lock
-            scheduler.execute(() -> blockedCaller.set(null));
+            executor.execute(() -> blockedCaller.set(null));
         }
     }
 

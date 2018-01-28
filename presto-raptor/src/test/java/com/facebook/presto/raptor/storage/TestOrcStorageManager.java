@@ -108,7 +108,7 @@ import static org.testng.FileAssert.assertFile;
 @Test(singleThreaded = true)
 public class TestOrcStorageManager
 {
-    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstanceUTC();
+    private static final ISOChronology UTC_CHRONOLOGY = ISOChronology.getInstance(UTC);
     private static final DateTime EPOCH = new DateTime(0, UTC_CHRONOLOGY);
     private static final String CURRENT_NODE = "node";
     private static final String CONNECTOR_ID = "test";
@@ -131,6 +131,7 @@ public class TestOrcStorageManager
 
     @BeforeMethod
     public void setup()
+            throws Exception
     {
         temporary = createTempDir();
         File directory = new File(temporary, "data");
@@ -357,6 +358,7 @@ public class TestOrcStorageManager
 
     @Test
     public void testWriterRollback()
+            throws Exception
     {
         // verify staging directory is empty
         File staging = new File(new File(temporary, "data"), "staging");
@@ -500,6 +502,7 @@ public class TestOrcStorageManager
 
     @Test
     public void testMaxShardRows()
+            throws Exception
     {
         OrcStorageManager manager = createOrcStorageManager(2, new DataSize(2, MEGABYTE));
 
@@ -517,6 +520,7 @@ public class TestOrcStorageManager
 
     @Test
     public void testMaxFileSize()
+            throws Exception
     {
         List<Long> columnIds = ImmutableList.of(3L, 7L);
         List<Type> columnTypes = ImmutableList.of(BIGINT, createVarcharType(5));
@@ -560,11 +564,13 @@ public class TestOrcStorageManager
     }
 
     public static OrcStorageManager createOrcStorageManager(IDBI dbi, File temporary)
+            throws IOException
     {
         return createOrcStorageManager(dbi, temporary, MAX_SHARD_ROWS);
     }
 
     public static OrcStorageManager createOrcStorageManager(IDBI dbi, File temporary, int maxShardRows)
+            throws IOException
     {
         File directory = new File(temporary, "data");
         StorageService storageService = new FileStorageService(directory);

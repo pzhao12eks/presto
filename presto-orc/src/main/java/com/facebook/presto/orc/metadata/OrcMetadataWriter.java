@@ -42,8 +42,6 @@ public class OrcMetadataWriter
         implements MetadataWriter
 {
     // see https://github.com/prestodb/orc-protobuf/blob/master/src/main/protobuf/orc_proto.proto
-    private static final int PRESTO_WRITER_ID = 2;
-    // in order to change this value, the master Apache ORC proto file must be updated
     private static final int ORC_WRITER_VERSION = 6;
     private static final List<Integer> ORC_METADATA_VERSION = ImmutableList.of(0, 12);
 
@@ -96,7 +94,6 @@ public class OrcMetadataWriter
             throws IOException
     {
         OrcProto.Footer footerProtobuf = OrcProto.Footer.newBuilder()
-                .setWriter(PRESTO_WRITER_ID)
                 .setNumberOfRows(footer.getNumberOfRows())
                 .setRowIndexStride(footer.getRowsInRowGroup())
                 .addAllStripes(footer.getStripes().stream()
@@ -204,13 +201,10 @@ public class OrcMetadataWriter
         }
 
         if (columnStatistics.getIntegerStatistics() != null) {
-            OrcProto.IntegerStatistics.Builder integerStatistics = OrcProto.IntegerStatistics.newBuilder()
+            builder.setIntStatistics(OrcProto.IntegerStatistics.newBuilder()
                     .setMinimum(columnStatistics.getIntegerStatistics().getMin())
-                    .setMaximum(columnStatistics.getIntegerStatistics().getMax());
-            if (columnStatistics.getIntegerStatistics().getSum() != null) {
-                integerStatistics.setSum(columnStatistics.getIntegerStatistics().getSum());
-            }
-            builder.setIntStatistics(integerStatistics.build());
+                    .setMaximum(columnStatistics.getIntegerStatistics().getMax())
+                    .build());
         }
 
         if (columnStatistics.getDoubleStatistics() != null) {
@@ -224,7 +218,6 @@ public class OrcMetadataWriter
             builder.setStringStatistics(OrcProto.StringStatistics.newBuilder()
                     .setMinimumBytes(ByteString.copyFrom(columnStatistics.getStringStatistics().getMin().getBytes()))
                     .setMaximumBytes(ByteString.copyFrom(columnStatistics.getStringStatistics().getMax().getBytes()))
-                    .setSum(columnStatistics.getStringStatistics().getSum())
                     .build());
         }
 

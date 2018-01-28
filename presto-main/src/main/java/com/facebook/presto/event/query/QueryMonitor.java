@@ -45,6 +45,7 @@ import com.facebook.presto.spi.eventlistener.StageCpuDistribution;
 import com.facebook.presto.transaction.TransactionId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airlift.json.JsonCodec;
@@ -119,7 +120,6 @@ public class QueryMonitor
                                 queryInfo.getSession().getRemoteUserAddress(),
                                 queryInfo.getSession().getUserAgent(),
                                 queryInfo.getSession().getClientInfo(),
-                                queryInfo.getSession().getClientTags(),
                                 queryInfo.getSession().getSource(),
                                 queryInfo.getSession().getCatalog(),
                                 queryInfo.getSession().getSchema(),
@@ -212,13 +212,12 @@ public class QueryMonitor
                                     ofMillis(queryStats.getQueuedTime().toMillis()),
                                     Optional.ofNullable(queryStats.getAnalysisTime()).map(duration -> ofMillis(duration.toMillis())),
                                     Optional.ofNullable(queryStats.getDistributedPlanningTime()).map(duration -> ofMillis(duration.toMillis())),
-                                    queryStats.getPeakUserMemoryReservation().toBytes(),
-                                    queryStats.getPeakTotalMemoryReservation().toBytes(),
+                                    queryStats.getPeakMemoryReservation().toBytes(),
                                     queryStats.getRawInputDataSize().toBytes(),
                                     queryStats.getRawInputPositions(),
                                     queryStats.getOutputDataSize().toBytes(),
                                     queryStats.getOutputPositions(),
-                                    queryStats.getLogicalWrittenDataSize().toBytes(),
+                                    queryStats.getWrittenDataSize().toBytes(),
                                     queryStats.getWrittenPositions(),
                                     queryStats.getCumulativeMemory(),
                                     queryStats.getCompletedDrivers(),
@@ -231,7 +230,6 @@ public class QueryMonitor
                                     queryInfo.getSession().getRemoteUserAddress(),
                                     queryInfo.getSession().getUserAgent(),
                                     queryInfo.getSession().getClientInfo(),
-                                    queryInfo.getSession().getClientTags(),
                                     queryInfo.getSession().getSource(),
                                     queryInfo.getSession().getCatalog(),
                                     queryInfo.getSession().getSchema(),
@@ -249,7 +247,7 @@ public class QueryMonitor
             logQueryTimeline(queryInfo);
         }
         catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -389,6 +387,7 @@ public class QueryMonitor
                                     ofMillis(driverStats.getRawInputReadTime().toMillis()),
                                     driverStats.getRawInputPositions(),
                                     driverStats.getRawInputDataSize().toBytes(),
+                                    driverStats.getPeakMemoryReservation().toBytes(),
                                     timeToStart,
                                     timeToEnd),
                             splitFailureMetadata,

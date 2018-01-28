@@ -23,26 +23,21 @@ import com.facebook.presto.tests.datatype.DataTypeTest;
 import com.facebook.presto.tests.sql.JdbcSqlExecutor;
 import com.facebook.presto.tests.sql.PrestoSqlExecutor;
 import io.airlift.testing.mysql.TestingMySqlServer;
+import io.airlift.tpch.TpchTable;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 
 import static com.facebook.presto.plugin.mysql.MySqlQueryRunner.createMySqlQueryRunner;
 import static com.facebook.presto.spi.type.VarcharType.createUnboundedVarcharType;
 import static com.facebook.presto.spi.type.VarcharType.createVarcharType;
-import static com.facebook.presto.tests.datatype.DataType.bigintDataType;
 import static com.facebook.presto.tests.datatype.DataType.charDataType;
-import static com.facebook.presto.tests.datatype.DataType.doubleDataType;
-import static com.facebook.presto.tests.datatype.DataType.integerDataType;
-import static com.facebook.presto.tests.datatype.DataType.realDataType;
-import static com.facebook.presto.tests.datatype.DataType.smallintDataType;
 import static com.facebook.presto.tests.datatype.DataType.stringDataType;
-import static com.facebook.presto.tests.datatype.DataType.tinyintDataType;
 import static com.facebook.presto.tests.datatype.DataType.varcharDataType;
 import static com.google.common.base.Strings.repeat;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
 
 @Test
 public class TestMySqlTypeMapping
@@ -59,8 +54,9 @@ public class TestMySqlTypeMapping
     }
 
     private TestMySqlTypeMapping(TestingMySqlServer mysqlServer)
+            throws Exception
     {
-        super(() -> createMySqlQueryRunner(mysqlServer, emptyList()));
+        super(() -> createMySqlQueryRunner(mysqlServer, TpchTable.getTables()));
         this.mysqlServer = mysqlServer;
     }
 
@@ -68,19 +64,6 @@ public class TestMySqlTypeMapping
     public final void destroy()
     {
         mysqlServer.close();
-    }
-
-    @Test
-    public void testBasicTypes()
-    {
-        DataTypeTest.create()
-                .addRoundTrip(bigintDataType(), 123_456_789_012L)
-                .addRoundTrip(integerDataType(), 1_234_567_890)
-                .addRoundTrip(smallintDataType(), (short) 32_456)
-                .addRoundTrip(tinyintDataType(), (byte) 125)
-                .addRoundTrip(doubleDataType(), 123.45d)
-                .addRoundTrip(realDataType(), 123.45f)
-                .execute(getQueryRunner(), prestoCreateAsSelect("test_basic_types"));
     }
 
     @Test
@@ -193,11 +176,13 @@ public class TestMySqlTypeMapping
 
     @Test
     public void testDecimalExceedingPrecisionMax()
+            throws SQLException
     {
         testUnsupportedDataType("decimal(50,0)");
     }
 
     private void testUnsupportedDataType(String databaseDataType)
+            throws SQLException
     {
         JdbcSqlExecutor jdbcSqlExecutor = new JdbcSqlExecutor(mysqlServer.getJdbcUrl());
         jdbcSqlExecutor.execute(format("CREATE TABLE tpch.test_unsupported_data_type(supported_column varchar(5), unsupported_column %s)", databaseDataType));

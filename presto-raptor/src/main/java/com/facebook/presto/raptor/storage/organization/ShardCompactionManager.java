@@ -79,18 +79,12 @@ public class ShardCompactionManager
     private final IDBI dbi;
 
     @Inject
-    public ShardCompactionManager(@ForMetadata IDBI dbi,
-            NodeManager nodeManager,
-            ShardManager shardManager,
-            ShardOrganizer organizer,
-            TemporalFunction temporalFunction,
-            StorageManagerConfig config)
+    public ShardCompactionManager(@ForMetadata IDBI dbi, NodeManager nodeManager, ShardManager shardManager, ShardOrganizer organizer, StorageManagerConfig config)
     {
         this(dbi,
                 nodeManager.getCurrentNode().getNodeIdentifier(),
                 shardManager,
                 organizer,
-                temporalFunction,
                 config.getCompactionInterval(),
                 config.getMaxShardSize(),
                 config.getMaxShardRows(),
@@ -102,7 +96,6 @@ public class ShardCompactionManager
             String currentNodeIdentifier,
             ShardManager shardManager,
             ShardOrganizer organizer,
-            TemporalFunction temporalFunction,
             Duration compactionDiscoveryInterval,
             DataSize maxShardSize,
             long maxShardRows,
@@ -123,7 +116,7 @@ public class ShardCompactionManager
         this.maxShardRows = maxShardRows;
 
         this.compactionEnabled = compactionEnabled;
-        this.compactionSetCreator = new CompactionSetCreator(temporalFunction, maxShardSize, maxShardRows);
+        this.compactionSetCreator = new CompactionSetCreator(maxShardSize, maxShardRows);
     }
 
     @PostConstruct

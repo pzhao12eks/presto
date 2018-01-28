@@ -25,6 +25,7 @@ public class TestRegexTemplate
 {
     @Test
     public void test()
+            throws Exception
     {
         RegexTemplate regexTemplate = new RegexTemplate("tpch_sf(?<scale>.*?)_(?<format>.*?)_(?<compression>.*?)");
 

@@ -20,6 +20,8 @@ import org.apache.hadoop.fs.RemoteIterator;
 
 import java.io.IOException;
 
+import static com.facebook.presto.hadoop.HadoopFileSystem.listLocatedStatus;
+
 public class HadoopDirectoryLister
         implements DirectoryLister
 {
@@ -27,6 +29,6 @@ public class HadoopDirectoryLister
     public RemoteIterator<LocatedFileStatus> list(FileSystem fs, Path path)
             throws IOException
     {
-        return fs.listLocatedStatus(path);
+        return listLocatedStatus(fs, path);
     }
 }

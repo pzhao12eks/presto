@@ -15,8 +15,7 @@ package com.facebook.presto.kafka.util;
 
 import com.facebook.presto.Session;
 import com.facebook.presto.client.Column;
-import com.facebook.presto.client.QueryData;
-import com.facebook.presto.client.QueryStatusInfo;
+import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.server.testing.TestingPrestoServer;
 import com.facebook.presto.spi.type.TimeZoneKey;
 import com.facebook.presto.spi.type.Type;
@@ -91,16 +90,16 @@ public class KafkaLoader
         }
 
         @Override
-        public void addResults(QueryStatusInfo statusInfo, QueryData data)
+        public void addResults(QueryResults results)
         {
-            if (types.get() == null && statusInfo.getColumns() != null) {
-                types.set(getTypes(statusInfo.getColumns()));
+            if (types.get() == null && results.getColumns() != null) {
+                types.set(getTypes(results.getColumns()));
             }
 
-            if (data.getData() != null) {
+            if (results.getData() != null) {
                 checkState(types.get() != null, "Data without types received!");
-                List<Column> columns = statusInfo.getColumns();
-                for (List<Object> fields : data.getData()) {
+                List<Column> columns = results.getColumns();
+                for (List<Object> fields : results.getData()) {
                     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
                     for (int i = 0; i < fields.size(); i++) {
                         Type type = types.get().get(i);

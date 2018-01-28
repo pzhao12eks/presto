@@ -44,8 +44,8 @@ public class OutputExtractor
     private class Visitor
             extends PlanVisitor<Void, Void>
     {
-        private ConnectorId connectorId;
-        private SchemaTableName schemaTableName;
+        private ConnectorId connectorId = null;
+        private SchemaTableName schemaTableName = null;
 
         @Override
         public Void visitTableWriter(TableWriterNode node, Void context)

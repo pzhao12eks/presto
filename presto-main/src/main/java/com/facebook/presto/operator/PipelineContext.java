@@ -14,12 +14,8 @@
 package com.facebook.presto.operator;
 
 import com.facebook.presto.Session;
-import com.facebook.presto.execution.Lifespan;
 import com.facebook.presto.execution.TaskId;
 import com.facebook.presto.memory.QueryContextVisitor;
-import com.facebook.presto.memory.context.LocalMemoryContext;
-import com.facebook.presto.memory.context.MemoryTrackingContext;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -70,6 +66,10 @@ public class PipelineContext
 
     private final AtomicInteger completedDrivers = new AtomicInteger();
 
+    private final AtomicLong memoryReservation = new AtomicLong();
+    private final AtomicLong systemMemoryReservation = new AtomicLong();
+    private final AtomicLong revocableMemoryReservation = new AtomicLong();
+
     private final AtomicReference<DateTime> executionStartTime = new AtomicReference<>();
     private final AtomicReference<DateTime> lastExecutionStartTime = new AtomicReference<>();
     private final AtomicReference<DateTime> lastExecutionEndTime = new AtomicReference<>();
@@ -91,13 +91,9 @@ public class PipelineContext
     private final CounterStat outputDataSize = new CounterStat();
     private final CounterStat outputPositions = new CounterStat();
 
-    private final AtomicLong physicalWrittenDataSize = new AtomicLong();
-
     private final ConcurrentMap<Integer, OperatorStats> operatorSummaries = new ConcurrentHashMap<>();
 
-    private final MemoryTrackingContext pipelineMemoryContext;
-
-    public PipelineContext(int pipelineId, TaskContext taskContext, Executor notificationExecutor, ScheduledExecutorService yieldExecutor, MemoryTrackingContext pipelineMemoryContext, boolean inputPipeline, boolean outputPipeline)
+    public PipelineContext(int pipelineId, TaskContext taskContext, Executor notificationExecutor, ScheduledExecutorService yieldExecutor, boolean inputPipeline, boolean outputPipeline)
     {
         this.pipelineId = pipelineId;
         this.inputPipeline = inputPipeline;
@@ -105,7 +101,6 @@ public class PipelineContext
         this.taskContext = requireNonNull(taskContext, "taskContext is null");
         this.notificationExecutor = requireNonNull(notificationExecutor, "notificationExecutor is null");
         this.yieldExecutor = requireNonNull(yieldExecutor, "yieldExecutor is null");
-        this.pipelineMemoryContext = requireNonNull(pipelineMemoryContext, "pipelineMemoryContext is null");
     }
 
     public TaskContext getTaskContext()
@@ -135,18 +130,12 @@ public class PipelineContext
 
     public DriverContext addDriverContext()
     {
-        return addDriverContext(false, Lifespan.taskWide());
+        return addDriverContext(false);
     }
 
-    public DriverContext addDriverContext(boolean partitioned, Lifespan lifespan)
+    public DriverContext addDriverContext(boolean partitioned)
     {
-        DriverContext driverContext = new DriverContext(
-                this,
-                notificationExecutor,
-                yieldExecutor,
-                pipelineMemoryContext.newMemoryTrackingContext(),
-                partitioned,
-                lifespan);
+        DriverContext driverContext = new DriverContext(this, notificationExecutor, yieldExecutor, partitioned);
         drivers.add(driverContext);
         return driverContext;
     }
@@ -206,8 +195,6 @@ public class PipelineContext
 
         outputDataSize.update(driverStats.getOutputDataSize().toBytes());
         outputPositions.update(driverStats.getOutputPositions());
-
-        physicalWrittenDataSize.getAndAdd(driverStats.getPhysicalWrittenDataSize().toBytes());
     }
 
     public void start()
@@ -230,20 +217,76 @@ public class PipelineContext
         return taskContext.isDone();
     }
 
+    public void transferMemoryToTaskContext(long bytes)
+    {
+        // The memory is already reserved in the task context, so just decrement our reservation
+        checkArgument(memoryReservation.addAndGet(-bytes) >= 0, "Tried to transfer more memory than is reserved");
+    }
+
+    public synchronized ListenableFuture<?> reserveMemory(long bytes)
+    {
+        ListenableFuture<?> future = taskContext.reserveMemory(bytes);
+        memoryReservation.getAndAdd(bytes);
+        return future;
+    }
+
+    public synchronized ListenableFuture<?> reserveRevocableMemory(long bytes)
+    {
+        ListenableFuture<?> future = taskContext.reserveRevocableMemory(bytes);
+        revocableMemoryReservation.getAndAdd(bytes);
+        return future;
+    }
+
+    public synchronized ListenableFuture<?> reserveSystemMemory(long bytes)
+    {
+        checkArgument(bytes >= 0, "bytes is negative");
+        ListenableFuture<?> future = taskContext.reserveSystemMemory(bytes);
+        systemMemoryReservation.getAndAdd(bytes);
+        return future;
+    }
+
     public synchronized ListenableFuture<?> reserveSpill(long bytes)
     {
         return taskContext.reserveSpill(bytes);
+    }
+
+    public synchronized boolean tryReserveMemory(long bytes)
+    {
+        if (taskContext.tryReserveMemory(bytes)) {
+            memoryReservation.getAndAdd(bytes);
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void freeMemory(long bytes)
+    {
+        checkArgument(bytes >= 0, "bytes is negative");
+        checkArgument(bytes <= memoryReservation.get(), "tried to free more memory than is reserved");
+        taskContext.freeMemory(bytes);
+        memoryReservation.getAndAdd(-bytes);
+    }
+
+    public synchronized void freeRevocableMemory(long bytes)
+    {
+        checkArgument(bytes >= 0, "bytes is negative");
+        checkArgument(bytes <= revocableMemoryReservation.get(), "tried to free more revocable memory than is reserved");
+        taskContext.freeRevocableMemory(bytes);
+        revocableMemoryReservation.getAndAdd(-bytes);
+    }
+
+    public synchronized void freeSystemMemory(long bytes)
+    {
+        checkArgument(bytes >= 0, "bytes is negative");
+        checkArgument(bytes <= systemMemoryReservation.get(), "tried to free more system memory than is reserved");
+        taskContext.freeSystemMemory(bytes);
+        systemMemoryReservation.getAndAdd(-bytes);
     }
 
     public synchronized void freeSpill(long bytes)
     {
         checkArgument(bytes >= 0, "bytes is negative");
         taskContext.freeSpill(bytes);
-    }
-
-    public LocalMemoryContext localSystemMemoryContext()
-    {
-        return pipelineMemoryContext.localSystemMemoryContext();
     }
 
     public void moreMemoryAvailable()
@@ -301,13 +344,6 @@ public class PipelineContext
         return stat;
     }
 
-    public long getPhysicalWrittenDataSize()
-    {
-        return drivers.stream()
-                .mapToLong(DriverContext::getPphysicalWrittenDataSize)
-                .sum();
-    }
-
     public PipelineStatus getPipelineStatus()
     {
         return getPipelineStatus(drivers.iterator());
@@ -346,8 +382,6 @@ public class PipelineContext
         long outputDataSize = this.outputDataSize.getTotalCount();
         long outputPositions = this.outputPositions.getTotalCount();
 
-        long physicalWrittenDataSize = this.physicalWrittenDataSize.get();
-
         List<DriverStats> drivers = new ArrayList<>();
 
         Multimap<Integer, OperatorStats> runningOperators = ArrayListMultimap.create();
@@ -376,8 +410,6 @@ public class PipelineContext
 
             outputDataSize += driverStats.getOutputDataSize().toBytes();
             outputPositions += driverStats.getOutputPositions();
-
-            physicalWrittenDataSize += driverStats.getPhysicalWrittenDataSize().toBytes();
         }
 
         // merge the running operator stats into the operator summary
@@ -420,9 +452,9 @@ public class PipelineContext
                 pipelineStatus.getBlockedDrivers(),
                 completedDrivers,
 
-                succinctBytes(pipelineMemoryContext.getUserMemory()),
-                succinctBytes(pipelineMemoryContext.getRevocableMemory()),
-                succinctBytes(pipelineMemoryContext.getSystemMemory()),
+                succinctBytes(memoryReservation.get()),
+                succinctBytes(revocableMemoryReservation.get()),
+                succinctBytes(systemMemoryReservation.get()),
 
                 queuedTime.snapshot(),
                 elapsedTime.snapshot(),
@@ -442,8 +474,6 @@ public class PipelineContext
 
                 succinctBytes(outputDataSize),
                 outputPositions,
-
-                succinctBytes(physicalWrittenDataSize),
 
                 ImmutableList.copyOf(operatorSummaries.values()),
                 drivers);
@@ -468,12 +498,6 @@ public class PipelineContext
         }
 
         return map.replace(key, oldValue, newValue);
-    }
-
-    @VisibleForTesting
-    public MemoryTrackingContext getPipelineMemoryContext()
-    {
-        return pipelineMemoryContext;
     }
 
     private static PipelineStatus getPipelineStatus(Iterator<DriverContext> driverContextsIterator)

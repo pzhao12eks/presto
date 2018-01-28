@@ -60,6 +60,7 @@ public class TestISO8601JsonFieldDecoder
 
     @Test
     public void testBasicFormatting()
+            throws Exception
     {
         long now = System.currentTimeMillis();
         String nowString = PRINTER.print(now);
@@ -102,6 +103,7 @@ public class TestISO8601JsonFieldDecoder
 
     @Test
     public void testNullValues()
+            throws Exception
     {
         byte[] json = "{}".getBytes(StandardCharsets.UTF_8);
 

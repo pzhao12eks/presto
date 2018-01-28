@@ -28,26 +28,22 @@ import java.util.function.Function;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class ExpressionSymbolInliner
+public class ExpressionSymbolInliner
 {
-    public static Expression inlineSymbols(Map<Symbol, ? extends Expression> mapping, Expression expression)
-    {
-        return inlineSymbols(mapping::get, expression);
-    }
-
-    public static Expression inlineSymbols(Function<Symbol, Expression> mapping, Expression expression)
-    {
-        return new ExpressionSymbolInliner(mapping).rewrite(expression);
-    }
-
     private final Function<Symbol, Expression> mapping;
 
-    private ExpressionSymbolInliner(Function<Symbol, Expression> mapping)
+    @Deprecated
+    public ExpressionSymbolInliner(Map<Symbol, ? extends Expression> mappings)
+    {
+        this.mapping = mappings::get;
+    }
+
+    public ExpressionSymbolInliner(Function<Symbol, Expression> mapping)
     {
         this.mapping = mapping;
     }
 
-    private Expression rewrite(Expression expression)
+    public Expression rewrite(Expression expression)
     {
         return ExpressionTreeRewriter.rewriteWith(new Visitor(), expression);
     }

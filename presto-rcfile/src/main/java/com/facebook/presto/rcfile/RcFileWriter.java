@@ -339,6 +339,7 @@ public class RcFileWriter
         private boolean columnClosed;
 
         public ColumnEncoder(ColumnEncoding columnEncoding, RcFileCompressor compressor)
+                throws IOException
         {
             this.columnEncoding = columnEncoding;
             this.output = compressor.createCompressedSliceOutput((int) MIN_BUFFER_SIZE.toBytes(), (int) MAX_BUFFER_SIZE.toBytes());
@@ -393,6 +394,7 @@ public class RcFileWriter
         }
 
         public void reset()
+                throws IOException
         {
             checkArgument(columnClosed, "Column is open");
             lengthOutput.reset();

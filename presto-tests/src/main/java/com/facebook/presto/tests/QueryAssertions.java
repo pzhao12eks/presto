@@ -81,7 +81,7 @@ public final class QueryAssertions
         long start = System.nanoTime();
         MaterializedResult actualResults = null;
         try {
-            actualResults = actualQueryRunner.execute(session, actual).toTestTypes();
+            actualResults = actualQueryRunner.execute(session, actual).toJdbcTypes();
         }
         catch (RuntimeException ex) {
             fail("Execution of 'actual' query failed: " + actual, ex);
@@ -212,18 +212,6 @@ public final class QueryAssertions
         }
         catch (RuntimeException ex) {
             assertExceptionMessage(sql, ex, expectedMessageRegExp);
-        }
-    }
-
-    protected static void assertQueryReturnsEmptyResult(QueryRunner queryRunner, Session session, @Language("SQL") String sql)
-    {
-        try {
-            MaterializedResult results = queryRunner.execute(session, sql).toTestTypes();
-            assertNotNull(results);
-            assertEquals(results.getRowCount(), 0);
-        }
-        catch (RuntimeException ex) {
-            fail("Execution of query failed: " + sql, ex);
         }
     }
 

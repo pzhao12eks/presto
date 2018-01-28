@@ -30,6 +30,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testObject()
+            throws Exception
     {
         assertEquals(new SqlIntervalYearMonth(3, 11), new SqlIntervalYearMonth(47));
         assertEquals(new SqlIntervalYearMonth(-3, -11), new SqlIntervalYearMonth(-47));
@@ -43,6 +44,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testLiteral()
+            throws Exception
     {
         assertLiteral("INTERVAL '124-30' YEAR TO MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(124, 30));
         assertLiteral("INTERVAL '124' YEAR TO MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(124, 0));
@@ -77,6 +79,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testAdd()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH + INTERVAL '3' MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(6));
         assertFunction("INTERVAL '6' YEAR + INTERVAL '6' YEAR", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(12 * 12));
@@ -85,6 +88,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testSubtract()
+            throws Exception
     {
         assertFunction("INTERVAL '6' MONTH - INTERVAL '3' MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(3));
         assertFunction("INTERVAL '9' YEAR - INTERVAL '6' YEAR", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(3 * 12));
@@ -93,6 +97,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testMultiply()
+            throws Exception
     {
         assertFunction("INTERVAL '6' MONTH * 2", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(12));
         assertFunction("2 * INTERVAL '6' MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(12));
@@ -107,6 +112,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testDivide()
+            throws Exception
     {
         assertFunction("INTERVAL '30' MONTH / 2", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(15));
         assertFunction("INTERVAL '60' MONTH / 2.5", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(24));
@@ -117,6 +123,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testNegation()
+            throws Exception
     {
         assertFunction("- INTERVAL '3' MONTH", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(-3));
         assertFunction("- INTERVAL '6' YEAR", INTERVAL_YEAR_MONTH, new SqlIntervalYearMonth(-72));
@@ -124,6 +131,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testEqual()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH = INTERVAL '3' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '6' YEAR = INTERVAL '6' YEAR", BOOLEAN, true);
@@ -134,6 +142,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testNotEqual()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH <> INTERVAL '4' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '6' YEAR <> INTERVAL '7' YEAR", BOOLEAN, true);
@@ -144,6 +153,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testLessThan()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH < INTERVAL '4' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '6' YEAR < INTERVAL '7' YEAR", BOOLEAN, true);
@@ -156,6 +166,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testLessThanOrEqual()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH <= INTERVAL '4' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '3' MONTH <= INTERVAL '3' MONTH", BOOLEAN, true);
@@ -168,6 +179,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testGreaterThan()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH > INTERVAL '2' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '6' YEAR > INTERVAL '5' YEAR", BOOLEAN, true);
@@ -180,6 +192,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testGreaterThanOrEqual()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH >= INTERVAL '2' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '3' MONTH >= INTERVAL '3' MONTH", BOOLEAN, true);
@@ -192,6 +205,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testBetween()
+            throws Exception
     {
         assertFunction("INTERVAL '3' MONTH between INTERVAL '2' MONTH and INTERVAL '4' MONTH", BOOLEAN, true);
         assertFunction("INTERVAL '3' MONTH between INTERVAL '3' MONTH and INTERVAL '4' MONTH", BOOLEAN, true);
@@ -205,6 +219,7 @@ public class TestIntervalYearMonth
 
     @Test
     public void testCastToSlice()
+            throws Exception
     {
         assertFunction("cast(INTERVAL '124-30' YEAR TO MONTH as varchar)", VARCHAR, "126-6");
         assertFunction("cast(INTERVAL '124-30' YEAR TO MONTH as varchar)", VARCHAR, new SqlIntervalYearMonth(124, 30).toString());

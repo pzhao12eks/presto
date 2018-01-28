@@ -51,7 +51,6 @@ import java.util.stream.DoubleStream;
 
 import static com.facebook.presto.hive.HiveSessionProperties.isStatisticsEnabled;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
@@ -74,8 +73,7 @@ public class MetastoreHiveStatisticsProvider
         if (!isStatisticsEnabled(session)) {
             return TableStatistics.EMPTY_STATISTICS;
         }
-
-        Map<String, PartitionStatistics> partitionStatistics = getPartitionsStatistics((HiveTableHandle) tableHandle, hivePartitions, tableColumns);
+        Map<String, PartitionStatistics> partitionStatistics = getPartitionsStatistics((HiveTableHandle) tableHandle, hivePartitions, tableColumns.keySet());
 
         TableStatistics.Builder tableStatistics = TableStatistics.builder();
         Estimate rowCount = calculateRowsCount(partitionStatistics);
@@ -175,7 +173,6 @@ public class MetastoreHiveStatisticsProvider
 
         return new Estimate(totalNullsCount.getValue() / totalRowsCount.getValue());
     }
-
     private Estimate countDistinctPartitionKeys(HiveColumnHandle partitionColumn, List<HivePartition> partitions)
     {
         return new Estimate(partitions.stream()
@@ -208,7 +205,6 @@ public class MetastoreHiveStatisticsProvider
                 .sum();
         return new Estimate(estimatedNullsCount / estimatedTotalRowsCount);
     }
-
     private Estimate summarizePartitionStatistics(
             Collection<PartitionStatistics> partitionStatistics,
             String column,
@@ -233,7 +229,7 @@ public class MetastoreHiveStatisticsProvider
         }
     }
 
-    private Map<String, PartitionStatistics> getPartitionsStatistics(HiveTableHandle tableHandle, List<HivePartition> hivePartitions, Map<String, ColumnHandle> tableColumns)
+    private Map<String, PartitionStatistics> getPartitionsStatistics(HiveTableHandle tableHandle, List<HivePartition> hivePartitions, Set<String> tableColumns)
     {
         if (hivePartitions.isEmpty()) {
             return ImmutableMap.of();
@@ -244,19 +240,11 @@ public class MetastoreHiveStatisticsProvider
         }
 
         if (unpartitioned) {
-            return ImmutableMap.of(HivePartition.UNPARTITIONED_ID, getTableStatistics(tableHandle.getSchemaTableName(), tableColumns.keySet()));
+            return ImmutableMap.of(HivePartition.UNPARTITIONED_ID, getTableStatistics(tableHandle.getSchemaTableName(), tableColumns));
         }
         else {
-            return getPartitionsStatistics(tableHandle.getSchemaTableName(), hivePartitions, listNonPartitioningColumns(tableColumns));
+            return getPartitionsStatistics(tableHandle.getSchemaTableName(), hivePartitions, tableColumns);
         }
-    }
-
-    private static Set<String> listNonPartitioningColumns(Map<String, ColumnHandle> tableColumns)
-    {
-        return tableColumns.entrySet().stream()
-                .filter(entry -> !((HiveColumnHandle) entry.getValue()).isPartitionKey())
-                .map(Map.Entry::getKey)
-                .collect(toImmutableSet());
     }
 
     private Map<String, PartitionStatistics> getPartitionsStatistics(SchemaTableName schemaTableName, List<HivePartition> hivePartitions, Set<String> tableColumns)

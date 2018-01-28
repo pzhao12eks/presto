@@ -32,7 +32,7 @@ public final class CassandraQueryRunner
     {
     }
 
-    private static boolean tpchLoaded;
+    private static boolean tpchLoaded = false;
 
     public static synchronized DistributedQueryRunner createCassandraQueryRunner()
             throws Exception

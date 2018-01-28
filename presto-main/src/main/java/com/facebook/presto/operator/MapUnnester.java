@@ -16,11 +16,11 @@ package com.facebook.presto.operator;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.block.BlockBuilder;
+import com.facebook.presto.spi.type.MapType;
 import com.facebook.presto.spi.type.Type;
 
 import javax.annotation.Nullable;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 public class MapUnnester
@@ -29,14 +29,28 @@ public class MapUnnester
     private final Type keyType;
     private final Type valueType;
     private Block block;
+    private final int channelCount;
 
     private int position;
     private int positionCount;
 
-    public MapUnnester(Type keyType, Type valueType)
+    public MapUnnester(MapType mapType, @Nullable Block mapBlock)
     {
-        this.keyType = requireNonNull(keyType, "keyType is null");
-        this.valueType = requireNonNull(valueType, "valueType is null");
+        this.channelCount = 2;
+        requireNonNull(mapType, "mapType is null");
+        this.keyType = mapType.getKeyType();
+        this.valueType = mapType.getValueType();
+
+        this.block = mapBlock;
+        this.positionCount = mapBlock == null ? 0 : mapBlock.getPositionCount();
+    }
+
+    protected void appendTo(PageBuilder pageBuilder, int outputChannelOffset)
+    {
+        BlockBuilder keyBlockBuilder = pageBuilder.getBlockBuilder(outputChannelOffset);
+        BlockBuilder valueBlockBuilder = pageBuilder.getBlockBuilder(outputChannelOffset + 1);
+        keyType.appendTo(block, position++, keyBlockBuilder);
+        valueType.appendTo(block, position++, valueBlockBuilder);
     }
 
     @Override
@@ -48,17 +62,13 @@ public class MapUnnester
     @Override
     public final int getChannelCount()
     {
-        return 2;
+        return channelCount;
     }
 
     @Override
     public final void appendNext(PageBuilder pageBuilder, int outputChannelOffset)
     {
-        checkState(block != null, "block is null");
-        BlockBuilder keyBlockBuilder = pageBuilder.getBlockBuilder(outputChannelOffset);
-        BlockBuilder valueBlockBuilder = pageBuilder.getBlockBuilder(outputChannelOffset + 1);
-        keyType.appendTo(block, position++, keyBlockBuilder);
-        valueType.appendTo(block, position++, valueBlockBuilder);
+        appendTo(pageBuilder, outputChannelOffset);
     }
 
     @Override

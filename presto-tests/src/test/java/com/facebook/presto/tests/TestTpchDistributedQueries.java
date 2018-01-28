@@ -24,6 +24,7 @@ public class TestTpchDistributedQueries
         extends AbstractTestQueries
 {
     public TestTpchDistributedQueries()
+            throws Exception
     {
         super(TpchQueryRunner::createQueryRunner);
     }

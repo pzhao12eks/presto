@@ -1,6 +1,4 @@
-#!/bin/bash
-
-set -euo pipefail
+#!/bin/bash -e
 
 function environment_compose() {
     "${DOCKER_CONF_LOCATION}/${ENVIRONMENT}/compose.sh" "$@"

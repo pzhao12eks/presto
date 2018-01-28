@@ -19,10 +19,12 @@ import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -39,6 +41,8 @@ public class JdbcOutputTableHandle
     private final List<String> columnNames;
     private final List<Type> columnTypes;
     private final String temporaryTableName;
+    private final String connectionUrl;
+    private final Map<String, String> connectionProperties;
 
     @JsonCreator
     public JdbcOutputTableHandle(
@@ -48,13 +52,17 @@ public class JdbcOutputTableHandle
             @JsonProperty("tableName") String tableName,
             @JsonProperty("columnNames") List<String> columnNames,
             @JsonProperty("columnTypes") List<Type> columnTypes,
-            @JsonProperty("temporaryTableName") String temporaryTableName)
+            @JsonProperty("temporaryTableName") String temporaryTableName,
+            @JsonProperty("connectionUrl") String connectionUrl,
+            @JsonProperty("connectionProperties") Map<String, String> connectionProperties)
     {
         this.connectorId = requireNonNull(connectorId, "connectorId is null");
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = requireNonNull(tableName, "tableName is null");
         this.temporaryTableName = requireNonNull(temporaryTableName, "temporaryTableName is null");
+        this.connectionUrl = requireNonNull(connectionUrl, "connectionUrl is null");
+        this.connectionProperties = ImmutableMap.copyOf(requireNonNull(connectionProperties, "connectionProperties is null"));
 
         requireNonNull(columnNames, "columnNames is null");
         requireNonNull(columnTypes, "columnTypes is null");
@@ -107,6 +115,18 @@ public class JdbcOutputTableHandle
         return temporaryTableName;
     }
 
+    @JsonProperty
+    public String getConnectionUrl()
+    {
+        return connectionUrl;
+    }
+
+    @JsonProperty
+    public Map<String, String> getConnectionProperties()
+    {
+        return connectionProperties;
+    }
+
     @Override
     public String toString()
     {
@@ -123,7 +143,9 @@ public class JdbcOutputTableHandle
                 tableName,
                 columnNames,
                 columnTypes,
-                temporaryTableName);
+                temporaryTableName,
+                connectionUrl,
+                connectionProperties);
     }
 
     @Override
@@ -142,6 +164,8 @@ public class JdbcOutputTableHandle
                 Objects.equals(this.tableName, other.tableName) &&
                 Objects.equals(this.columnNames, other.columnNames) &&
                 Objects.equals(this.columnTypes, other.columnTypes) &&
-                Objects.equals(this.temporaryTableName, other.temporaryTableName);
+                Objects.equals(this.temporaryTableName, other.temporaryTableName) &&
+                Objects.equals(this.connectionUrl, other.connectionUrl) &&
+                Objects.equals(this.connectionProperties, other.connectionProperties);
     }
 }

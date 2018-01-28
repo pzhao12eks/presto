@@ -56,8 +56,6 @@ public class OperatorStats
     private final DataSize outputDataSize;
     private final long outputPositions;
 
-    private final DataSize physicalWrittenDataSize;
-
     private final Duration blockedWall;
 
     private final long finishCalls;
@@ -95,8 +93,6 @@ public class OperatorStats
             @JsonProperty("getOutputUser") Duration getOutputUser,
             @JsonProperty("outputDataSize") DataSize outputDataSize,
             @JsonProperty("outputPositions") long outputPositions,
-
-            @JsonProperty("physicalWrittenDataSize") DataSize physicalWrittenDataSize,
 
             @JsonProperty("blockedWall") Duration blockedWall,
 
@@ -137,8 +133,6 @@ public class OperatorStats
         this.outputDataSize = requireNonNull(outputDataSize, "outputDataSize is null");
         checkArgument(outputPositions >= 0, "outputPositions is negative");
         this.outputPositions = outputPositions;
-
-        this.physicalWrittenDataSize = requireNonNull(physicalWrittenDataSize, "writtenDataSize is null");
 
         this.blockedWall = requireNonNull(blockedWall, "blockedWall is null");
 
@@ -264,12 +258,6 @@ public class OperatorStats
     }
 
     @JsonProperty
-    public DataSize getPhysicalWrittenDataSize()
-    {
-        return physicalWrittenDataSize;
-    }
-
-    @JsonProperty
     public Duration getBlockedWall()
     {
         return blockedWall;
@@ -354,8 +342,6 @@ public class OperatorStats
         long outputDataSize = this.outputDataSize.toBytes();
         long outputPositions = this.outputPositions;
 
-        long physicalWrittenDataSize = this.physicalWrittenDataSize.toBytes();
-
         long blockedWall = this.blockedWall.roundTo(NANOSECONDS);
 
         long finishCalls = this.finishCalls;
@@ -388,8 +374,6 @@ public class OperatorStats
             getOutputUser += operator.getGetOutputUser().roundTo(NANOSECONDS);
             outputDataSize += operator.getOutputDataSize().toBytes();
             outputPositions += operator.getOutputPositions();
-
-            physicalWrittenDataSize += operator.getPhysicalWrittenDataSize().toBytes();
 
             finishCalls += operator.getFinishCalls();
             finishWall += operator.getFinishWall().roundTo(NANOSECONDS);
@@ -433,8 +417,6 @@ public class OperatorStats
                 new Duration(getOutputUser, NANOSECONDS).convertToMostSuccinctTimeUnit(),
                 succinctBytes(outputDataSize),
                 outputPositions,
-
-                succinctBytes(physicalWrittenDataSize),
 
                 new Duration(blockedWall, NANOSECONDS).convertToMostSuccinctTimeUnit(),
 
@@ -488,7 +470,6 @@ public class OperatorStats
                 getOutputUser,
                 outputDataSize,
                 outputPositions,
-                physicalWrittenDataSize,
                 blockedWall,
                 finishCalls,
                 finishWall,

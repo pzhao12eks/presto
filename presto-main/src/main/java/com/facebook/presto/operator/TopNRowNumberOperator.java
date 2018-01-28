@@ -13,7 +13,6 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.memory.context.LocalMemoryContext;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.PageBuilder;
 import com.facebook.presto.spi.block.Block;
@@ -150,7 +149,6 @@ public class TopNRowNumberOperator
     private static final DataSize OVERHEAD_PER_VALUE = new DataSize(100, DataSize.Unit.BYTE); // for estimating in-memory size. This is a completely arbitrary number
 
     private final OperatorContext operatorContext;
-    private final LocalMemoryContext localUserMemoryContext;
     private boolean finishing;
     private final List<Type> types;
     private final int[] outputChannels;
@@ -183,7 +181,6 @@ public class TopNRowNumberOperator
     {
         this.operatorContext = requireNonNull(operatorContext, "operatorContext is null");
         this.outputChannels = Ints.toArray(requireNonNull(outputChannels, "outputChannels is null"));
-        this.localUserMemoryContext = operatorContext.localUserMemoryContext();
 
         this.sortChannels = requireNonNull(sortChannels, "sortChannels is null");
         this.sortOrders = requireNonNull(sortOrders, "sortOrders is null");
@@ -200,9 +197,7 @@ public class TopNRowNumberOperator
             this.groupByHash = Optional.empty();
         }
         else {
-            GroupByHash groupByHash = createGroupByHash(operatorContext.getSession(), partitionTypes, Ints.toArray(partitionChannels), hashChannel, expectedPositions, joinCompiler);
-            this.groupByHash = Optional.of(groupByHash);
-            localUserMemoryContext.setBytes(groupByHash.getEstimatedSize());
+            this.groupByHash = Optional.of(createGroupByHash(operatorContext.getSession(), partitionTypes, Ints.toArray(partitionChannels), hashChannel, expectedPositions, joinCompiler));
         }
         this.flushingPartition = Optional.empty();
         this.pageBuilder = new PageBuilder(types);
@@ -258,7 +253,6 @@ public class TopNRowNumberOperator
 
     private void processPage(Page page)
     {
-        long currentMemoryBytes = localUserMemoryContext.getBytes();
         Optional<GroupByIdBlock> partitionIds = Optional.empty();
         if (groupByHash.isPresent()) {
             GroupByHash hash = groupByHash.get();
@@ -268,7 +262,7 @@ public class TopNRowNumberOperator
             // TODO: this class does not yield wrt memory limit; enable it
             verify(done);
             partitionIds = Optional.of(work.getResult());
-            currentMemoryBytes += (hash.getEstimatedSize() - groupByHashSize);
+            operatorContext.reserveMemory(hash.getEstimatedSize() - groupByHashSize);
         }
 
         long sizeDelta = 0;
@@ -280,16 +274,20 @@ public class TopNRowNumberOperator
             }
             PartitionBuilder partitionBuilder = partitionRows.get(partitionId);
             if (partitionBuilder.getRowCount() < maxRowCountPerPartition) {
-                Block[] row = page.getSingleValuePage(position).getBlocks();
+                Block[] row = getSingleValueBlocks(page, position);
                 sizeDelta += partitionBuilder.addRow(row);
             }
             else if (compare(position, blocks, partitionBuilder.peekLastRow()) < 0) {
-                Block[] row = page.getSingleValuePage(position).getBlocks();
+                Block[] row = getSingleValueBlocks(page, position);
                 sizeDelta += partitionBuilder.replaceRow(row);
             }
         }
-        currentMemoryBytes += sizeDelta;
-        localUserMemoryContext.setBytes(currentMemoryBytes);
+        if (sizeDelta > 0) {
+            operatorContext.reserveMemory(sizeDelta);
+        }
+        else {
+            operatorContext.freeMemory(-sizeDelta);
+        }
     }
 
     private int compare(int position, Block[] blocks, Block[] currentMax)
@@ -343,7 +341,7 @@ public class TopNRowNumberOperator
             return null;
         }
         Page page = pageBuilder.build();
-        localUserMemoryContext.setBytes(localUserMemoryContext.getBytes() - sizeDelta);
+        operatorContext.freeMemory(sizeDelta);
         return page;
     }
 
@@ -379,6 +377,16 @@ public class TopNRowNumberOperator
     public boolean isEmpty()
     {
         return partitionRows.isEmpty();
+    }
+
+    private static Block[] getSingleValueBlocks(Page page, int position)
+    {
+        Block[] blocks = page.getBlocks();
+        Block[] row = new Block[blocks.length];
+        for (int i = 0; i < blocks.length; i++) {
+            row[i] = blocks[i].getSingleValueBlock(position);
+        }
+        return row;
     }
 
     private static List<Type> toTypes(List<? extends Type> sourceTypes, List<Integer> outputChannels, boolean generateRowNumber)

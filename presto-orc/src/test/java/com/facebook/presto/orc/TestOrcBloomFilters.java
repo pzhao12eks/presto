@@ -77,6 +77,7 @@ public class TestOrcBloomFilters
 
     @Test
     public void testHiveBloomFilterSerde()
+            throws Exception
     {
         BloomFilter bloomFilter = new BloomFilter(1_000_000L, 0.05);
 
@@ -181,6 +182,7 @@ public class TestOrcBloomFilters
 
     @Test
     public void testBloomFilterPredicateValuesExisting()
+            throws Exception
     {
         BloomFilter bloomFilter = new BloomFilter(TEST_VALUES.size() * 10, 0.01);
 
@@ -222,6 +224,7 @@ public class TestOrcBloomFilters
 
     @Test
     public void testBloomFilterPredicateValuesNonExisting()
+            throws Exception
     {
         BloomFilter bloomFilter = new BloomFilter(TEST_VALUES.size() * 10, 0.01);
 
@@ -236,6 +239,7 @@ public class TestOrcBloomFilters
 
     @Test
     public void testExtractValuesFromSingleDomain()
+            throws Exception
     {
         Map<Type, Object> testValues = ImmutableMap.<Type, Object>builder()
                 .put(BOOLEAN, true)
@@ -258,6 +262,7 @@ public class TestOrcBloomFilters
     @Test
     // simulate query on a 2 columns where 1 is used as part of the where, with and without bloom filter
     public void testMatches()
+            throws Exception
     {
         // stripe column
         Domain testingColumnHandleDomain = Domain.singleValue(BIGINT, 1234L);
@@ -286,7 +291,7 @@ public class TestOrcBloomFilters
                 null,
                 0,
                 null,
-                new IntegerStatistics(10L, 2000L, null),
+                new IntegerStatistics(10L, 2000L),
                 null,
                 null,
                 null,
@@ -298,7 +303,7 @@ public class TestOrcBloomFilters
                 null,
                 0,
                 null,
-                new IntegerStatistics(10L, 2000L, null),
+                new IntegerStatistics(10L, 2000L),
                 null,
                 null,
                 null,
@@ -310,7 +315,7 @@ public class TestOrcBloomFilters
                 null,
                 0,
                 null,
-                new IntegerStatistics(10L, 2000L, null),
+                new IntegerStatistics(10L, 2000L),
                 null,
                 null,
                 null,

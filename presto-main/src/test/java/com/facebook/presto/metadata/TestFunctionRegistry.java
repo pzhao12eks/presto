@@ -126,6 +126,7 @@ public class TestFunctionRegistry
 
     @Test(expectedExceptions = IllegalStateException.class, expectedExceptionsMessageRegExp = "'sum' is both an aggregation and a scalar function")
     public void testConflictingScalarAggregation()
+            throws Exception
     {
         List<SqlFunction> functions = new FunctionListBuilder()
                 .scalars(ScalarSum.class)
@@ -138,6 +139,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testListingHiddenFunctions()
+            throws Exception
     {
         TypeRegistry typeManager = new TypeRegistry();
         FunctionRegistry registry = new FunctionRegistry(typeManager, new BlockEncodingManager(typeManager), new FeaturesConfig());
@@ -152,6 +154,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionByExactMatch()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(functionSignature("bigint", "bigint"))
@@ -161,6 +164,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveTypeParametrizedFunction()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(functionSignature(ImmutableList.of("T", "T"), "boolean", ImmutableList.of(typeVariable("T"))))
@@ -170,6 +174,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionWithCoercion()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -182,6 +187,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testAmbiguousCallWithNoCoercion()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -193,6 +199,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testAmbiguousCallWithCoercion()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -204,6 +211,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionWithCoercionInTypes()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -216,6 +224,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionWithVariableArity()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -234,6 +243,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionWithVariadicBound()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(
@@ -250,6 +260,7 @@ public class TestFunctionRegistry
 
     @Test
     public void testResolveFunctionForUnknown()
+            throws Exception
     {
         assertThatResolveFunction()
                 .among(

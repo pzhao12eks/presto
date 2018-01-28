@@ -18,7 +18,6 @@ import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.block.BlockBuilder;
 import com.facebook.presto.spi.block.BlockBuilderStatus;
-import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.gen.JoinCompiler;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
 import com.facebook.presto.testing.MaterializedResult;
@@ -39,19 +38,15 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static com.facebook.presto.RowPagesBuilder.rowPagesBuilder;
 import static com.facebook.presto.SessionTestUtils.TEST_SESSION;
-import static com.facebook.presto.operator.GroupByHashYieldAssertion.createPagesWithDistinctHashKeys;
-import static com.facebook.presto.operator.GroupByHashYieldAssertion.finishOperatorWithYieldingGroupByHash;
 import static com.facebook.presto.operator.OperatorAssertion.toMaterializedResult;
 import static com.facebook.presto.operator.OperatorAssertion.toPages;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.DoubleType.DOUBLE;
-import static com.facebook.presto.spi.type.VarcharType.VARCHAR;
 import static com.facebook.presto.testing.MaterializedResult.resultBuilder;
 import static com.facebook.presto.testing.TestingTaskContext.createTaskContext;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static io.airlift.concurrent.Threads.daemonThreadsNamed;
 import static io.airlift.testing.Assertions.assertEqualsIgnoreOrder;
-import static io.airlift.testing.Assertions.assertGreaterThan;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static org.testng.Assert.assertEquals;
@@ -78,12 +73,6 @@ public class TestRowNumberOperator
         scheduledExecutor.shutdownNow();
     }
 
-    @DataProvider
-    public Object[][] dataType()
-    {
-        return new Object[][] {{VARCHAR}, {BIGINT}};
-    }
-
     @DataProvider(name = "hashEnabledValues")
     public static Object[][] hashEnabledValuesProvider()
     {
@@ -99,6 +88,7 @@ public class TestRowNumberOperator
 
     @Test
     public void testRowNumberUnpartitioned()
+            throws Exception
     {
         DriverContext driverContext = getDriverContext();
         List<Page> input = rowPagesBuilder(BIGINT, DOUBLE)
@@ -150,41 +140,9 @@ public class TestRowNumberOperator
         assertEqualsIgnoreOrder(actual.getMaterializedRows(), expectedResult.getMaterializedRows());
     }
 
-    @Test(dataProvider = "dataType")
-    public void testMemoryReservationYield(Type type)
-    {
-        List<Page> input = createPagesWithDistinctHashKeys(type, 5_000, 500);
-
-        OperatorFactory operatorFactory = new RowNumberOperator.RowNumberOperatorFactory(
-                0,
-                new PlanNodeId("test"),
-                ImmutableList.of(type),
-                ImmutableList.of(0),
-                ImmutableList.of(0),
-                ImmutableList.of(type),
-                Optional.empty(),
-                Optional.empty(),
-                1,
-                joinCompiler);
-
-        // get result with yield; pick a relatively small buffer for partitionRowCount's memory usage
-        GroupByHashYieldAssertion.GroupByHashYieldResult result = finishOperatorWithYieldingGroupByHash(input, type, operatorFactory, operator -> ((RowNumberOperator) operator).getCapacity(), 170_000);
-        assertGreaterThan(result.getYieldCount(), 5);
-        assertGreaterThan(result.getMaxReservedBytes(), 20L << 20);
-
-        int count = 0;
-        for (Page page : result.getOutput()) {
-            assertEquals(page.getChannelCount(), 3);
-            for (int i = 0; i < page.getPositionCount(); i++) {
-                assertEquals(page.getBlock(2).getLong(i, 0), 1);
-                count++;
-            }
-        }
-        assertEquals(count, 5_000 * 500);
-    }
-
     @Test(dataProvider = "hashEnabledValues")
     public void testRowNumberPartitioned(boolean hashEnabled)
+            throws Exception
     {
         DriverContext driverContext = getDriverContext();
         RowPagesBuilder rowPagesBuilder = rowPagesBuilder(hashEnabled, Ints.asList(0), BIGINT, DOUBLE);
@@ -251,6 +209,7 @@ public class TestRowNumberOperator
 
     @Test(dataProvider = "hashEnabledValues")
     public void testRowNumberPartitionedLimit(boolean hashEnabled)
+            throws Exception
     {
         DriverContext driverContext = getDriverContext();
         RowPagesBuilder rowPagesBuilder = rowPagesBuilder(hashEnabled, Ints.asList(0), BIGINT, DOUBLE);
@@ -321,6 +280,7 @@ public class TestRowNumberOperator
 
     @Test
     public void testRowNumberUnpartitionedLimit()
+            throws Exception
     {
         DriverContext driverContext = getDriverContext();
         List<Page> input = rowPagesBuilder(BIGINT, DOUBLE)

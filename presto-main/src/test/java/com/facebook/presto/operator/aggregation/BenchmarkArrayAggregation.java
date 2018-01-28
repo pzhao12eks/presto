@@ -66,6 +66,7 @@ public class BenchmarkArrayAggregation
     @Benchmark
     @OperationsPerInvocation(ARRAY_SIZE)
     public void arrayAggregation(BenchmarkData data)
+            throws Throwable
     {
         data.getAccumulator().addInput(data.getPage());
     }

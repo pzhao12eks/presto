@@ -19,6 +19,7 @@ import com.facebook.presto.spi.function.AccumulatorStateFactory;
 import com.facebook.presto.spi.function.AccumulatorStateSerializer;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -57,7 +58,7 @@ public class GenericAccumulatorFactoryBinder
                     Optional.class);
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

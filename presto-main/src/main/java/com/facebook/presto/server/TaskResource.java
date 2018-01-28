@@ -193,9 +193,6 @@ public class TaskResource
         }
 
         Duration waitTime = randomizeWaitTime(maxWait);
-        // TODO: With current implementation, a newly completed driver group won't trigger immediate HTTP response,
-        // leading to a slight delay of approx 1 second, which is not a major issue for any query that are heavy weight enough
-        // to justify group-by-group execution. In order to fix this, REST endpoint /v1/{task}/status will need change.
         ListenableFuture<TaskStatus> futureTaskStatus = addTimeout(
                 taskManager.getTaskStatus(taskId, currentState),
                 () -> taskManager.getTaskStatus(taskId),
@@ -239,6 +236,7 @@ public class TaskResource
             @PathParam("token") final long token,
             @HeaderParam(PRESTO_MAX_SIZE) DataSize maxSize,
             @Suspended AsyncResponse asyncResponse)
+            throws InterruptedException
     {
         requireNonNull(taskId, "taskId is null");
         requireNonNull(bufferId, "bufferId is null");

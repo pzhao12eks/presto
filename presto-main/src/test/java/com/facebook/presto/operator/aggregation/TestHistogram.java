@@ -60,6 +60,7 @@ public class TestHistogram
 
     @Test
     public void testSimpleHistograms()
+            throws Exception
     {
         MapType mapType = mapType(VARCHAR, BIGINT);
         InternalAggregationFunction aggregationFunction = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -108,6 +109,7 @@ public class TestHistogram
 
     @Test
     public void testDuplicateKeysValues()
+            throws Exception
     {
         MapType mapType = mapType(VARCHAR, BIGINT);
         InternalAggregationFunction aggregationFunction = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -136,6 +138,7 @@ public class TestHistogram
 
     @Test
     public void testWithNulls()
+            throws Exception
     {
         MapType mapType = mapType(BIGINT, BIGINT);
         InternalAggregationFunction aggregationFunction = metadata.getFunctionRegistry().getAggregateFunctionImplementation(
@@ -162,6 +165,7 @@ public class TestHistogram
 
     @Test
     public void testArrayHistograms()
+            throws Exception
     {
         ArrayType arrayType = new ArrayType(VARCHAR);
         MapType mapType = mapType(arrayType, BIGINT);
@@ -179,6 +183,7 @@ public class TestHistogram
 
     @Test
     public void testMapHistograms()
+            throws Exception
     {
         MapType innerMapType = mapType(VARCHAR, VARCHAR);
         MapType mapType = mapType(innerMapType, BIGINT);
@@ -201,6 +206,7 @@ public class TestHistogram
 
     @Test
     public void testRowHistograms()
+            throws Exception
     {
         RowType innerRowType = new RowType(ImmutableList.of(BIGINT, DOUBLE), Optional.of(ImmutableList.of("f1", "f2")));
         MapType mapType = mapType(innerRowType, BIGINT);
@@ -223,6 +229,7 @@ public class TestHistogram
 
     @Test
     public void testLargerHistograms()
+            throws Exception
     {
         MapType mapType = mapType(VARCHAR, BIGINT);
         InternalAggregationFunction aggregationFunction = metadata.getFunctionRegistry().getAggregateFunctionImplementation(

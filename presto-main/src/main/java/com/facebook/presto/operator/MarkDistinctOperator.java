@@ -13,13 +13,11 @@
  */
 package com.facebook.presto.operator;
 
-import com.facebook.presto.memory.context.LocalMemoryContext;
 import com.facebook.presto.spi.Page;
 import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.gen.JoinCompiler;
 import com.facebook.presto.sql.planner.plan.PlanNodeId;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 
@@ -96,13 +94,9 @@ public class MarkDistinctOperator
     private final OperatorContext operatorContext;
     private final List<Type> types;
     private final MarkDistinctHash markDistinctHash;
-    private final LocalMemoryContext localUserMemoryContext;
 
-    private Page inputPage;
+    private Page outputPage;
     private boolean finishing;
-
-    // for yield when memory is not available
-    private Work<Block> unfinishedWork;
 
     public MarkDistinctOperator(OperatorContext operatorContext, List<Type> types, List<Integer> markDistinctChannels, Optional<Integer> hashChannel, JoinCompiler joinCompiler)
     {
@@ -116,8 +110,7 @@ public class MarkDistinctOperator
         for (int channel : markDistinctChannels) {
             distinctTypes.add(types.get(channel));
         }
-        this.markDistinctHash = new MarkDistinctHash(operatorContext.getSession(), distinctTypes.build(), Ints.toArray(markDistinctChannels), hashChannel, joinCompiler, this::updateMemoryReservation);
-        this.localUserMemoryContext = operatorContext.localUserMemoryContext();
+        this.markDistinctHash = new MarkDistinctHash(operatorContext.getSession(), distinctTypes.build(), Ints.toArray(markDistinctChannels), hashChannel, joinCompiler);
     }
 
     @Override
@@ -141,76 +134,44 @@ public class MarkDistinctOperator
     @Override
     public boolean isFinished()
     {
-        return finishing && !hasUnfinishedInput();
+        return finishing && outputPage == null;
     }
 
     @Override
     public boolean needsInput()
     {
-        return !finishing && !hasUnfinishedInput();
+        operatorContext.setMemoryReservation(markDistinctHash.getEstimatedSize());
+        if (finishing || outputPage != null) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public void addInput(Page page)
     {
         requireNonNull(page, "page is null");
-        checkState(needsInput());
+        checkState(!finishing, "Operator is finishing");
+        checkState(outputPage == null, "Operator still has pending output");
+        operatorContext.setMemoryReservation(markDistinctHash.getEstimatedSize());
 
-        inputPage = page;
+        Block markerBlock = markDistinctHash.markDistinctRows(page);
 
-        unfinishedWork = markDistinctHash.markDistinctRows(page);
-        updateMemoryReservation();
+        // add the new boolean column to the page
+        Block[] sourceBlocks = page.getBlocks();
+        Block[] outputBlocks = new Block[sourceBlocks.length + 1]; // +1 for the single boolean output channel
+
+        System.arraycopy(sourceBlocks, 0, outputBlocks, 0, sourceBlocks.length);
+        outputBlocks[sourceBlocks.length] = markerBlock;
+
+        outputPage = new Page(outputBlocks);
     }
 
     @Override
     public Page getOutput()
     {
-        if (unfinishedWork == null) {
-            return null;
-        }
-
-        if (!unfinishedWork.process()) {
-            return null;
-        }
-
-        // add the new boolean column to the page
-        Block[] sourceBlocks = inputPage.getBlocks();
-        Block[] outputBlocks = new Block[sourceBlocks.length + 1]; // +1 for the single boolean output channel
-
-        System.arraycopy(sourceBlocks, 0, outputBlocks, 0, sourceBlocks.length);
-        outputBlocks[sourceBlocks.length] = unfinishedWork.getResult();
-        unfinishedWork = null;
-        inputPage = null;
-
-        updateMemoryReservation();
-        return new Page(outputBlocks);
-    }
-
-    private boolean hasUnfinishedInput()
-    {
-        return inputPage != null || unfinishedWork != null;
-    }
-
-    /**
-     * Update memory usage.
-     *
-     * @return true to if the reservation is within the limit
-     */
-    // TODO: update in the interface after the new memory tracking framework is landed (#9049)
-    // Essentially we would love to have clean interfaces to support both pushing and pulling memory usage
-    // The following implementation is a hybrid model, where the push model is going to call the pull model causing reentrancy
-    private boolean updateMemoryReservation()
-    {
-        // Operator/driver will be blocked on memory after we call localUserMemoryContext.setBytes().
-        // If memory is not available, once we return, this operator will be blocked until memory is available.
-        localUserMemoryContext.setBytes(markDistinctHash.getEstimatedSize());
-        // If memory is not available, inform the caller that we cannot proceed for allocation.
-        return operatorContext.isWaitingForMemory().isDone();
-    }
-
-    @VisibleForTesting
-    public int getCapacity()
-    {
-        return markDistinctHash.getCapacity();
+        Page result = outputPage;
+        outputPage = null;
+        return result;
     }
 }

@@ -69,6 +69,7 @@ public class TestTableWriterOperator
 
     @Test
     public void testBlockedPageSink()
+            throws Exception
     {
         BlockingPageSink blockingPageSink = new BlockingPageSink();
         Operator operator = createTableWriterOperator(blockingPageSink);
@@ -122,6 +123,7 @@ public class TestTableWriterOperator
 
     @Test(expectedExceptions = IllegalStateException.class)
     public void addInputFailsOnBlockedOperator()
+            throws Exception
     {
         Operator operator = createTableWriterOperator(new BlockingPageSink());
 

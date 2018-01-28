@@ -37,6 +37,7 @@ public class TestPrestoThriftBigint
 {
     @Test
     public void testReadBlock()
+            throws Exception
     {
         PrestoThriftBlock columnsData = longColumn(
                 new boolean[] {false, true, false, false, false, false, true},
@@ -67,6 +68,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testReadBlockAllNonNullOption1()
+            throws Exception
     {
         PrestoThriftBlock columnsData = longColumn(
                 null,
@@ -77,6 +79,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testReadBlockAllNonNullOption2()
+            throws Exception
     {
         PrestoThriftBlock columnsData = longColumn(
                 new boolean[] {false, false, false, false, false, false, false},
@@ -87,6 +90,7 @@ public class TestPrestoThriftBigint
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testReadBlockWrongActualType()
+            throws Exception
     {
         PrestoThriftBlock columnsData = integerData(new PrestoThriftInteger(null, null));
         columnsData.toBlock(BIGINT);
@@ -94,6 +98,7 @@ public class TestPrestoThriftBigint
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testReadBlockWrongDesiredType()
+            throws Exception
     {
         PrestoThriftBlock columnsData = longColumn(null, null);
         columnsData.toBlock(INTEGER);
@@ -101,6 +106,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testWriteBlockAlternating()
+            throws Exception
     {
         Block source = longBlock(1, null, 2, null, 3, null, 4, null, 5, null, 6, null, 7, null);
         PrestoThriftBlock column = fromBlock(source);
@@ -113,6 +119,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testWriteBlockAllNulls()
+            throws Exception
     {
         Block source = longBlock(null, null, null, null, null);
         PrestoThriftBlock column = fromBlock(source);
@@ -123,6 +130,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testWriteBlockAllNonNull()
+            throws Exception
     {
         Block source = longBlock(1, 2, 3, 4, 5);
         PrestoThriftBlock column = fromBlock(source);
@@ -133,6 +141,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testWriteBlockEmpty()
+            throws Exception
     {
         PrestoThriftBlock column = fromBlock(longBlock());
         assertNotNull(column.getBigintData());
@@ -142,6 +151,7 @@ public class TestPrestoThriftBigint
 
     @Test
     public void testWriteBlockSingleValue()
+            throws Exception
     {
         PrestoThriftBlock column = fromBlock(longBlock(1));
         assertNotNull(column.getBigintData());

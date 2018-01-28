@@ -76,7 +76,6 @@ public class TableScanNode
         checkArgument(assignments.keySet().containsAll(outputs), "assignments does not cover all of outputs");
         requireNonNull(tableLayout, "tableLayout is null");
         requireNonNull(currentConstraint, "currentConstraint is null");
-        checkArgument(currentConstraint.isAll() || tableLayout.isPresent(), "currentConstraint present without layout");
 
         this.table = table;
         this.outputSymbols = ImmutableList.copyOf(outputs);

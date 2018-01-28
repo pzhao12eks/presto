@@ -231,6 +231,7 @@ public class HttpBackupStore
 
         @Override
         public StatusResponse handleException(Request request, Exception exception)
+                throws IOException
         {
             throw propagate(request, exception);
         }

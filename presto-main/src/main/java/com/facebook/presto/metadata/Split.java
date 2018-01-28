@@ -14,7 +14,6 @@
 package com.facebook.presto.metadata;
 
 import com.facebook.presto.connector.ConnectorId;
-import com.facebook.presto.execution.Lifespan;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.HostAddress;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
@@ -31,25 +30,16 @@ public final class Split
     private final ConnectorId connectorId;
     private final ConnectorTransactionHandle transactionHandle;
     private final ConnectorSplit connectorSplit;
-    private final Lifespan lifespan;
-
-    // TODO: inline
-    public Split(ConnectorId connectorId, ConnectorTransactionHandle transactionHandle, ConnectorSplit connectorSplit)
-    {
-        this(connectorId, transactionHandle, connectorSplit, Lifespan.taskWide());
-    }
 
     @JsonCreator
     public Split(
             @JsonProperty("connectorId") ConnectorId connectorId,
             @JsonProperty("transactionHandle") ConnectorTransactionHandle transactionHandle,
-            @JsonProperty("connectorSplit") ConnectorSplit connectorSplit,
-            @JsonProperty("lifespan") Lifespan lifespan)
+            @JsonProperty("connectorSplit") ConnectorSplit connectorSplit)
     {
         this.connectorId = requireNonNull(connectorId, "connectorId is null");
         this.transactionHandle = requireNonNull(transactionHandle, "transactionHandle is null");
         this.connectorSplit = requireNonNull(connectorSplit, "connectorSplit is null");
-        this.lifespan = requireNonNull(lifespan, "lifespan is null");
     }
 
     @JsonProperty
@@ -68,12 +58,6 @@ public final class Split
     public ConnectorSplit getConnectorSplit()
     {
         return connectorSplit;
-    }
-
-    @JsonProperty
-    public Lifespan getLifespan()
-    {
-        return lifespan;
     }
 
     public Object getInfo()
@@ -98,7 +82,6 @@ public final class Split
                 .add("connectorId", connectorId)
                 .add("transactionHandle", transactionHandle)
                 .add("connectorSplit", connectorSplit)
-                .add("lifespan", lifespan)
                 .toString();
     }
 }

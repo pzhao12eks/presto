@@ -25,24 +25,23 @@ import javax.validation.constraints.NotNull;
 import static io.airlift.units.DataSize.Unit.GIGABYTE;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
-@DefunctConfig({
-        "experimental.cluster-memory-manager-enabled",
-        "query.low-memory-killer.enabled"})
+@DefunctConfig("experimental.cluster-memory-manager-enabled")
 public class MemoryManagerConfig
 {
     private DataSize maxQueryMemory = new DataSize(20, GIGABYTE);
-    private String lowMemoryKillerPolicy = LowMemoryKillerPolicy.NONE;
+    private boolean killOnOutOfMemory;
     private Duration killOnOutOfMemoryDelay = new Duration(5, MINUTES);
 
-    public String getLowMemoryKillerPolicy()
+    public boolean isKillOnOutOfMemory()
     {
-        return lowMemoryKillerPolicy;
+        return killOnOutOfMemory;
     }
 
-    @Config("query.low-memory-killer.policy")
-    public MemoryManagerConfig setLowMemoryKillerPolicy(String lowMemoryKillerPolicy)
+    @Config("query.low-memory-killer.enabled")
+    @ConfigDescription("Enable low memory killer")
+    public MemoryManagerConfig setKillOnOutOfMemory(boolean killOnOutOfMemory)
     {
-        this.lowMemoryKillerPolicy = lowMemoryKillerPolicy;
+        this.killOnOutOfMemory = killOnOutOfMemory;
         return this;
     }
 
@@ -72,12 +71,5 @@ public class MemoryManagerConfig
     {
         this.maxQueryMemory = maxQueryMemory;
         return this;
-    }
-
-    public static class LowMemoryKillerPolicy
-    {
-        public static final String NONE = "none";
-        public static final String TOTAL_RESERVATION = "total-reservation";
-        public static final String TOTAL_RESERVATION_ON_BLOCKED_NODES = "total-reservation-on-blocked-nodes";
     }
 }

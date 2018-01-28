@@ -29,7 +29,6 @@ import com.facebook.presto.spi.type.TypeSignature;
 import com.facebook.presto.spi.type.TypeSignatureParameter;
 import com.facebook.presto.spi.type.VarcharType;
 import com.facebook.presto.sql.analyzer.FeaturesConfig;
-import com.facebook.presto.type.setdigest.SetDigestType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -78,11 +77,11 @@ import static com.facebook.presto.type.JoniRegexpType.JONI_REGEXP;
 import static com.facebook.presto.type.JsonPathType.JSON_PATH;
 import static com.facebook.presto.type.JsonType.JSON;
 import static com.facebook.presto.type.LikePatternType.LIKE_PATTERN;
+import static com.facebook.presto.type.ListLiteralType.LIST_LITERAL;
 import static com.facebook.presto.type.MapParametricType.MAP;
 import static com.facebook.presto.type.Re2JRegexpType.RE2J_REGEXP;
 import static com.facebook.presto.type.RowParametricType.ROW;
 import static com.facebook.presto.type.UnknownType.UNKNOWN;
-import static com.facebook.presto.type.setdigest.SetDigestType.SET_DIGEST;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -134,7 +133,6 @@ public final class TypeRegistry
         addType(INTERVAL_YEAR_MONTH);
         addType(INTERVAL_DAY_TIME);
         addType(HYPER_LOG_LOG);
-        addType(SET_DIGEST);
         addType(P4_HYPER_LOG_LOG);
         addType(JONI_REGEXP);
         addType(RE2J_REGEXP);
@@ -143,6 +141,7 @@ public final class TypeRegistry
         addType(COLOR);
         addType(JSON);
         addType(CODE_POINTS);
+        addType(LIST_LITERAL);
         addType(IPADDRESS);
         addParametricType(VarcharParametricType.VARCHAR);
         addParametricType(CharParametricType.CHAR);
@@ -427,7 +426,6 @@ public final class TypeRegistry
                     case StandardTypes.TIMESTAMP:
                     case StandardTypes.TIMESTAMP_WITH_TIME_ZONE:
                     case StandardTypes.HYPER_LOG_LOG:
-                    case SetDigestType.NAME:
                     case StandardTypes.P4_HYPER_LOG_LOG:
                     case StandardTypes.JSON:
                     case StandardTypes.INTERVAL_YEAR_TO_MONTH:
@@ -591,6 +589,14 @@ public final class TypeRegistry
                 switch (resultTypeBase) {
                     case StandardTypes.HYPER_LOG_LOG:
                         return Optional.of(HYPER_LOG_LOG);
+                    default:
+                        return Optional.empty();
+                }
+            }
+            case StandardTypes.ARRAY: {
+                switch (resultTypeBase) {
+                    case ListLiteralType.NAME:
+                        return Optional.of(LIST_LITERAL);
                     default:
                         return Optional.empty();
                 }

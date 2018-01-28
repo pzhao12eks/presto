@@ -43,7 +43,6 @@ import java.util.Map;
 
 import static com.facebook.presto.accumulo.AccumuloErrorCode.MINI_ACCUMULO;
 import static com.facebook.presto.accumulo.AccumuloErrorCode.UNEXPECTED_ACCUMULO_ERROR;
-import static com.facebook.presto.accumulo.MiniAccumuloConfigUtil.setConfigClassPath;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.testing.TestingSession.testSessionBuilder;
 import static com.facebook.presto.tpch.TpchMetadata.TINY_SCHEMA_NAME;
@@ -58,7 +57,7 @@ public final class AccumuloQueryRunner
     private static final String MAC_PASSWORD = "secret";
     private static final String MAC_USER = "root";
 
-    private static boolean tpchLoaded;
+    private static boolean tpchLoaded = false;
     private static Connector connector = getAccumuloConnector();
 
     private AccumuloQueryRunner() {}
@@ -195,7 +194,6 @@ public final class AccumuloQueryRunner
         // Start MAC and connect to it
         MiniAccumuloCluster accumulo = new MiniAccumuloCluster(macDir, MAC_PASSWORD);
         accumulo.getConfig().setDefaultMemory(512, MEGABYTE);
-        setConfigClassPath(accumulo.getConfig());
         accumulo.start();
 
         // Add shutdown hook to stop MAC and cleanup temporary files

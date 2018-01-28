@@ -42,7 +42,7 @@ public class NumericHistogram
     private final double[] values;
     private final double[] weights;
 
-    private int nextIndex;
+    private int nextIndex = 0;
 
     public NumericHistogram(int maxBuckets)
     {

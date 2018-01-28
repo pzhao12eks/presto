@@ -29,6 +29,7 @@ public class TestBroadcastOutputBufferManager
 {
     @Test
     public void test()
+            throws Exception
     {
         AtomicReference<OutputBuffers> outputBufferTarget = new AtomicReference<>();
         BroadcastOutputBufferManager hashOutputBufferManager = new BroadcastOutputBufferManager(outputBufferTarget::set);

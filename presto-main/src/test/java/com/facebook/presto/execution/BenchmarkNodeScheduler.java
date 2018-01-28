@@ -94,6 +94,7 @@ public class BenchmarkNodeScheduler
     @Benchmark
     @OperationsPerInvocation(SPLITS)
     public Object benchmark(BenchmarkData data)
+            throws Throwable
     {
         List<RemoteTask> remoteTasks = ImmutableList.copyOf(data.getTaskMap().values());
         Iterator<MockRemoteTaskFactory.MockRemoteTask> finishingTask = Iterators.cycle(data.getTaskMap().values());
@@ -139,6 +140,7 @@ public class BenchmarkNodeScheduler
 
         @Setup
         public void setup()
+                throws NoSuchMethodException, IllegalAccessException
         {
             TestingTransactionHandle transactionHandle = TestingTransactionHandle.create();
 

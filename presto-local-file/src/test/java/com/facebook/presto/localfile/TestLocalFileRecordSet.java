@@ -34,6 +34,7 @@ public class TestLocalFileRecordSet
 
     @Test
     public void testSimpleCursor()
+            throws Exception
     {
         String location = "example-data";
         LocalFileTables localFileTables = new LocalFileTables(new LocalFileConfig().setHttpRequestLogLocation(getResourceFilePath(location)));
@@ -44,6 +45,7 @@ public class TestLocalFileRecordSet
 
     @Test
     public void testGzippedData()
+            throws Exception
     {
         String location = "example-gzipped-data";
         LocalFileTables localFileTables = new LocalFileTables(new LocalFileConfig().setHttpRequestLogLocation(getResourceFilePath(location)));

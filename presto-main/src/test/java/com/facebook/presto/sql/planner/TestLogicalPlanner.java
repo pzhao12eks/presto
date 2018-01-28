@@ -78,6 +78,7 @@ public class TestLogicalPlanner
 {
     @Test
     public void testDistinctLimitOverInequalityJoin()
+            throws Exception
     {
         assertPlan("SELECT DISTINCT o.orderkey FROM orders o JOIN lineitem l ON o.orderkey < l.orderkey LIMIT 1",
                 anyTree(
@@ -107,6 +108,7 @@ public class TestLogicalPlanner
 
     @Test
     public void testInnerInequalityJoinNoEquiJoinConjuncts()
+            throws Exception
     {
         assertPlan("SELECT 1 FROM orders o JOIN lineitem l ON o.orderkey < l.orderkey",
                 anyTree(
@@ -118,6 +120,7 @@ public class TestLogicalPlanner
 
     @Test
     public void testInnerInequalityJoinWithEquiJoinConjuncts()
+            throws Exception
     {
         assertPlan("SELECT 1 FROM orders o JOIN lineitem l ON o.shippriority = l.linenumber AND o.orderkey < l.orderkey",
                 anyTree(
@@ -135,6 +138,7 @@ public class TestLogicalPlanner
 
     @Test
     public void testLeftConvertedToInnerInequalityJoinNoEquiJoinConjuncts()
+            throws Exception
     {
         assertPlan("SELECT 1 FROM orders o LEFT JOIN lineitem l ON o.orderkey < l.orderkey WHERE l.orderkey IS NOT NULL",
                 anyTree(
@@ -332,7 +336,7 @@ public class TestLogicalPlanner
     @Test
     public void testCorrelatedSubqueries()
     {
-        assertPlan(
+        assertPlanWithOptimizerFiltering(
                 "SELECT orderkey FROM orders WHERE 3 = (SELECT orderkey)",
                 LogicalPlanner.Stage.OPTIMIZED,
                 anyTree(
@@ -384,7 +388,7 @@ public class TestLogicalPlanner
     @Test
     public void testDoubleNestedCorrelatedSubqueries()
     {
-        assertPlan(
+        assertPlanWithOptimizerFiltering(
                 "SELECT orderkey FROM orders o " +
                         "WHERE 3 IN (SELECT o.custkey FROM lineitem l WHERE (SELECT l.orderkey = o.orderkey))",
                 LogicalPlanner.Stage.OPTIMIZED,

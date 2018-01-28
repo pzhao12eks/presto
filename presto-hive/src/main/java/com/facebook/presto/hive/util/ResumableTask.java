@@ -13,8 +13,7 @@
  */
 package com.facebook.presto.hive.util;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.util.concurrent.CompletableFuture;
 
 public interface ResumableTask
 {
@@ -29,9 +28,9 @@ public interface ResumableTask
     class TaskStatus
     {
         private final boolean finished;
-        private final ListenableFuture<?> continuationFuture;
+        private final CompletableFuture<?> continuationFuture;
 
-        private TaskStatus(boolean finished, ListenableFuture<?> continuationFuture)
+        private TaskStatus(boolean finished, CompletableFuture<?> continuationFuture)
         {
             this.finished = finished;
             this.continuationFuture = continuationFuture;
@@ -39,10 +38,10 @@ public interface ResumableTask
 
         public static TaskStatus finished()
         {
-            return new TaskStatus(true, Futures.immediateFuture(null));
+            return new TaskStatus(true, CompletableFuture.completedFuture(null));
         }
 
-        public static TaskStatus continueOn(ListenableFuture<?> continuationFuture)
+        public static TaskStatus continueOn(CompletableFuture<?> continuationFuture)
         {
             return new TaskStatus(false, continuationFuture);
         }
@@ -52,7 +51,7 @@ public interface ResumableTask
             return finished;
         }
 
-        public ListenableFuture<?> getContinuationFuture()
+        public CompletableFuture<?> getContinuationFuture()
         {
             return continuationFuture;
         }

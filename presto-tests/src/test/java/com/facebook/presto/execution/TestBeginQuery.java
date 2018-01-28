@@ -56,6 +56,7 @@ public class TestBeginQuery
     private TestMetadata metadata;
 
     protected TestBeginQuery()
+            throws Exception
     {
         super(TestBeginQuery::createQueryRunner);
     }
@@ -72,6 +73,7 @@ public class TestBeginQuery
 
     @BeforeClass
     public void setUp()
+            throws Exception
     {
         metadata = new TestMetadata();
         getQueryRunner().installPlugin(new TestPlugin(metadata));
@@ -82,18 +84,21 @@ public class TestBeginQuery
 
     @BeforeMethod
     public void beforeMethod()
+            throws Exception
     {
         metadata.clear();
     }
 
     @Test
     public void testCreateTableAsSelect()
+            throws Exception
     {
         assertNoBeginQuery("CREATE TABLE nation AS SELECT * FROM tpch.tiny.nation");
     }
 
     @Test
     public void testCreateTableAsSelectSameConnector()
+            throws Exception
     {
         assertNoBeginQuery("CREATE TABLE nation AS SELECT * FROM tpch.tiny.nation");
         assertBeginQuery("CREATE TABLE nation_copy AS SELECT * FROM nation");
@@ -101,6 +106,7 @@ public class TestBeginQuery
 
     @Test
     public void testInsert()
+            throws Exception
     {
         assertNoBeginQuery("CREATE TABLE nation AS SELECT * FROM tpch.tiny.nation");
         assertBeginQuery("INSERT INTO nation SELECT * FROM tpch.tiny.nation");
@@ -109,6 +115,7 @@ public class TestBeginQuery
 
     @Test
     public void testInsertSelectSameConnector()
+            throws Exception
     {
         assertNoBeginQuery("CREATE TABLE nation AS SELECT * FROM tpch.tiny.nation");
         assertBeginQuery("INSERT INTO nation SELECT * FROM nation");
@@ -116,6 +123,7 @@ public class TestBeginQuery
 
     @Test
     public void testSelect()
+            throws Exception
     {
         assertNoBeginQuery("CREATE TABLE nation AS SELECT * FROM tpch.tiny.nation");
         assertBeginQuery("SELECT * FROM nation");

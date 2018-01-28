@@ -16,14 +16,11 @@ package com.facebook.presto.tests;
 import com.facebook.presto.Session;
 import com.facebook.presto.client.IntervalDayTime;
 import com.facebook.presto.client.IntervalYearMonth;
-import com.facebook.presto.client.QueryData;
-import com.facebook.presto.client.QueryStatusInfo;
+import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.server.testing.TestingPrestoServer;
 import com.facebook.presto.spi.type.ArrayType;
 import com.facebook.presto.spi.type.DecimalType;
 import com.facebook.presto.spi.type.MapType;
-import com.facebook.presto.spi.type.SqlTimestamp;
-import com.facebook.presto.spi.type.SqlTimestampWithTimeZone;
 import com.facebook.presto.spi.type.TimeZoneKey;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
@@ -36,20 +33,16 @@ import com.google.common.collect.ImmutableList;
 import io.airlift.log.Logger;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -57,6 +50,7 @@ import java.util.stream.Collectors;
 import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.Chars.isCharType;
+import static com.facebook.presto.spi.type.DateTimeEncoding.unpackMillisUtc;
 import static com.facebook.presto.spi.type.DateType.DATE;
 import static com.facebook.presto.spi.type.DoubleType.DOUBLE;
 import static com.facebook.presto.spi.type.IntegerType.INTEGER;
@@ -71,6 +65,11 @@ import static com.facebook.presto.spi.type.VarbinaryType.VARBINARY;
 import static com.facebook.presto.testing.MaterializedResult.DEFAULT_PRECISION;
 import static com.facebook.presto.type.IntervalDayTimeType.INTERVAL_DAY_TIME;
 import static com.facebook.presto.type.IntervalYearMonthType.INTERVAL_YEAR_MONTH;
+import static com.facebook.presto.util.DateTimeUtils.parseDate;
+import static com.facebook.presto.util.DateTimeUtils.parseTime;
+import static com.facebook.presto.util.DateTimeUtils.parseTimeWithTimeZone;
+import static com.facebook.presto.util.DateTimeUtils.parseTimestampWithTimeZone;
+import static com.facebook.presto.util.DateTimeUtils.parseTimestampWithoutTimeZone;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
@@ -80,12 +79,6 @@ public class TestingPrestoClient
         extends AbstractTestingPrestoClient<MaterializedResult>
 {
     private static final Logger log = Logger.get("TestQueries");
-
-    private static final DateTimeFormatter timeWithUtcZoneFormat = DateTimeFormatter.ofPattern("HH:mm:ss.SSS 'UTC'"); // UTC zone would be printed as "Z" in "XXX" format
-    private static final DateTimeFormatter timeWithZoneOffsetFormat = DateTimeFormatter.ofPattern("HH:mm:ss.SSS XXX");
-
-    private static final DateTimeFormatter timestampFormat = DateTimeFormatter.ofPattern(SqlTimestamp.JSON_FORMAT);
-    private static final DateTimeFormatter timestampWithTimeZoneFormat = DateTimeFormatter.ofPattern(SqlTimestampWithTimeZone.JSON_FORMAT);
 
     public TestingPrestoClient(TestingPrestoServer prestoServer, Session defaultSession)
     {
@@ -129,19 +122,19 @@ public class TestingPrestoClient
         }
 
         @Override
-        public void addResults(QueryStatusInfo statusInfo, QueryData data)
+        public void addResults(QueryResults results)
         {
             if (!loggedUri.getAndSet(true)) {
-                log.info("Query %s: %s", statusInfo.getId(), statusInfo.getInfoUri());
+                log.info("Query %s: %s", results.getId(), results.getInfoUri());
             }
 
-            if (types.get() == null && statusInfo.getColumns() != null) {
-                types.set(getTypes(statusInfo.getColumns()));
+            if (types.get() == null && results.getColumns() != null) {
+                types.set(getTypes(results.getColumns()));
             }
 
-            if (data.getData() != null) {
+            if (results.getData() != null) {
                 checkState(types.get() != null, "data received without types");
-                rows.addAll(transform(data.getData(), dataToRow(timeZoneKey, types.get())));
+                rows.addAll(transform(results.getData(), dataToRow(timeZoneKey, types.get())));
             }
         }
 
@@ -210,25 +203,20 @@ public class TestingPrestoClient
             return value;
         }
         else if (DATE.equals(type)) {
-            return DateTimeFormatter.ISO_LOCAL_DATE.parse(((String) value), LocalDate::from);
+            int days = parseDate((String) value);
+            return new Date(TimeUnit.DAYS.toMillis(days));
         }
         else if (TIME.equals(type)) {
-            return DateTimeFormatter.ISO_LOCAL_TIME.parse(((String) value), LocalTime::from);
+            return new Time(parseTime(timeZoneKey, (String) value));
         }
         else if (TIME_WITH_TIME_ZONE.equals(type)) {
-            // Only zone-offset timezones are supported (TODO remove political timezones support for TIME WITH TIME ZONE)
-            try {
-                return timeWithUtcZoneFormat.parse(((String) value), LocalTime::from).atOffset(ZoneOffset.UTC);
-            }
-            catch (DateTimeParseException e) {
-                return timeWithZoneOffsetFormat.parse(((String) value), OffsetTime::from);
-            }
+            return new Time(unpackMillisUtc(parseTimeWithTimeZone((String) value)));
         }
         else if (TIMESTAMP.equals(type)) {
-            return timestampFormat.parse((String) value, LocalDateTime::from);
+            return new Timestamp(parseTimestampWithoutTimeZone(timeZoneKey, (String) value));
         }
         else if (TIMESTAMP_WITH_TIME_ZONE.equals(type)) {
-            return timestampWithTimeZoneFormat.parse((String) value, ZonedDateTime::from);
+            return new Timestamp(unpackMillisUtc(parseTimestampWithTimeZone(timeZoneKey, (String) value)));
         }
         else if (INTERVAL_DAY_TIME.equals(type)) {
             return new SqlIntervalDayTime(IntervalDayTime.parseMillis(String.valueOf(value)));

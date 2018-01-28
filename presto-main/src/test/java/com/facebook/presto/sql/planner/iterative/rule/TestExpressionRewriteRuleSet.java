@@ -75,6 +75,7 @@ public class TestExpressionRewriteRuleSet
 
     @Test
     public void testAggregationExpressionRewrite()
+            throws Exception
     {
         tester().assertThat(functionCallRewriter.aggregationExpressionRewrite())
                 .on(p -> p.aggregation(a -> a
@@ -93,6 +94,7 @@ public class TestExpressionRewriteRuleSet
 
     @Test
     public void testAggregationExpressionNotRewritten()
+            throws Exception
     {
         tester().assertThat(functionCallRewriter.aggregationExpressionRewrite())
                 .on(p -> p.aggregation(a -> a

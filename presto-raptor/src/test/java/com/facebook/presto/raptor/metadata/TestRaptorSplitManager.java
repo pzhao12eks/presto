@@ -56,7 +56,6 @@ import java.util.UUID;
 import static com.facebook.presto.raptor.metadata.DatabaseShardManager.shardIndexTable;
 import static com.facebook.presto.raptor.metadata.SchemaDaoUtil.createTablesWithRetry;
 import static com.facebook.presto.raptor.metadata.TestDatabaseShardManager.shardInfo;
-import static com.facebook.presto.spi.connector.ConnectorSplitManager.SplitSchedulingStrategy.UNGROUPED_SCHEDULING;
 import static com.facebook.presto.spi.type.VarcharType.createVarcharType;
 import static com.facebook.presto.testing.TestingConnectorSession.SESSION;
 import static com.google.common.base.Ticker.systemTicker;
@@ -142,6 +141,7 @@ public class TestRaptorSplitManager
 
     @Test
     public void testSanity()
+            throws InterruptedException
     {
         List<ConnectorTableLayoutResult> layouts = metadata.getTableLayouts(SESSION, tableHandle, Constraint.alwaysTrue(), Optional.empty());
         assertEquals(layouts.size(), 1);
@@ -158,6 +158,7 @@ public class TestRaptorSplitManager
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "No host for shard .* found: \\[\\]")
     public void testNoHostForShard()
+            throws InterruptedException
     {
         deleteShardNodes();
 
@@ -168,7 +169,7 @@ public class TestRaptorSplitManager
 
     @Test
     public void testAssignRandomNodeWhenBackupAvailable()
-            throws URISyntaxException
+            throws InterruptedException, URISyntaxException
     {
         TestingNodeManager nodeManager = new TestingNodeManager();
         RaptorConnectorId connectorId = new RaptorConnectorId("raptor");
@@ -187,6 +188,7 @@ public class TestRaptorSplitManager
 
     @Test(expectedExceptions = PrestoException.class, expectedExceptionsMessageRegExp = "No nodes available to run query")
     public void testNoNodes()
+            throws InterruptedException, URISyntaxException
     {
         deleteShardNodes();
 
@@ -205,6 +207,6 @@ public class TestRaptorSplitManager
     private static ConnectorSplitSource getSplits(RaptorSplitManager splitManager, ConnectorTableLayoutResult layout)
     {
         ConnectorTransactionHandle transaction = new RaptorTransactionHandle();
-        return splitManager.getSplits(transaction, SESSION, layout.getTableLayout().getHandle(), UNGROUPED_SCHEDULING);
+        return splitManager.getSplits(transaction, SESSION, layout.getTableLayout().getHandle());
     }
 }

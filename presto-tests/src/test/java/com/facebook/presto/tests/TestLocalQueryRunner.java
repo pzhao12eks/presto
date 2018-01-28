@@ -25,6 +25,7 @@ public class TestLocalQueryRunner
 
     @Test
     public void testSimpleQuery()
+            throws Exception
     {
         assertQuery("SELECT * FROM nation");
     }

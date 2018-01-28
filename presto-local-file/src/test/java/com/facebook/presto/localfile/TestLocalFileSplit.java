@@ -30,6 +30,7 @@ public class TestLocalFileSplit
 
     @BeforeMethod
     public void setUp()
+            throws Exception
     {
         address = HostAddress.fromParts("localhost", 1234);
         split = new LocalFileSplit(address, LocalFileTables.HttpRequestLogTable.getSchemaTableName(), TupleDomain.all());

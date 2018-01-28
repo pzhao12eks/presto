@@ -82,11 +82,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.PrimitiveIterator;
 import java.util.Set;
@@ -100,9 +97,6 @@ import static java.util.stream.Collectors.toList;
 
 public final class ExpressionFormatter
 {
-    private static final ThreadLocal<DecimalFormat> doubleFormatter = ThreadLocal.withInitial(
-            () -> new DecimalFormat("0.###################E0###", new DecimalFormatSymbols(Locale.US)));
-
     private ExpressionFormatter() {}
 
     public static String formatExpression(Expression expression, Optional<List<Expression>> parameters)
@@ -230,13 +224,12 @@ public final class ExpressionFormatter
         @Override
         protected String visitDoubleLiteral(DoubleLiteral node, Void context)
         {
-            return doubleFormatter.get().format(node.getValue());
+            return Double.toString(node.getValue());
         }
 
         @Override
         protected String visitDecimalLiteral(DecimalLiteral node, Void context)
         {
-            // TODO return node value without "DECIMAL '..'" when FeaturesConfig#parseDecimalLiteralsAsDouble switch is removed
             return "DECIMAL '" + node.getValue() + "'";
         }
 

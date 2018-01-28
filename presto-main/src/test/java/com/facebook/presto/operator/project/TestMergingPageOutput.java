@@ -40,6 +40,7 @@ public class TestMergingPageOutput
 
     @Test
     public void testMinPageSizeThreshold()
+            throws Exception
     {
         Page page = createSequencePage(TYPES, 10);
 
@@ -55,6 +56,7 @@ public class TestMergingPageOutput
 
     @Test
     public void testMinRowCountThreshold()
+            throws Exception
     {
         Page page = createSequencePage(TYPES, 10);
 
@@ -70,6 +72,7 @@ public class TestMergingPageOutput
 
     @Test
     public void testBufferSmallPages()
+            throws Exception
     {
         int singlePageRowCount = 10;
         Page page = createSequencePage(TYPES, singlePageRowCount * 2);
@@ -97,6 +100,7 @@ public class TestMergingPageOutput
 
     @Test
     public void testFlushOnBigPage()
+            throws Exception
     {
         Page smallPage = createSequencePage(TYPES, 10);
         Page bigPage = createSequencePage(TYPES, 100);
@@ -120,6 +124,7 @@ public class TestMergingPageOutput
 
     @Test
     public void testFlushOnFullPage()
+            throws Exception
     {
         int singlePageRowCount = 10;
         List<Type> types = ImmutableList.of(BIGINT);

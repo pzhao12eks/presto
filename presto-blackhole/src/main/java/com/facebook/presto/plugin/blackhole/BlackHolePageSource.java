@@ -18,6 +18,7 @@ import com.facebook.presto.spi.Page;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import io.airlift.units.Duration;
 
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -90,6 +91,7 @@ class BlackHolePageSource
 
     @Override
     public void close()
+            throws IOException
     {
         closed = true;
     }

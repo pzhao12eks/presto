@@ -432,6 +432,7 @@ public class TestAggregateWindowFunction
 
     @Test
     public void testSumCurrentRow()
+            throws Exception
     {
         MaterializedResult expected = resultBuilder(TEST_SESSION, INTEGER, VARCHAR, BIGINT)
                 .row(3, "F", 3L)
@@ -461,6 +462,7 @@ public class TestAggregateWindowFunction
 
     @Test
     public void testSumEmptyWindow()
+            throws Exception
     {
         MaterializedResult expected = resultBuilder(TEST_SESSION, INTEGER, VARCHAR, BIGINT)
                 .row(3, "F", null)

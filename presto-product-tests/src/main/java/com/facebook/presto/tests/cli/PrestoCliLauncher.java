@@ -17,7 +17,7 @@ import com.facebook.presto.cli.Presto;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import io.prestodb.tempto.ProductTest;
+import com.teradata.tempto.ProductTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,13 +65,13 @@ public class PrestoCliLauncher
     }
 
     protected void launchPrestoCli(String... arguments)
-            throws IOException
+            throws IOException, InterruptedException
     {
         launchPrestoCli(asList(arguments));
     }
 
     protected void launchPrestoCli(List<String> arguments)
-            throws IOException
+            throws IOException, InterruptedException
     {
         presto = new PrestoCliProcess(getProcessBuilder(arguments).start());
     }

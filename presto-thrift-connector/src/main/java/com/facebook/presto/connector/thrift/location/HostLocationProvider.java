@@ -19,7 +19,7 @@ import java.util.List;
 
 public interface HostLocationProvider
 {
-    HostLocationHandle getAnyHost();
+    HostAddress getAnyHost();
 
-    HostLocationHandle getAnyOf(List<HostAddress> hosts);
+    HostAddress getAnyOf(List<HostAddress> hosts);
 }

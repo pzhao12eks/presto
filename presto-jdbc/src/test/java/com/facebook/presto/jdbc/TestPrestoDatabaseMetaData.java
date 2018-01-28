@@ -72,6 +72,7 @@ public class TestPrestoDatabaseMetaData
 
     @AfterMethod(alwaysRun = true)
     public void tearDown()
+            throws SQLException
     {
         closeQuietly(connection);
     }

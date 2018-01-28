@@ -28,6 +28,7 @@ public class TestCharacterStringCasts
 {
     @Test
     public void testVarcharToVarcharCast()
+            throws Exception
     {
         assertFunction("cast('bar' as varchar(20))", createVarcharType(20), "bar");
         assertFunction("cast(cast('bar' as varchar(20)) as varchar(30))", createVarcharType(30), "bar");
@@ -47,6 +48,7 @@ public class TestCharacterStringCasts
 
     @Test
     public void testCharToVarcharCast()
+            throws Exception
     {
         assertFunction("cast(cast('bar' as char(5)) as varchar(10))", createVarcharType(10), "bar  ");
         assertFunction("cast(cast('bar' as char(5)) as varchar(1))", createVarcharType(1), "b");

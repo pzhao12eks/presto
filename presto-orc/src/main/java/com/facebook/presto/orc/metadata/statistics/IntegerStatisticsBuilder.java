@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.facebook.presto.orc.metadata.statistics.IntegerStatistics.INTEGER_VALUE_BYTES;
-import static java.lang.Math.addExact;
 import static java.util.Objects.requireNonNull;
 
 public class IntegerStatisticsBuilder
@@ -26,8 +25,6 @@ public class IntegerStatisticsBuilder
     private long nonNullValueCount;
     private long minimum = Long.MAX_VALUE;
     private long maximum = Long.MIN_VALUE;
-    private long sum;
-    private boolean overflow;
 
     @Override
     public void addValue(long value)
@@ -36,15 +33,6 @@ public class IntegerStatisticsBuilder
 
         minimum = Math.min(value, minimum);
         maximum = Math.max(value, maximum);
-
-        if (!overflow) {
-            try {
-                sum = addExact(sum, value);
-            }
-            catch (ArithmeticException e) {
-                overflow = true;
-            }
-        }
     }
 
     private void addIntegerStatistics(long valueCount, IntegerStatistics value)
@@ -56,21 +44,6 @@ public class IntegerStatisticsBuilder
         nonNullValueCount += valueCount;
         minimum = Math.min(value.getMin(), minimum);
         maximum = Math.max(value.getMax(), maximum);
-
-        if (value.getSum() == null) {
-            // if input value does not have a sum tag this stat as overflowed
-            // to prevent creation of the sum stats (since it was not provided
-            // for these values).
-            overflow = true;
-        }
-        else if (!overflow) {
-            try {
-                sum = addExact(sum, value.getSum());
-            }
-            catch (ArithmeticException e) {
-                overflow = true;
-            }
-        }
     }
 
     private Optional<IntegerStatistics> buildIntegerStatistics()
@@ -78,7 +51,7 @@ public class IntegerStatisticsBuilder
         if (nonNullValueCount == 0) {
             return Optional.empty();
         }
-        return Optional.of(new IntegerStatistics(minimum, maximum, overflow ? null : sum));
+        return Optional.of(new IntegerStatistics(minimum, maximum));
     }
 
     @Override
