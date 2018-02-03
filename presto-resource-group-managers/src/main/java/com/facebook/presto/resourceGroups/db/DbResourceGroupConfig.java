@@ -15,11 +15,13 @@ package com.facebook.presto.resourceGroups.db;
 
 import io.airlift.configuration.Config;
 
+import javax.validation.constraints.NotNull;
+
 public class DbResourceGroupConfig
 {
     private String configUrl;
-    private boolean exactMatchSelectorEnabled;
 
+    @NotNull
     public String getConfigDbUrl()
     {
         return configUrl;
@@ -29,18 +31,6 @@ public class DbResourceGroupConfig
     public DbResourceGroupConfig setConfigDbUrl(String configUrl)
     {
         this.configUrl = configUrl;
-        return this;
-    }
-
-    public boolean getExactMatchSelectorEnabled()
-    {
-        return exactMatchSelectorEnabled;
-    }
-
-    @Config("resource-groups.exact-match-selector-enabled")
-    public DbResourceGroupConfig setExactMatchSelectorEnabled(boolean exactMatchSelectorEnabled)
-    {
-        this.exactMatchSelectorEnabled = exactMatchSelectorEnabled;
         return this;
     }
 }

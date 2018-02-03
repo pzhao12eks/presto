@@ -20,6 +20,7 @@ import com.facebook.presto.raptor.metadata.TableColumn;
 import com.facebook.presto.spi.type.TimestampType;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimaps;
@@ -130,7 +131,7 @@ public class ShardOrganizerUtil
             }
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
         return indexInfoBuilder.build();
     }

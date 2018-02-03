@@ -547,7 +547,6 @@ public abstract class AbstractTestHiveClient
                 new HiveCoercionPolicy(TYPE_MANAGER),
                 new CounterStat(),
                 100,
-                hiveClientConfig.getMaxOutstandingSplitsSize(),
                 hiveClientConfig.getMinPartitionBatchSize(),
                 hiveClientConfig.getMaxPartitionBatchSize(),
                 hiveClientConfig.getMaxInitialSplits(),

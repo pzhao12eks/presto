@@ -16,6 +16,7 @@ package com.facebook.presto.verifier;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.common.base.Throwables;
 import io.airlift.event.client.AbstractEventClient;
 import io.airlift.event.client.JsonEventSerializer;
 
@@ -25,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UncheckedIOException;
 
 import static java.util.Objects.requireNonNull;
 
@@ -56,7 +56,7 @@ public class JsonEventClient
             out.println(buffer.toString().trim());
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 }

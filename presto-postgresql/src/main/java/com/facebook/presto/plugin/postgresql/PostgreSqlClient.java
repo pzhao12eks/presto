@@ -17,6 +17,7 @@ import com.facebook.presto.plugin.jdbc.BaseJdbcClient;
 import com.facebook.presto.plugin.jdbc.BaseJdbcConfig;
 import com.facebook.presto.plugin.jdbc.JdbcConnectorId;
 import com.facebook.presto.plugin.jdbc.JdbcOutputTableHandle;
+import com.google.common.base.Throwables;
 import org.postgresql.Driver;
 
 import javax.inject.Inject;
@@ -51,7 +52,7 @@ public class PostgreSqlClient
             execute(connection, sql.toString());
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

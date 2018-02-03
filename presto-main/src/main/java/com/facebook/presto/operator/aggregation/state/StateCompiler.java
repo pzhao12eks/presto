@@ -39,6 +39,7 @@ import com.facebook.presto.spi.type.RowType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.sql.gen.CallSiteBinder;
 import com.facebook.presto.sql.gen.SqlTypeBytecodeExpression;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -143,7 +144,7 @@ public class StateCompiler
                 return (AccumulatorStateSerializer<T>) metadata.stateSerializerClass().getConstructor().newInstance();
             }
             catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
 
@@ -168,7 +169,7 @@ public class StateCompiler
             return (AccumulatorStateSerializer<T>) serializerClass.newInstance();
         }
         catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -310,7 +311,7 @@ public class StateCompiler
             return clazz.getMethod(field.getSetterName(), field.getType());
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -320,7 +321,7 @@ public class StateCompiler
             return clazz.getMethod(field.getGetterName());
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -342,7 +343,7 @@ public class StateCompiler
                 return (AccumulatorStateFactory<T>) metadata.stateFactoryClass().getConstructor().newInstance();
             }
             catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
 
@@ -390,7 +391,7 @@ public class StateCompiler
             return (AccumulatorStateFactory<T>) factoryClass.newInstance();
         }
         catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

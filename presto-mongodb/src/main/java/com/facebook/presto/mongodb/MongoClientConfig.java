@@ -14,6 +14,7 @@
 package com.facebook.presto.mongodb;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
@@ -125,7 +126,7 @@ public class MongoClientConfig
                 }
             }
             catch (NumberFormatException e) {
-                throw e;
+                throw Throwables.propagate(e);
             }
         }
         return builder.build();

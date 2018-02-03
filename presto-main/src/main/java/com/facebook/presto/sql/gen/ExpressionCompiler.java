@@ -22,6 +22,7 @@ import com.facebook.presto.operator.project.PageProcessor;
 import com.facebook.presto.operator.project.PageProjection;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.sql.relational.RowExpression;
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -83,7 +84,7 @@ public class ExpressionCompiler
                 return cursorProcessor.newInstance();
             }
             catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         };
     }

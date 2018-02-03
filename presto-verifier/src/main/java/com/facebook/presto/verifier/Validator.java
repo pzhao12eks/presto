@@ -458,7 +458,7 @@ public class Validator
                 }
                 catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
+                    throw Throwables.propagate(e);
                 }
                 catch (Exception e) {
                     throw Throwables.propagate(e);

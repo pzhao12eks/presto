@@ -21,15 +21,9 @@ import com.google.common.collect.ImmutableList;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
 import static com.facebook.presto.geospatial.BingTileType.BING_TILE;
 import static com.facebook.presto.metadata.FunctionExtractor.extractFunctions;
 import static com.facebook.presto.operator.scalar.ApplyFunction.APPLY_FUNCTION;
-import static com.facebook.presto.spi.type.BigintType.BIGINT;
 import static com.facebook.presto.spi.type.BooleanType.BOOLEAN;
 import static com.facebook.presto.spi.type.IntegerType.INTEGER;
 import static com.facebook.presto.spi.type.TinyintType.TINYINT;
@@ -157,21 +151,6 @@ public class TestBingTileFunctions
     }
 
     @Test
-    public void testLargeGeometryToBingTiles()
-            throws Exception
-    {
-        Path filePath = Paths.get(this.getClass().getClassLoader().getResource("large_polygon.txt").getPath());
-        List<String> lines = Files.readAllLines(filePath);
-        for (String line : lines) {
-            String[] parts = line.split("\\|");
-            String wkt = parts[0];
-            int zoomLevel = Integer.parseInt(parts[1]);
-            long tileCount = Long.parseLong(parts[2]);
-            assertFunction("cardinality(geometry_to_bing_tiles(ST_GeometryFromText('" + wkt + "'), " + zoomLevel + "))", BIGINT, tileCount);
-        }
-    }
-
-    @Test
     public void testGeometryToBingTiles()
             throws Exception
     {
@@ -195,16 +174,6 @@ public class TestBingTileFunctions
         // Invalid zoom levels
         assertInvalidFunction("geometry_to_bing_tiles(ST_Point(60, 30.12), 0)", "Zoom level must be > 0");
         assertInvalidFunction("geometry_to_bing_tiles(ST_Point(60, 30.12), 40)", "Zoom level must be <= 23");
-
-        // Input rectangle too large
-        assertInvalidFunction("geometry_to_bing_tiles(ST_Envelope(ST_GeometryFromText('LINESTRING (0 0, 80 80)')), 16)", "The number of input tiles is too large (more than 1M) to compute a set of covering bing tiles.");
-        assertFunction("cardinality(geometry_to_bing_tiles(ST_Envelope(ST_GeometryFromText('LINESTRING (0 0, 80 80)')), 5))", BIGINT, 112L);
-
-        // Input polygon too large
-        String filePath = this.getClass().getClassLoader().getResource("too_large_polygon.txt").getPath();
-        String largeWkt = Files.lines(Paths.get(filePath)).findFirst().get();
-        assertInvalidFunction("geometry_to_bing_tiles(ST_GeometryFromText('" + largeWkt + "'), 16)", "The zoom level is too high or the geometry is too complex to compute a set of covering bing tiles. Please use a lower zoom level or convert the geometry to its bounding box using the ST_Envelope function.");
-        assertFunction("cardinality(geometry_to_bing_tiles(ST_Envelope(ST_GeometryFromText('" + largeWkt + "')), 16))", BIGINT, 19939L);
     }
 
     @Test

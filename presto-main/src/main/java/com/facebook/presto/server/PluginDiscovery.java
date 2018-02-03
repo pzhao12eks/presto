@@ -14,6 +14,7 @@
 package com.facebook.presto.server;
 
 import com.facebook.presto.spi.Plugin;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.objectweb.asm.ClassReader;
@@ -24,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -125,7 +125,7 @@ final class PluginDiscovery
             return new ClassReader(toByteArray(in));
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 

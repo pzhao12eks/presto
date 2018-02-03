@@ -680,7 +680,7 @@ public class DatabaseShardManager
             return existingShards.build();
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

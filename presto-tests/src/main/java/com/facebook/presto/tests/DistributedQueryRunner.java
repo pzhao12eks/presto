@@ -33,6 +33,7 @@ import com.facebook.presto.testing.MaterializedResult;
 import com.facebook.presto.testing.QueryRunner;
 import com.facebook.presto.testing.TestingAccessControlManager;
 import com.facebook.presto.transaction.TransactionManager;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Closer;
@@ -42,7 +43,6 @@ import io.airlift.units.Duration;
 import org.intellij.lang.annotations.Language;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -297,7 +297,7 @@ public class DistributedQueryRunner
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         }
         log.info("Announced catalog %s (%s) in %s", catalogName, connectorId, nanosSince(start));
@@ -398,7 +398,7 @@ public class DistributedQueryRunner
             closer.close();
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 

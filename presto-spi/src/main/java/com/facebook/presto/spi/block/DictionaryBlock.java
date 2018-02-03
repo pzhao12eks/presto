@@ -28,7 +28,6 @@ import static com.facebook.presto.spi.block.BlockUtil.checkValidPositions;
 import static com.facebook.presto.spi.block.DictionaryId.randomDictionaryId;
 import static io.airlift.slice.SizeOf.sizeOf;
 import static java.lang.Math.min;
-import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public class DictionaryBlock
@@ -297,7 +296,7 @@ public class DictionaryBlock
     public Block copyRegion(int position, int length)
     {
         if (position < 0 || length < 0 || position + length > positionCount) {
-            throw new IndexOutOfBoundsException(format("Invalid position range [%s, %s) in block with %s positions", position, position + length, positionCount));
+            throw new IndexOutOfBoundsException("Invalid position " + position + " in block with " + positionCount + " positions");
         }
         int[] newIds = Arrays.copyOfRange(ids, idsOffset + position, idsOffset + position + length);
         DictionaryBlock dictionaryBlock = new DictionaryBlock(dictionary, newIds);

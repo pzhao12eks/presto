@@ -538,10 +538,7 @@ final class ShowQueriesRewrite
                             .collect(toImmutableList())),
                     aliased(new Values(rows.build()), "functions", ImmutableList.copyOf(columns.keySet())),
                     ordering(
-                            new SortItem(
-                                    functionCall("lower", identifier("function_name")),
-                                    SortItem.Ordering.ASCENDING,
-                                    SortItem.NullOrdering.UNDEFINED),
+                            ascending("function_name"),
                             ascending("return_type"),
                             ascending("argument_types"),
                             ascending("function_type")));

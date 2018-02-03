@@ -14,6 +14,7 @@
 package com.facebook.presto.bytecode;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -73,7 +74,7 @@ public class DynamicClassLoader
                 }
                 catch (ClassNotFoundException e) {
                     // this should never happen
-                    throw new RuntimeException(e);
+                    throw Throwables.propagate(e);
                 }
             }
             return classes;

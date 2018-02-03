@@ -16,8 +16,7 @@ package com.facebook.presto.tests;
 import com.facebook.presto.Session;
 import com.facebook.presto.client.IntervalDayTime;
 import com.facebook.presto.client.IntervalYearMonth;
-import com.facebook.presto.client.QueryData;
-import com.facebook.presto.client.QueryStatusInfo;
+import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.server.testing.TestingPrestoServer;
 import com.facebook.presto.spi.type.ArrayType;
 import com.facebook.presto.spi.type.DecimalType;
@@ -123,19 +122,19 @@ public class TestingPrestoClient
         }
 
         @Override
-        public void addResults(QueryStatusInfo statusInfo, QueryData data)
+        public void addResults(QueryResults results)
         {
             if (!loggedUri.getAndSet(true)) {
-                log.info("Query %s: %s", statusInfo.getId(), statusInfo.getInfoUri());
+                log.info("Query %s: %s", results.getId(), results.getInfoUri());
             }
 
-            if (types.get() == null && statusInfo.getColumns() != null) {
-                types.set(getTypes(statusInfo.getColumns()));
+            if (types.get() == null && results.getColumns() != null) {
+                types.set(getTypes(results.getColumns()));
             }
 
-            if (data.getData() != null) {
+            if (results.getData() != null) {
                 checkState(types.get() != null, "data received without types");
-                rows.addAll(transform(data.getData(), dataToRow(timeZoneKey, types.get())));
+                rows.addAll(transform(results.getData(), dataToRow(timeZoneKey, types.get())));
             }
         }
 

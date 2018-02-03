@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.jdbc;
 
+import com.google.common.base.Throwables;
 import okhttp3.OkHttpClient;
 
 import java.io.Closeable;
@@ -63,7 +64,7 @@ public class PrestoDriver
             DriverManager.registerDriver(new PrestoDriver());
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 

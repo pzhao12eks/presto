@@ -13,7 +13,7 @@
  */
 package com.facebook.presto.cli;
 
-import com.facebook.presto.client.QueryStatusInfo;
+import com.facebook.presto.client.QueryResults;
 import com.facebook.presto.client.StageStats;
 import com.facebook.presto.client.StatementClient;
 import com.facebook.presto.client.StatementStats;
@@ -89,7 +89,7 @@ Parallelism: 2.5
             while (client.isValid()) {
                 try {
                     // exit status loop if there is pending output
-                    if (client.currentData().getData() != null) {
+                    if (client.current().getData() != null) {
                         return;
                     }
 
@@ -137,14 +137,14 @@ Parallelism: 2.5
     private void updateScreen()
     {
         console.repositionCursor();
-        printQueryInfo(client.currentStatusInfo());
+        printQueryInfo(client.current());
     }
 
     public void printFinalInfo()
     {
         Duration wallTime = nanosSince(start);
 
-        QueryStatusInfo results = client.finalStatusInfo();
+        QueryResults results = client.finalResults();
         StatementStats stats = results.getStats();
 
         int nodes = stats.getNodes();
@@ -210,7 +210,7 @@ Parallelism: 2.5
         out.println();
     }
 
-    private void printQueryInfo(QueryStatusInfo results)
+    private void printQueryInfo(QueryResults results)
     {
         StatementStats stats = results.getStats();
         Duration wallTime = nanosSince(start);

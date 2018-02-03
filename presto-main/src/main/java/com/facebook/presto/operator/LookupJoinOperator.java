@@ -649,7 +649,8 @@ public class LookupJoinOperator
 
         public SavedRow(Page page, int position, long joinPositionWithinPartition, boolean currentProbePositionProducedRow, int joinSourcePositions)
         {
-            this.row = page.getSingleValuePage(position);
+            this.row = page.mask(new int[] {position});
+            this.row.compact();
 
             this.joinPositionWithinPartition = joinPositionWithinPartition;
             this.currentProbePositionProducedRow = currentProbePositionProducedRow;

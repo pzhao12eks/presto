@@ -261,7 +261,7 @@ public class TopNOperator
             Block[] blocks = page.getBlocks();
             for (int position = 0; position < page.getPositionCount(); position++) {
                 if (globalCandidates.size() < n || compare(position, blocks, globalCandidates.peek()) < 0) {
-                    sizeDelta += addRow(position, page);
+                    sizeDelta += addRow(position, blocks);
                 }
             }
 
@@ -287,10 +287,10 @@ public class TopNOperator
             return 0;
         }
 
-        private long addRow(int position, Page page)
+        private long addRow(int position, Block[] blocks)
         {
             long sizeDelta = 0;
-            Block[] row = page.getSingleValuePage(position).getBlocks();
+            Block[] row = getValues(position, blocks);
 
             sizeDelta += sizeOfRow(row);
             globalCandidates.add(row);
@@ -309,6 +309,15 @@ public class TopNOperator
                 size += value.getRetainedSizeInBytes();
             }
             return size;
+        }
+
+        private static Block[] getValues(int position, Block[] blocks)
+        {
+            Block[] row = new Block[blocks.length];
+            for (int i = 0; i < blocks.length; i++) {
+                row[i] = blocks[i].getSingleValueBlock(position);
+            }
+            return row;
         }
 
         public Iterator<Block[]> build()

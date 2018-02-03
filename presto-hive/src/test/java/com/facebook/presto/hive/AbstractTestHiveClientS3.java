@@ -203,7 +203,6 @@ public abstract class AbstractTestHiveClientS3
                 new HiveCoercionPolicy(TYPE_MANAGER),
                 new CounterStat(),
                 config.getMaxOutstandingSplits(),
-                config.getMaxOutstandingSplitsSize(),
                 config.getMinPartitionBatchSize(),
                 config.getMaxPartitionBatchSize(),
                 config.getMaxInitialSplits(),

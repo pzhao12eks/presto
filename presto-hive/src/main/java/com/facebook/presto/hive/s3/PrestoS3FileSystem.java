@@ -79,7 +79,6 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -580,7 +579,7 @@ public class PrestoS3FileSystem
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
         catch (Exception e) {
             throwIfInstanceOf(e, IOException.class);
@@ -600,7 +599,7 @@ public class PrestoS3FileSystem
             return new LocatedFileStatus(status, fakeLocation);
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -836,7 +835,7 @@ public class PrestoS3FileSystem
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
             catch (Exception e) {
                 throwIfInstanceOf(e, IOException.class);
@@ -918,13 +917,13 @@ public class PrestoS3FileSystem
                                             throw new UnrecoverableS3OperationException(path, e);
                                     }
                                 }
-                                throw e;
+                                throw Throwables.propagate(e);
                             }
                         });
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
             catch (Exception e) {
                 throwIfInstanceOf(e, IOException.class);

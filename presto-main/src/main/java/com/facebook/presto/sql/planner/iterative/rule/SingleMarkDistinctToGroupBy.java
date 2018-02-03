@@ -59,7 +59,7 @@ public class SingleMarkDistinctToGroupBy
     private static final Capture<MarkDistinctNode> CHILD = newCapture();
 
     private static final Pattern<AggregationNode> PATTERN = aggregation()
-            .matching(aggregation -> !hasFilters(aggregation)) // DISTINCT + Aggregation filters not currently supported
+            .matching(aggregation -> hasFilters(aggregation))
             .with(source().matching(markDistinct().capturedAs(CHILD)));
 
     private static boolean hasFilters(AggregationNode aggregationNode)

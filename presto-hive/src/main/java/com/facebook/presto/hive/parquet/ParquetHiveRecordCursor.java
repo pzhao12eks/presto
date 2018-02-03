@@ -27,6 +27,7 @@ import com.facebook.presto.spi.type.DecimalType;
 import com.facebook.presto.spi.type.Decimals;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import io.airlift.slice.Slice;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -56,7 +57,6 @@ import parquet.schema.MessageType;
 import parquet.schema.PrimitiveType;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -304,7 +304,7 @@ public class ParquetHiveRecordCursor
             recordReader.close();
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -371,7 +371,7 @@ public class ParquetHiveRecordCursor
             throwIfInstanceOf(e, PrestoException.class);
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
             String message = format("Error opening Hive split %s (offset=%s, length=%s): %s", path, start, length, e.getMessage());
             if (e.getClass().getSimpleName().equals("BlockMissingException")) {

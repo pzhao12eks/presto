@@ -16,6 +16,7 @@ package com.facebook.presto.operator;
 import com.facebook.presto.execution.buffer.SerializedPage;
 import com.facebook.presto.server.remotetask.Backoff;
 import com.facebook.presto.spi.PrestoException;
+import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
 import com.google.common.net.MediaType;
@@ -566,7 +567,7 @@ public final class HttpPageBufferClient
                     return createPagesResponse(taskInstanceId, token, nextToken, pages, complete);
                 }
                 catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw Throwables.propagate(e);
                 }
             }
             catch (PageTransportErrorException e) {

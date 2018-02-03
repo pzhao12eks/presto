@@ -14,6 +14,7 @@
 package com.facebook.presto.hive.authentication;
 
 import com.facebook.presto.hive.ForHiveMetastore;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.thrift.client.TUGIAssumingTransport;
 import org.apache.hadoop.security.SaslRpcServer;
@@ -25,7 +26,6 @@ import javax.inject.Inject;
 import javax.security.sasl.Sasl;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -77,7 +77,7 @@ public class KerberosHiveMetastoreAuthentication
             return new TUGIAssumingTransport(saslTransport, authentication.getUserGroupInformation());
         }
         catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Throwables.propagate(e);
         }
     }
 }
